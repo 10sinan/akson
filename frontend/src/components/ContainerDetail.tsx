@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
 import {
   Play,
@@ -104,7 +105,13 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   const isRunning = container.status === 'running';
 
   return (
-    <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full">
+    <motion.div
+      initial={{ opacity: 0, x: 24 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 24 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full"
+    >
       {/* Header of Detail View */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#26282e]">
         <div className="flex items-center gap-3.5">
@@ -447,6 +454,6 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   GitCommit,
   Clock,
@@ -75,13 +76,33 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline
         </div>
       </div>
 
-      {/* List */}
-      <div className="space-y-3">
+      {/* List with Staggered Children */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.04,
+            },
+          },
+        }}
+        initial="hidden"
+        animate="visible"
+        className="space-y-3"
+      >
         {MOCK_PIPELINES.map((item) => (
-          <article
+          <motion.article
             key={item.id}
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+            }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => onSelectPipeline?.(item)}
-            className="group p-3.5 bg-[#121318] hover:bg-[#16171d] rounded-xl border border-[#26282e] hover:border-white/30 transition-all cursor-pointer space-y-2.5 active:scale-[0.99]"
+            className="group p-3.5 bg-[#121318] hover:bg-[#16171d] rounded-xl border border-[#26282e] hover:border-white/30 transition-colors cursor-pointer space-y-2.5"
           >
             <div className="flex items-start justify-between">
               <div>
@@ -122,9 +143,9 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline
                 </span>
               </div>
             </div>
-          </article>
+          </motion.article>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

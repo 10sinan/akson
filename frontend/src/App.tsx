@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar, type ActiveNavTab } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ContainerCard } from './components/ContainerCard';
@@ -194,187 +195,287 @@ export function App() {
 
         {/* 3. GÖMÜLÜ İÇ KANVAS (Recessed Canvas: rounded-tl-3xl border-t border-l border-[#26282e] p-8) */}
         <main className="ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0d0e13] rounded-tl-3xl border-t border-l border-[#26282e] p-8 flex-1 flex flex-col min-w-0 overflow-y-auto">
-          {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
-          {activeTab === 'dashboard' && (
-            <div className="flex flex-col flex-1 space-y-6">
-              {/* SubHeader Bar */}
-              <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#1e1f25]">
-                <div>
-                  <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
-                    Akson Kontrol Paneli
-                  </h1>
-                  <p className="text-xs text-[#8e9192] mt-1">
-                    Yerel konteyner ortamları, Traefik ters vekil ve anlık donanım telemetrisi
-                  </p>
-                </div>
-
-                {/* Aksiyon & Görünüm Butonları */}
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="flex items-center bg-[#151722] p-1 rounded-xl border border-[#232736] shadow-sm">
-                    <button
-                      onClick={() => setIsDetailOpen(false)}
-                      className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer active:scale-95 ${
-                        !isDetailOpen
-                          ? 'bg-[#242838] text-white shadow-sm border border-white/5 font-semibold'
-                          : 'text-[#8e9192] hover:text-white'
-                      }`}
-                    >
-                      <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
-                      <span className="hidden sm:inline">3 Sütunlu Görünüm</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('storage')}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
-                    >
-                      <Database className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Birimler</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('logs')}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
-                    >
-                      <TerminalIcon className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Loglar</span>
-                    </button>
+          {/* Sayfalar Arası Yumuşak Geçiş (AnimatePresence mode="wait") */}
+          <AnimatePresence mode="wait">
+            {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
+            {activeTab === 'dashboard' && (
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="flex flex-col flex-1 space-y-6"
+              >
+                {/* SubHeader Bar */}
+                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#1e1f25]">
+                  <div>
+                    <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                      Akson Kontrol Paneli
+                    </h1>
+                    <p className="text-xs text-[#8e9192] mt-1">
+                      Yerel konteyner ortamları, Traefik ters vekil ve anlık donanım telemetrisi
+                    </p>
                   </div>
 
-                  <button
-                    onClick={handleRefresh}
-                    className="flex items-center space-x-1 px-3 py-2 bg-[#1a1b21] hover:bg-[#232736] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#292a2f] shadow-sm transition cursor-pointer active:scale-95"
-                    title="Metrikleri Yenile"
-                  >
-                    <RotateCw className={`w-3.5 h-3.5 text-[#8e9192] ${isRefreshing ? 'animate-spin' : ''}`} />
-                    <span className="hidden sm:inline text-xs">Yenile</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('deploy')}
-                    className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Yeni Servis Dağıt</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Master-Detail Grid Konteyneri */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start transition-all duration-300">
-                {/* 1. SÜTUN: Aktif Servisler (1/3 Alan) */}
-                <section className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all duration-300 ease-in-out lg:col-span-1">
-                  <div className="flex items-center justify-between px-1">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-blue-400" />
-                      <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                        Aktif Servisler ({filteredContainers.length})
-                      </h2>
-                    </div>
-
-                    {/* Filter Pills */}
-                    <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
+                  {/* Aksiyon & Görünüm Butonları */}
+                  <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="flex items-center bg-[#151722] p-1 rounded-xl border border-[#232736] shadow-sm">
                       <button
-                        onClick={() => setStatusFilter('all')}
-                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                          statusFilter === 'all'
-                            ? 'bg-[#292a2f] text-white font-semibold'
-                            : 'text-[#8e9192]'
+                        onClick={() => setIsDetailOpen(false)}
+                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer active:scale-95 ${
+                          !isDetailOpen
+                            ? 'bg-[#242838] text-white shadow-sm border border-white/5 font-semibold'
+                            : 'text-[#8e9192] hover:text-white'
                         }`}
                       >
-                        Tümü
+                        <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="hidden sm:inline">3 Sütunlu Görünüm</span>
                       </button>
                       <button
-                        onClick={() => setStatusFilter('running')}
-                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                          statusFilter === 'running'
-                            ? 'bg-[#292a2f] text-emerald-400 font-semibold'
-                            : 'text-[#8e9192]'
-                        }`}
+                        onClick={() => setActiveTab('storage')}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
                       >
-                        Aktif
+                        <Database className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Birimler</span>
                       </button>
                       <button
-                        onClick={() => setStatusFilter('stopped')}
-                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                          statusFilter === 'stopped'
-                            ? 'bg-[#292a2f] text-rose-400 font-semibold'
-                            : 'text-[#8e9192]'
-                        }`}
+                        onClick={() => setActiveTab('logs')}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
                       >
-                        Pasif
+                        <TerminalIcon className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Loglar</span>
                       </button>
                     </div>
+
+                    <button
+                      onClick={handleRefresh}
+                      className="flex items-center space-x-1 px-3 py-2 bg-[#1a1b21] hover:bg-[#232736] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#292a2f] shadow-sm transition cursor-pointer active:scale-95"
+                      title="Metrikleri Yenile"
+                    >
+                      <RotateCw className={`w-3.5 h-3.5 text-[#8e9192] ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span className="hidden sm:inline text-xs">Yenile</span>
+                    </button>
+
+                    <button
+                      onClick={() => setActiveTab('deploy')}
+                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Yeni Servis Dağıt</span>
+                    </button>
                   </div>
+                </div>
 
-                  {/* Cards List */}
-                  <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
-                    {filteredContainers.map((container) => (
-                      <ContainerCard
-                        key={container.id}
-                        container={container}
-                        isSelected={isDetailOpen && container.id === selectedContainer?.id}
-                        onSelect={handleSelectContainer}
-                      />
-                    ))}
-                    {filteredContainers.length === 0 && (
-                      <div className="p-8 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-xl border border-[#26282e]">
-                        Arama kriterlerine uygun konteyner bulunamadı.
+                {/* Master-Detail Grid Konteyneri */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start transition-all duration-300">
+                  {/* 1. SÜTUN: Aktif Servisler (1/3 Alan - Layout Animasyonu ile) */}
+                  <motion.section
+                    layout
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all duration-300 ease-in-out lg:col-span-1"
+                  >
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-blue-400" />
+                        <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                          Aktif Servisler ({filteredContainers.length})
+                        </h2>
                       </div>
-                    )}
-                  </div>
-                </section>
 
-                {/* 3 SÜTUNLU MOD: Kolon 2 (Pipeline) ve Kolon 3 (Metrikler) Açık */}
-                {!isDetailOpen && (
-                  <>
-                    <PipelineColumn
-                      onSelectPipeline={(pipeline) => {
-                        // Switch into detail mode when clicking a pipeline task
-                        const matched = containers.find((c) =>
-                          pipeline.name.includes(c.name) || pipeline.description.includes(c.name)
-                        );
-                        if (matched) {
-                          setSelectedId(matched.id);
-                        }
-                        setIsDetailOpen(true);
+                      {/* Filter Pills */}
+                      <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
+                        <button
+                          onClick={() => setStatusFilter('all')}
+                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                            statusFilter === 'all'
+                              ? 'bg-[#292a2f] text-white font-semibold'
+                              : 'text-[#8e9192]'
+                          }`}
+                        >
+                          Tümü
+                        </button>
+                        <button
+                          onClick={() => setStatusFilter('running')}
+                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                            statusFilter === 'running'
+                              ? 'bg-[#292a2f] text-emerald-400 font-semibold'
+                              : 'text-[#8e9192]'
+                          }`}
+                        >
+                          Aktif
+                        </button>
+                        <button
+                          onClick={() => setStatusFilter('stopped')}
+                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                            statusFilter === 'stopped'
+                              ? 'bg-[#292a2f] text-rose-400 font-semibold'
+                              : 'text-[#8e9192]'
+                          }`}
+                        >
+                          Pasif
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Cards List with Staggered Children */}
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0 },
+                        visible: {
+                          opacity: 1,
+                          transition: {
+                            staggerChildren: 0.04,
+                          },
+                        },
                       }}
-                    />
-                    <MetricsColumn
-                      totalCpu={totalCpu}
-                      totalMemoryMb={totalMemory}
-                    />
-                  </>
-                )}
+                      initial="hidden"
+                      animate="visible"
+                      className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
+                    >
+                      {filteredContainers.map((container) => (
+                        <ContainerCard
+                          key={container.id}
+                          container={container}
+                          isSelected={isDetailOpen && container.id === selectedContainer?.id}
+                          onSelect={handleSelectContainer}
+                        />
+                      ))}
+                      {filteredContainers.length === 0 && (
+                        <div className="p-8 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-xl border border-[#26282e]">
+                          Arama kriterlerine uygun konteyner bulunamadı.
+                        </div>
+                      )}
+                    </motion.div>
+                  </motion.section>
 
-                {/* 1/3 + 2/3 MODU: Sağdaki 2/3 Detay Paneli (#detail-view) */}
-                {isDetailOpen && selectedContainer && (
-                  <section className="lg:col-span-2 h-full transition-all duration-300">
-                    <ContainerDetail
-                      container={selectedContainer}
-                      onAction={handleAction}
-                      onClose={() => setIsDetailOpen(false)}
-                      onOpenAiAnalyze={() => setIsAiOpen(true)}
-                    />
-                  </section>
-                )}
-              </div>
-            </div>
-          )}
+                  {/* 3 SÜTUN / 1/3+2/3 GEÇİŞİ (AnimatePresence mode="popLayout") */}
+                  <AnimatePresence mode="popLayout">
+                    {!isDetailOpen && (
+                      <>
+                        <motion.section
+                          key="col-pipeline"
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          className="lg:col-span-1"
+                        >
+                          <PipelineColumn
+                            onSelectPipeline={(pipeline) => {
+                              const matched = containers.find(
+                                (c) =>
+                                  pipeline.name.includes(c.name) ||
+                                  pipeline.description.includes(c.name)
+                              );
+                              if (matched) {
+                                setSelectedId(matched.id);
+                              }
+                              setIsDetailOpen(true);
+                            }}
+                          />
+                        </motion.section>
 
-          {/* TAB 2: YENİ DAĞITIM (DEPLOY) */}
-          {activeTab === 'deploy' && (
-            <DeployView
-              onDeploySuccess={handleDeployNew}
-              onNavigateDashboard={() => setActiveTab('dashboard')}
-            />
-          )}
+                        <motion.section
+                          key="col-metrics"
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          className="lg:col-span-1"
+                        >
+                          <MetricsColumn
+                            totalCpu={totalCpu}
+                            totalMemoryMb={totalMemory}
+                          />
+                        </motion.section>
+                      </>
+                    )}
 
-          {/* TAB 3: DEPOLAMA & BİRİMLER (STORAGE) */}
-          {activeTab === 'storage' && <StorageView />}
+                    {isDetailOpen && selectedContainer && (
+                      <motion.section
+                        key="detail-view"
+                        layout
+                        initial={{ opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 24 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        className="lg:col-span-2 h-full"
+                      >
+                        <ContainerDetail
+                          container={selectedContainer}
+                          onAction={handleAction}
+                          onClose={() => setIsDetailOpen(false)}
+                          onOpenAiAnalyze={() => setIsAiOpen(true)}
+                        />
+                      </motion.section>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
 
-          {/* TAB 4: SİSTEM GÜNLÜKLERİ (LOGS) */}
-          {activeTab === 'logs' && <LogsView containers={containers} />}
+            {/* TAB 2: YENİ DAĞITIM (DEPLOY) */}
+            {activeTab === 'deploy' && (
+              <motion.div
+                key="deploy"
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="flex flex-col flex-1"
+              >
+                <DeployView
+                  onDeploySuccess={handleDeployNew}
+                  onNavigateDashboard={() => setActiveTab('dashboard')}
+                />
+              </motion.div>
+            )}
 
-          {/* TAB 5: AĞ & TRAEFIK PROXY (NETWORK) */}
-          {activeTab === 'network' && <NetworkView containers={containers} />}
+            {/* TAB 3: DEPOLAMA & BİRİMLER (STORAGE) */}
+            {activeTab === 'storage' && (
+              <motion.div
+                key="storage"
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="flex flex-col flex-1"
+              >
+                <StorageView />
+              </motion.div>
+            )}
+
+            {/* TAB 4: SİSTEM GÜNLÜKLERİ (LOGS) */}
+            {activeTab === 'logs' && (
+              <motion.div
+                key="logs"
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="flex flex-col flex-1"
+              >
+                <LogsView containers={containers} />
+              </motion.div>
+            )}
+
+            {/* TAB 5: AĞ & TRAEFIK PROXY (NETWORK) */}
+            {activeTab === 'network' && (
+              <motion.div
+                key="network"
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="flex flex-col flex-1"
+              >
+                <NetworkView containers={containers} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 

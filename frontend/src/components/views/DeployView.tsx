@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Rocket,
   FolderGit2,
@@ -274,14 +275,34 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </div>
 
                 {/* Repo List */}
-                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                <motion.div
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.04,
+                      },
+                    },
+                  }}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-2 max-h-56 overflow-y-auto pr-1"
+                >
                   {filteredRepos.map((repo) => {
                     const isSelected = selectedRepo.id === repo.id;
                     return (
-                      <div
+                      <motion.div
                         key={repo.id}
+                        variants={{
+                          hidden: { opacity: 0, y: 8 },
+                          visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+                        }}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                         onClick={() => handleSelectRepo(repo)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                        className={`p-3 rounded-xl border transition-colors cursor-pointer flex items-center justify-between ${
                           isSelected
                             ? 'bg-[#1a1b21] border-blue-500/50 shadow-sm'
                             : 'bg-[#16171d]/60 border-[#26282e] hover:bg-[#16171d] hover:border-white/20'
@@ -316,10 +337,10 @@ export const DeployView: React.FC<DeployViewProps> = ({
                         >
                           {isSelected ? 'Seçildi' : 'Bağla'}
                         </button>
-                      </div>
+                      </motion.div>
                     );
                   })}
-                </div>
+                </motion.div>
               </div>
             ) : (
               <div className="space-y-3 font-mono text-xs">

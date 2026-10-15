@@ -1,3 +1,5 @@
+import React from 'react';
+import { motion, type Variants } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
 import {
   Globe,
@@ -12,6 +14,18 @@ interface ContainerCardProps {
   isSelected: boolean;
   onSelect: (container: ContainerItem) => void;
 }
+
+const containerCardItemVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.25,
+      ease: 'easeOut',
+    },
+  },
+};
 
 export const ContainerCard: React.FC<ContainerCardProps> = ({
   container,
@@ -37,9 +51,13 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   const isRunning = container.status === 'running';
 
   return (
-    <div
+    <motion.div
+      variants={containerCardItemVariants}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={() => onSelect(container)}
-      className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer select-none ${
+      className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none ${
         isSelected
           ? 'bg-[#16171d] border-blue-500/80 shadow-lg shadow-blue-500/5 ring-1 ring-blue-500/40'
           : 'bg-[#121318] border-[#26282e] hover:border-white/20 hover:bg-[#16171d]/60'
@@ -103,6 +121,6 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           <span>RAM: <strong className="text-white">{container.memoryUsageMb} MB</strong></span>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };

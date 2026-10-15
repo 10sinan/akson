@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import {
   Search,
   Pause,
@@ -255,9 +256,11 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
             </span>
 
             <div className="space-y-1 font-mono text-xs">
-              <button
+              <motion.button
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedContainer('all')}
-                className={`w-full text-left px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-between ${
+                className={`w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between ${
                   selectedContainer === 'all'
                     ? 'bg-white text-black font-semibold'
                     : 'text-[#8e9192] hover:text-white hover:bg-[#16171d]'
@@ -265,13 +268,15 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               >
                 <span>Tüm Konteynerler</span>
                 <span className="text-[10px]">{containers.length}</span>
-              </button>
+              </motion.button>
 
               {containers.map((c) => (
-                <button
+                <motion.button
                   key={c.id}
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedContainer(c.name)}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition cursor-pointer flex items-center justify-between ${
+                  className={`w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between ${
                     selectedContainer === c.name
                       ? 'bg-blue-600 text-white font-semibold'
                       : 'text-[#8e9192] hover:text-white hover:bg-[#16171d]'
@@ -283,7 +288,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                       c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'
                     }`}
                   />
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>

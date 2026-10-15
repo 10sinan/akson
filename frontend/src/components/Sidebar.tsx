@@ -1,3 +1,5 @@
+import React from 'react';
+import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Rocket,
@@ -18,6 +20,14 @@ interface SidebarProps {
   onOpenAiModal: () => void;
 }
 
+const NAV_ITEMS: { id: ActiveNavTab; title: string; icon: React.FC<{ className?: string }> }[] = [
+  { id: 'dashboard', title: 'Kontrol Paneli (Dashboard)', icon: LayoutDashboard },
+  { id: 'deploy', title: 'Yeni Dağıtım (Deploy)', icon: Rocket },
+  { id: 'storage', title: 'Depolama & Volumes', icon: HardDrive },
+  { id: 'logs', title: 'Konsol & Canlı Günlükler', icon: Terminal },
+  { id: 'network', title: 'Ağ & Traefik Proxy', icon: Network },
+];
+
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
@@ -32,78 +42,44 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Layers className="w-5 h-5 text-white" />
         </div>
 
-        {/* Navigation Buttons */}
+        {/* Navigation Buttons with Animated Sliding Pill */}
         <nav className="flex flex-col items-center gap-2 w-full px-2">
-          <button
-            onClick={() => onSelectTab('dashboard')}
-            title="Kontrol Paneli (Dashboard)"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-              activeTab === 'dashboard'
-                ? 'bg-white text-black shadow-md font-semibold'
-                : 'text-[#8e9192] hover:text-white hover:bg-[#1a1b21]'
-            }`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => onSelectTab('deploy')}
-            title="Yeni Dağıtım (Deploy)"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-              activeTab === 'deploy'
-                ? 'bg-white text-black shadow-md font-semibold'
-                : 'text-[#8e9192] hover:text-white hover:bg-[#1a1b21]'
-            }`}
-          >
-            <Rocket className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => onSelectTab('storage')}
-            title="Depolama & Volumes"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-              activeTab === 'storage'
-                ? 'bg-white text-black shadow-md font-semibold'
-                : 'text-[#8e9192] hover:text-white hover:bg-[#1a1b21]'
-            }`}
-          >
-            <HardDrive className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => onSelectTab('logs')}
-            title="Konsol & Canlı Günlükler"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-              activeTab === 'logs'
-                ? 'bg-white text-black shadow-md font-semibold'
-                : 'text-[#8e9192] hover:text-white hover:bg-[#1a1b21]'
-            }`}
-          >
-            <Terminal className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => onSelectTab('network')}
-            title="Ağ & Traefik Proxy"
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-              activeTab === 'network'
-                ? 'bg-white text-black shadow-md font-semibold'
-                : 'text-[#8e9192] hover:text-white hover:bg-[#1a1b21]'
-            }`}
-          >
-            <Network className="w-5 h-5" />
-          </button>
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeTab === item.id;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onSelectTab(item.id)}
+                title={item.title}
+                className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-[#8e9192] hover:text-white"
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="sidebarActivePill"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    className="absolute inset-0 bg-white rounded-xl shadow-md"
+                  />
+                )}
+                <span className={`relative z-10 transition-colors ${isActive ? 'text-black font-semibold' : ''}`}>
+                  <Icon className="w-5 h-5" />
+                </span>
+              </button>
+            );
+          })}
 
           <div className="w-6 h-[1px] bg-[#26282e] my-1" />
 
           {/* AI Copilot Button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onOpenAiModal}
             title="Gemini AI DevOps Asistanı"
-            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600/20 to-purple-600/30 text-blue-300 border border-blue-500/40 hover:text-white hover:border-blue-400 flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer hover:scale-105 active:scale-95"
+            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600/20 to-purple-600/30 text-blue-300 border border-blue-500/40 hover:text-white hover:border-blue-400 flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer"
           >
             <Sparkles className="w-5 h-5 text-blue-400" />
-          </button>
+          </motion.button>
         </nav>
       </div>
 

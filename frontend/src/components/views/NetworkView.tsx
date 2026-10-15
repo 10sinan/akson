@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Network,
   ShieldCheck,
@@ -228,11 +229,30 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
         </p>
 
         {/* Visual node grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+        <motion.div
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.04,
+              },
+            },
+          }}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 pt-2"
+        >
           {containers.map((c) => (
-            <div
+            <motion.div
               key={c.id}
-              className="bg-[#0d0e13] p-3 rounded-xl border border-[#1e1f25] space-y-1.5 hover:border-white/20 transition"
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+              }}
+              whileHover={{ y: -2 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="bg-[#0d0e13] p-3 rounded-xl border border-[#1e1f25] space-y-1.5 hover:border-white/20 transition-colors cursor-default"
             >
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-white truncate">{c.name}</span>
@@ -244,9 +264,9 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
               </div>
               <div className="text-[11px] text-emerald-400">{c.ipAddress}</div>
               <div className="text-[10px] text-[#8e9192] truncate">{c.image}</div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

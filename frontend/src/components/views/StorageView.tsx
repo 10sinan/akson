@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Database,
   Search,
@@ -187,14 +188,34 @@ export const StorageView: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-2 space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto">
+          <motion.div
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.04,
+                },
+              },
+            }}
+            initial="hidden"
+            animate="visible"
+            className="p-2 space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto"
+          >
             {filteredVolumes.map((vol) => {
               const isSelected = selectedVolume.id === vol.id;
               return (
-                <div
+                <motion.div
                   key={vol.id}
+                  variants={{
+                    hidden: { opacity: 0, y: 8 },
+                    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+                  }}
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   onClick={() => setSelectedVolume(vol)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
+                  className={`p-3 rounded-xl border transition-colors cursor-pointer flex flex-col gap-1.5 ${
                     isSelected
                       ? 'bg-[#1a1b21] border-white/30 shadow-md'
                       : 'bg-[#121318] border-[#26282e] hover:border-white/20 hover:bg-[#16171d]'
@@ -211,10 +232,10 @@ export const StorageView: React.FC = () => {
                   <div className="text-[11px] font-mono text-[#8e9192] truncate">
                     <span className="text-emerald-400">{vol.service}</span> • {vol.mountPath}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
 
         {/* Column 2 (5 cols): Volume Mount Details & Host Paths */}
