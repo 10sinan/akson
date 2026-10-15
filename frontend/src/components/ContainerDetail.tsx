@@ -19,11 +19,15 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  X,
+  Sparkles,
 } from 'lucide-react';
 
 interface ContainerDetailProps {
   container: ContainerItem;
   onAction: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void;
+  onClose?: () => void;
+  onOpenAiAnalyze?: () => void;
 }
 
 type DetailTab = 'overview' | 'logs' | 'env' | 'terminal';
@@ -31,6 +35,8 @@ type DetailTab = 'overview' | 'logs' | 'env' | 'terminal';
 export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   container,
   onAction,
+  onClose,
+  onOpenAiAnalyze,
 }) => {
   const [activeTab, setActiveTab] = useState<DetailTab>('overview');
   const [copiedId, setCopiedId] = useState(false);
@@ -146,11 +152,22 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {onOpenAiAnalyze && (
+            <button
+              onClick={onOpenAiAnalyze}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-medium transition cursor-pointer active:scale-95 shadow-sm"
+              title="Gemini ile Hata ve Konfigürasyon Analizi"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+              <span>AI Analizi</span>
+            </button>
+          )}
+
           {isRunning ? (
             <button
               onClick={() => onAction('stop', container.id)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#1a1b21] hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-[#292a2f] hover:border-rose-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-[#292a2f] hover:border-rose-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
             >
               <Square className="w-3.5 h-3.5 fill-rose-300" />
               <span>Durdur</span>
@@ -158,7 +175,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           ) : (
             <button
               onClick={() => onAction('start', container.id)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#1a1b21] hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-[#292a2f] hover:border-emerald-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-[#292a2f] hover:border-emerald-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
             >
               <Play className="w-3.5 h-3.5 fill-emerald-300" />
               <span>Başlat</span>
@@ -168,7 +185,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           <button
             onClick={() => onAction('restart', container.id)}
             title="Konteyneri Yeniden Başlat"
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#1a1b21] hover:bg-[#232736] text-white border border-[#292a2f] rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-[#232736] text-white border border-[#292a2f] rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
           >
             <RotateCw className="w-3.5 h-3.5 text-blue-400" />
             <span>Yeniden Başlat</span>
@@ -177,10 +194,21 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           <button
             onClick={() => onAction('delete', container.id)}
             title="Konteyneri Sil"
-            className="p-2 bg-[#1a1b21] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-[#292a2f] rounded-xl transition cursor-pointer active:scale-95"
+            className="p-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-[#292a2f] rounded-xl transition cursor-pointer active:scale-95"
           >
             <Trash2 className="w-4 h-4" />
           </button>
+
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-[#1a1b21] hover:bg-[#26282e] hover:border-white/30 text-neutral-300 hover:text-white border border-[#26282e] flex items-center gap-1.5 cursor-pointer transition active:scale-95 shadow-sm ml-1"
+              title="3 Sütunlu Görünüme Dön"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Görünümü Kapat (3 Sütuna Dön)</span>
+            </button>
+          )}
         </div>
       </div>
 

@@ -5,20 +5,28 @@ import { ContainerCard } from './components/ContainerCard';
 import { ContainerDetail } from './components/ContainerDetail';
 import { DeployModal } from './components/DeployModal';
 import { AiCopilotModal } from './components/AiCopilotModal';
+import { PipelineColumn } from './components/dashboard/PipelineColumn';
+import { MetricsColumn } from './components/dashboard/MetricsColumn';
+import { DeployView } from './components/views/DeployView';
+import { StorageView } from './components/views/StorageView';
+import { LogsView } from './components/views/LogsView';
+import { NetworkView } from './components/views/NetworkView';
 import { INITIAL_CONTAINERS } from './data/mockContainers';
 import type { ContainerItem } from './types/container';
 import {
   Layers,
-  HardDrive,
+  LayoutGrid,
+  Database,
   Terminal as TerminalIcon,
-  Network as NetworkIcon,
+  RotateCw,
+  Plus,
 } from 'lucide-react';
-
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('dashboard');
   const [containers, setContainers] = useState<ContainerItem[]>(INITIAL_CONTAINERS);
   const [selectedId, setSelectedId] = useState<string>(INITIAL_CONTAINERS[0].id);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'stopped'>('all');
   const [isDeployOpen, setIsDeployOpen] = useState(false);
@@ -49,7 +57,10 @@ export function App() {
 
   // Global metrics summary
   const runningCount = containers.filter((c) => c.status === 'running').length;
-  const totalCpu = containers.reduce((acc, c) => acc + (c.status === 'running' ? c.cpuPercent : 0), 0);
+  const totalCpu = containers.reduce(
+    (acc, c) => acc + (c.status === 'running' ? c.cpuPercent : 0),
+    0
+  );
   const totalMemory = containers.reduce(
     (acc, c) => acc + (c.status === 'running' ? c.memoryUsageMb : 0),
     0
@@ -78,7 +89,7 @@ export function App() {
             uptime: 'Az önce başlatıldı',
             cpuPercent: 1.5,
             memoryUsageMb: 40,
-            logs: [...c.logs, `[akson] Container started by user at ${new Date().toLocaleTimeString()}`],
+            logs: [...c.logs, `[akson] Konteyner kullanıcı tarafından başlatıldı: ${new Date().toLocaleTimeString()}`],
           };
         } else if (action === 'stop') {
           return {
@@ -88,7 +99,7 @@ export function App() {
             uptime: 'Durduruldu',
             cpuPercent: 0,
             memoryUsageMb: 0,
-            logs: [...c.logs, `[akson] Container stopped by user at ${new Date().toLocaleTimeString()}`],
+            logs: [...c.logs, `[akson] Konteyner kullanıcı tarafından durduruldu: ${new Date().toLocaleTimeString()}`],
           };
         } else if (action === 'restart') {
           return {
@@ -97,7 +108,7 @@ export function App() {
             statusText: 'Çevrimiçi',
             restartCount: c.restartCount + 1,
             uptime: 'Az önce yeniden başlatıldı',
-            logs: [...c.logs, `[akson] Container restarted at ${new Date().toLocaleTimeString()}`],
+            logs: [...c.logs, `[akson] Konteyner sıfır kesintiyle yeniden başlatıldı: ${new Date().toLocaleTimeString()}`],
           };
         }
         return c;
@@ -108,7 +119,6 @@ export function App() {
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
-      // Simulate small fluctuation in metrics
       setContainers((prev) =>
         prev.map((c) => {
           if (c.status !== 'running') return c;
@@ -126,6 +136,12 @@ export function App() {
   const handleDeployNew = (newContainer: ContainerItem) => {
     setContainers((prev) => [newContainer, ...prev]);
     setSelectedId(newContainer.id);
+    setIsDetailOpen(true);
+  };
+
+  const handleSelectContainer = (container: ContainerItem) => {
+    setSelectedId(container.id);
+    setIsDetailOpen(true);
   };
 
   const getTabTitle = () => {
@@ -146,17 +162,22 @@ export function App() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#090a0f] text-[#e3e1e9]">
-      {/* 1. Left Sidebar (Icon Rail) */}
+    <div className="bg-[#090a0f] text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
+      {/* 1. SOL SABİT MENÜ (Dikişsiz L-Şekilli Ray: bg-[#090a0f] - Sıfır border-r) */}
       <Sidebar
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'dashboard') {
+            setIsDetailOpen(false);
+          }
+        }}
         onOpenAiModal={() => setIsAiOpen(true)}
       />
 
-      {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
+      {/* 2. ANA SARMALAYICI & ÜST BAR */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#090a0f]">
+        {/* Üst Başlık Çubuğu (Seamless L-Shaped Header: h-14, pl-20, Sıfır border-b) */}
         <Header
           currentTabName={getTabTitle()}
           totalContainers={containers.length}
@@ -166,196 +187,198 @@ export function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onRefresh={handleRefresh}
-          onOpenDeploy={() => setIsDeployOpen(true)}
+          onOpenDeploy={() => setActiveTab('deploy')}
+          onOpenAi={() => setIsAiOpen(true)}
           isRefreshing={isRefreshing}
         />
 
-        {/* View Router */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* DASHBOARD VIEW (1/3 + 2/3 Master-Detail Grid) */}
+        {/* 3. GÖMÜLÜ İÇ KANVAS (Recessed Canvas: rounded-tl-3xl border-t border-l border-[#26282e] p-8) */}
+        <main className="ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0d0e13] rounded-tl-3xl border-t border-l border-[#26282e] p-8 flex-1 flex flex-col min-w-0 overflow-y-auto">
+          {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
           {activeTab === 'dashboard' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start h-full">
-              {/* Left Column (1/3): Containers List */}
-              <section className="space-y-4 bg-[#1a1b21]/60 p-4 rounded-2xl border border-[#26282e] lg:col-span-1">
-                {/* Section Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-blue-400" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Konteynerler ({filteredContainers.length})
-                    </h2>
-                  </div>
-
-                  {/* Filter Pills */}
-                  <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
-                    <button
-                      onClick={() => setStatusFilter('all')}
-                      className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                        statusFilter === 'all' ? 'bg-[#292a2f] text-white font-semibold' : 'text-[#8e9192]'
-                      }`}
-                    >
-                      Tümü
-                    </button>
-                    <button
-                      onClick={() => setStatusFilter('running')}
-                      className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                        statusFilter === 'running' ? 'bg-[#292a2f] text-emerald-400 font-semibold' : 'text-[#8e9192]'
-                      }`}
-                    >
-                      Aktif
-                    </button>
-                    <button
-                      onClick={() => setStatusFilter('stopped')}
-                      className={`px-2 py-0.5 rounded transition cursor-pointer ${
-                        statusFilter === 'stopped' ? 'bg-[#292a2f] text-rose-400 font-semibold' : 'text-[#8e9192]'
-                      }`}
-                    >
-                      Pasif
-                    </button>
-                  </div>
-                </div>
-
-                {/* Cards List */}
-                <div className="space-y-3 max-h-[calc(100vh-210px)] overflow-y-auto pr-1">
-                  {filteredContainers.map((container) => (
-                    <ContainerCard
-                      key={container.id}
-                      container={container}
-                      isSelected={container.id === selectedContainer?.id}
-                      onSelect={(c) => setSelectedId(c.id)}
-                    />
-                  ))}
-                  {filteredContainers.length === 0 && (
-                    <div className="p-8 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-xl border border-[#26282e]">
-                      Arama kriterlerine uygun konteyner bulunamadı.
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              {/* Right Column (2/3): Container Detail Inspection */}
-              <section className="lg:col-span-2 h-full">
-                {selectedContainer ? (
-                  <ContainerDetail
-                    container={selectedContainer}
-                    onAction={handleAction}
-                  />
-                ) : (
-                  <div className="p-12 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-2xl border border-[#26282e]">
-                    İncelemek için sol listeden bir servis seçin.
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
-
-          {/* STORAGE VIEW */}
-          {activeTab === 'storage' && (
-            <div className="p-8 bg-[#121318] border border-[#26282e] rounded-2xl space-y-4">
-              <div className="flex items-center gap-2 text-white font-mono text-sm font-bold">
-                <HardDrive className="w-5 h-5 text-blue-400" />
-                <span>Docker Birimleri (Volumes) & Depolama</span>
-              </div>
-              <p className="text-xs text-[#8e9192]">
-                Kalıcı disk alanları, SQLite veritabanı dosyaları ve yedekler burada listelenir.
-              </p>
-              <div className="rounded-xl border border-[#26282e] overflow-hidden font-mono text-xs">
-                <table className="w-full text-left">
-                  <thead className="bg-[#16171d] text-[#8e9192] border-b border-[#26282e]">
-                    <tr>
-                      <th className="p-3">Birim Adı</th>
-                      <th className="p-3">Sürücü</th>
-                      <th className="p-3">Bağlı Servis</th>
-                      <th className="p-3">Boyut</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#26282e]">
-                    <tr>
-                      <td className="p-3 text-white">akson_postgres_data</td>
-                      <td className="p-3 text-[#8e9192]">local</td>
-                      <td className="p-3 text-emerald-400">postgres-main</td>
-                      <td className="p-3 text-slate-300">1.4 GB</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 text-white">akson_redis_data</td>
-                      <td className="p-3 text-[#8e9192]">local</td>
-                      <td className="p-3 text-emerald-400">redis-cache</td>
-                      <td className="p-3 text-slate-300">128 MB</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 text-white">traefik_acme_certs</td>
-                      <td className="p-3 text-[#8e9192]">local</td>
-                      <td className="p-3 text-emerald-400">api-gateway</td>
-                      <td className="p-3 text-slate-300">4.2 MB</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* LOGS VIEW */}
-          {activeTab === 'logs' && (
-            <div className="p-8 bg-[#121318] border border-[#26282e] rounded-2xl space-y-4">
-              <div className="flex items-center gap-2 text-white font-mono text-sm font-bold">
-                <TerminalIcon className="w-5 h-5 text-purple-400" />
-                <span>Birleşik Küme Günlükleri (Cluster Logs)</span>
-              </div>
-              <p className="text-xs text-[#8e9192]">Tüm konteynerlerin ortak akışı canlı olarak gösterilir.</p>
-              <div className="p-4 rounded-xl bg-[#090a0f] border border-[#26282e] font-mono text-xs text-[#c4c7c8] space-y-1 max-h-[500px] overflow-y-auto">
-                {containers.flatMap((c) => c.logs).map((l, i) => (
-                  <div key={i} className="hover:bg-white/5 px-1 rounded">{l}</div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* NETWORK VIEW */}
-          {activeTab === 'network' && (
-            <div className="p-8 bg-[#121318] border border-[#26282e] rounded-2xl space-y-4">
-              <div className="flex items-center gap-2 text-white font-mono text-sm font-bold">
-                <NetworkIcon className="w-5 h-5 text-emerald-400" />
-                <span>Traefik v3.0 & Docker Bridge Ağı</span>
-              </div>
-              <p className="text-xs text-[#8e9192]">
-                Alt ağ: <code className="text-blue-400">172.20.0.0/16 (akson-bridge)</code>. Otomatik SSL ve DNS yönlendirmeleri devrededir.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-[#16171d] border border-[#26282e] space-y-2 font-mono text-xs">
-                  <span className="text-[#8e9192]">Giriş Noktası (EntryPoints):</span>
-                  <div className="text-white">Port 80 (HTTP) ➔ Otomatik 443 (HTTPS) Yönlendirmesi</div>
-                  <div className="text-white">Port 443 (HTTPS) ➔ Let's Encrypt TLS-ALPN-01</div>
-                </div>
-                <div className="p-4 rounded-xl bg-[#16171d] border border-[#26282e] space-y-2 font-mono text-xs">
-                  <span className="text-[#8e9192]">Sertifika Sağlayıcı:</span>
-                  <div className="text-white">Let's Encrypt ACME v02 (Otomatik Yenileme Aktif)</div>
-                  <div className="text-emerald-400">Durum: Sağlıklı</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* DEPLOY VIEW */}
-          {activeTab === 'deploy' && (
-            <div className="p-8 bg-[#121318] border border-[#26282e] rounded-2xl space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="flex flex-col flex-1 space-y-6">
+              {/* SubHeader Bar */}
+              <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#1e1f25]">
                 <div>
-                  <h3 className="text-white font-mono text-sm font-bold">Hızlı Dağıtım Sihirbazı</h3>
-                  <p className="text-xs text-[#8e9192]">Yeni bir Docker servisini tek tıkla ayağa kaldırın.</p>
+                  <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                    Akson Kontrol Paneli
+                  </h1>
+                  <p className="text-xs text-[#8e9192] mt-1">
+                    Yerel konteyner ortamları, Traefik ters vekil ve anlık donanım telemetrisi
+                  </p>
                 </div>
-                <button
-                  onClick={() => setIsDeployOpen(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition cursor-pointer"
-                >
-                  Sihirbazı Aç
-                </button>
+
+                {/* Aksiyon & Görünüm Butonları */}
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="flex items-center bg-[#151722] p-1 rounded-xl border border-[#232736] shadow-sm">
+                    <button
+                      onClick={() => setIsDetailOpen(false)}
+                      className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer active:scale-95 ${
+                        !isDetailOpen
+                          ? 'bg-[#242838] text-white shadow-sm border border-white/5 font-semibold'
+                          : 'text-[#8e9192] hover:text-white'
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
+                      <span className="hidden sm:inline">3 Sütunlu Görünüm</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('storage')}
+                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
+                    >
+                      <Database className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Birimler</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('logs')}
+                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
+                    >
+                      <TerminalIcon className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Loglar</span>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleRefresh}
+                    className="flex items-center space-x-1 px-3 py-2 bg-[#1a1b21] hover:bg-[#232736] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#292a2f] shadow-sm transition cursor-pointer active:scale-95"
+                    title="Metrikleri Yenile"
+                  >
+                    <RotateCw className={`w-3.5 h-3.5 text-[#8e9192] ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline text-xs">Yenile</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('deploy')}
+                    className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Yeni Servis Dağıt</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Master-Detail Grid Konteyneri */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start transition-all duration-300">
+                {/* 1. SÜTUN: Aktif Servisler (1/3 Alan) */}
+                <section className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all duration-300 ease-in-out lg:col-span-1">
+                  <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-blue-400" />
+                      <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                        Aktif Servisler ({filteredContainers.length})
+                      </h2>
+                    </div>
+
+                    {/* Filter Pills */}
+                    <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
+                      <button
+                        onClick={() => setStatusFilter('all')}
+                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          statusFilter === 'all'
+                            ? 'bg-[#292a2f] text-white font-semibold'
+                            : 'text-[#8e9192]'
+                        }`}
+                      >
+                        Tümü
+                      </button>
+                      <button
+                        onClick={() => setStatusFilter('running')}
+                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          statusFilter === 'running'
+                            ? 'bg-[#292a2f] text-emerald-400 font-semibold'
+                            : 'text-[#8e9192]'
+                        }`}
+                      >
+                        Aktif
+                      </button>
+                      <button
+                        onClick={() => setStatusFilter('stopped')}
+                        className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          statusFilter === 'stopped'
+                            ? 'bg-[#292a2f] text-rose-400 font-semibold'
+                            : 'text-[#8e9192]'
+                        }`}
+                      >
+                        Pasif
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cards List */}
+                  <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+                    {filteredContainers.map((container) => (
+                      <ContainerCard
+                        key={container.id}
+                        container={container}
+                        isSelected={isDetailOpen && container.id === selectedContainer?.id}
+                        onSelect={handleSelectContainer}
+                      />
+                    ))}
+                    {filteredContainers.length === 0 && (
+                      <div className="p-8 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-xl border border-[#26282e]">
+                        Arama kriterlerine uygun konteyner bulunamadı.
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* 3 SÜTUNLU MOD: Kolon 2 (Pipeline) ve Kolon 3 (Metrikler) Açık */}
+                {!isDetailOpen && (
+                  <>
+                    <PipelineColumn
+                      onSelectPipeline={(pipeline) => {
+                        // Switch into detail mode when clicking a pipeline task
+                        const matched = containers.find((c) =>
+                          pipeline.name.includes(c.name) || pipeline.description.includes(c.name)
+                        );
+                        if (matched) {
+                          setSelectedId(matched.id);
+                        }
+                        setIsDetailOpen(true);
+                      }}
+                    />
+                    <MetricsColumn
+                      totalCpu={totalCpu}
+                      totalMemoryMb={totalMemory}
+                    />
+                  </>
+                )}
+
+                {/* 1/3 + 2/3 MODU: Sağdaki 2/3 Detay Paneli (#detail-view) */}
+                {isDetailOpen && selectedContainer && (
+                  <section className="lg:col-span-2 h-full transition-all duration-300">
+                    <ContainerDetail
+                      container={selectedContainer}
+                      onAction={handleAction}
+                      onClose={() => setIsDetailOpen(false)}
+                      onOpenAiAnalyze={() => setIsAiOpen(true)}
+                    />
+                  </section>
+                )}
               </div>
             </div>
           )}
+
+          {/* TAB 2: YENİ DAĞITIM (DEPLOY) */}
+          {activeTab === 'deploy' && (
+            <DeployView
+              onDeploySuccess={handleDeployNew}
+              onNavigateDashboard={() => setActiveTab('dashboard')}
+            />
+          )}
+
+          {/* TAB 3: DEPOLAMA & BİRİMLER (STORAGE) */}
+          {activeTab === 'storage' && <StorageView />}
+
+          {/* TAB 4: SİSTEM GÜNLÜKLERİ (LOGS) */}
+          {activeTab === 'logs' && <LogsView containers={containers} />}
+
+          {/* TAB 5: AĞ & TRAEFIK PROXY (NETWORK) */}
+          {activeTab === 'network' && <NetworkView containers={containers} />}
         </main>
       </div>
 
-      {/* Modals */}
+      {/* Global Modals */}
       <DeployModal
         isOpen={isDeployOpen}
         onClose={() => setIsDeployOpen(false)}
