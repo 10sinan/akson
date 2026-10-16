@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { wiseBouncy } from '../../utils/motion';
 import {
   Rocket,
   FolderGit2,
@@ -235,27 +236,41 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </h2>
               </div>
 
-              {/* Source Switcher */}
+              {/* Source Switcher with Wise Sliding Pill */}
               <div className="flex items-center gap-1 bg-[#090a0f] p-1 rounded-xl border border-[#26282e] text-xs font-mono">
                 <button
                   onClick={() => setSourceType('github')}
-                  className={`px-3 py-1 rounded-lg transition cursor-pointer ${
+                  className={`relative px-3 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                     sourceType === 'github'
-                      ? 'bg-[#16171d] text-white font-medium border border-white/10 shadow-sm'
+                      ? 'text-white font-medium'
                       : 'text-[#8e9192] hover:text-white'
                   }`}
                 >
-                  GitHub
+                  {sourceType === 'github' && (
+                    <motion.div
+                      layoutId="deploySourcePill"
+                      className="absolute inset-0 bg-[#16171d] rounded-lg border border-white/10 shadow-sm"
+                      transition={wiseBouncy}
+                    />
+                  )}
+                  <span className="relative z-10">GitHub</span>
                 </button>
                 <button
                   onClick={() => setSourceType('giturl')}
-                  className={`px-3 py-1 rounded-lg transition cursor-pointer ${
+                  className={`relative px-3 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                     sourceType === 'giturl'
-                      ? 'bg-[#16171d] text-white font-medium border border-white/10 shadow-sm'
+                      ? 'text-white font-medium'
                       : 'text-[#8e9192] hover:text-white'
                   }`}
                 >
-                  Git URL
+                  {sourceType === 'giturl' && (
+                    <motion.div
+                      layoutId="deploySourcePill"
+                      className="absolute inset-0 bg-[#16171d] rounded-lg border border-white/10 shadow-sm"
+                      transition={wiseBouncy}
+                    />
+                  )}
+                  <span className="relative z-10">Git URL</span>
                 </button>
               </div>
             </div>

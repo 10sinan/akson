@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { wiseBouncy } from '../../utils/motion';
 import {
   Search,
   Pause,
@@ -260,14 +261,21 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedContainer('all')}
-                className={`w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between ${
+                className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
                   selectedContainer === 'all'
-                    ? 'bg-white text-black font-semibold'
+                    ? 'text-black font-semibold'
                     : 'text-[#8e9192] hover:text-white hover:bg-[#16171d]'
                 }`}
               >
-                <span>Tüm Konteynerler</span>
-                <span className="text-[10px]">{containers.length}</span>
+                {selectedContainer === 'all' && (
+                  <motion.div
+                    layoutId="logsContainerPill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-md"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">Tüm Konteynerler</span>
+                <span className="relative z-10 text-[10px]">{containers.length}</span>
               </motion.button>
 
               {containers.map((c) => (
@@ -276,15 +284,22 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedContainer(c.name)}
-                  className={`w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between ${
+                  className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
                     selectedContainer === c.name
-                      ? 'bg-blue-600 text-white font-semibold'
+                      ? 'text-white font-semibold'
                       : 'text-[#8e9192] hover:text-white hover:bg-[#16171d]'
                   }`}
                 >
-                  <span className="truncate">{c.name}</span>
+                  {selectedContainer === c.name && (
+                    <motion.div
+                      layoutId="logsContainerPill"
+                      className="absolute inset-0 bg-blue-600 rounded-xl shadow-md"
+                      transition={wiseBouncy}
+                    />
+                  )}
+                  <span className="relative z-10 truncate">{c.name}</span>
                   <span
-                    className={`w-2 h-2 rounded-full ${
+                    className={`relative z-10 w-2 h-2 rounded-full ${
                       c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'
                     }`}
                   />
@@ -328,47 +343,75 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               />
             </div>
 
-            {/* Level Filters */}
+            {/* Level Filters with Sliding Spring Pill */}
             <div className="flex items-center gap-1 bg-[#0d0e13] p-1 rounded-xl border border-[#26282e] text-[11px] font-mono">
               <button
                 onClick={() => setSelectedLevel('all')}
-                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'all'
-                    ? 'bg-[#1a1b21] text-white font-semibold'
+                    ? 'text-white font-semibold'
                     : 'text-[#8e9192] hover:text-white'
                 }`}
               >
-                Tümü
+                {selectedLevel === 'all' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-[#1a1b21] rounded-lg border border-[#292a2f] shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">Tümü</span>
               </button>
               <button
                 onClick={() => setSelectedLevel('info')}
-                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'info'
-                    ? 'bg-emerald-500/20 text-emerald-400 font-semibold'
+                    ? 'text-emerald-400 font-semibold'
                     : 'text-[#8e9192] hover:text-white'
                 }`}
               >
-                INFO
+                {selectedLevel === 'info' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-emerald-500/15 rounded-lg border border-emerald-500/30 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">INFO</span>
               </button>
               <button
                 onClick={() => setSelectedLevel('warn')}
-                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'warn'
-                    ? 'bg-amber-500/20 text-amber-400 font-semibold'
+                    ? 'text-amber-400 font-semibold'
                     : 'text-[#8e9192] hover:text-white'
                 }`}
               >
-                WARN
+                {selectedLevel === 'warn' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-amber-500/15 rounded-lg border border-amber-500/30 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">WARN</span>
               </button>
               <button
                 onClick={() => setSelectedLevel('error')}
-                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'error'
-                    ? 'bg-rose-500/20 text-rose-400 font-semibold'
+                    ? 'text-rose-400 font-semibold'
                     : 'text-[#8e9192] hover:text-white'
                 }`}
               >
-                ERROR
+                {selectedLevel === 'error' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-rose-500/15 rounded-lg border border-rose-500/30 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">ERROR</span>
               </button>
             </div>
 
