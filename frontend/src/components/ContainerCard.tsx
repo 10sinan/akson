@@ -7,6 +7,7 @@ import {
   Cpu,
   Layers,
   Zap,
+  MoreHorizontal,
 } from 'lucide-react';
 import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
@@ -18,6 +19,7 @@ interface ContainerCardProps {
   isSelected: boolean;
   onSelect: (container: ContainerItem) => void;
   isRefreshing?: boolean;
+  onContextMenu?: (e: React.MouseEvent, container: ContainerItem) => void;
 }
 
 export const ContainerCard: React.FC<ContainerCardProps> = ({
@@ -25,6 +27,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   isSelected,
   onSelect,
   isRefreshing = false,
+  onContextMenu,
 }) => {
   // Select appropriate icon
   const getIcon = () => {
@@ -65,6 +68,12 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       whileTap={{ scale: 0.972, y: 0 }}
       transition={wiseBouncy}
       onClick={() => onSelect(container)}
+      onContextMenu={(e) => {
+        if (onContextMenu) {
+          e.preventDefault();
+          onContextMenu(e, container);
+        }
+      }}
       className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none relative overflow-hidden group ${
         isSelected
           ? 'bg-[#16171d] border-blue-500/80 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/50'
@@ -102,21 +111,44 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           </div>
         </div>
 
-        {/* Status Dot with Breathing Glow */}
-        <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
-          <span className="relative flex h-2 w-2">
-            {isRunning && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            )}
-            <span
-              className={`relative inline-flex rounded-full h-2 w-2 ${
-                isRunning ? 'bg-emerald-400' : 'bg-zinc-600'
-              }`}
-            />
-          </span>
-          <span className="text-[11px] font-mono text-[#c4c7c8]">
-            {container.statusText}
-          </span>
+        {/* Status Dot with Breathing Glow & Quick 3-Dots Action */}
+        <div className="flex items-center gap-2 shrink-0 pt-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              {isRunning && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              )}
+              <span
+                className={`relative inline-flex rounded-full h-2 w-2 ${
+                  isRunning ? 'bg-emerald-400' : 'bg-zinc-600'
+                }`}
+              />
+            </span>
+            <span className="text-[11px] font-mono text-[#c4c7c8]">
+              {container.statusText}
+            </span>
+          </div>
+
+          {onContextMenu && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = e.currentTarget.getBoundingClientRect();
+                onContextMenu(
+                  {
+                    clientX: rect.left,
+                    clientY: rect.bottom + 4,
+                    preventDefault: () => {},
+                  } as React.MouseEvent,
+                  container
+                );
+              }}
+              title="Hızlı İşlemler"
+              className="p-1 rounded-md text-[#8e9192] hover:text-white hover:bg-[#1a1b21] transition opacity-40 group-hover:opacity-100 cursor-pointer"
+            >
+              <MoreHorizontal className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

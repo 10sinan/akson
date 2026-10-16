@@ -8,6 +8,7 @@ import { DeployModal } from './components/DeployModal';
 import { AiCopilotDrawer } from './components/AiCopilotDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { ToastContainer, type ToastItem } from './components/Toast';
+import { ContextMenu, type ContextMenuState } from './components/ContextMenu';
 import { PipelineColumn } from './components/dashboard/PipelineColumn';
 import { MetricsColumn } from './components/dashboard/MetricsColumn';
 import { DeployView } from './components/views/DeployView';
@@ -49,6 +50,26 @@ export function App() {
     setTimeout(() => {
       dismissToast(id);
     }, toast.duration || 3500);
+  };
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    container: null,
+  });
+
+  const handleOpenContextMenu = (e: React.MouseEvent, container: ContainerItem) => {
+    setContextMenu({
+      isOpen: true,
+      x: e.clientX,
+      y: e.clientY,
+      container,
+    });
+  };
+
+  const handleCloseContextMenu = () => {
+    setContextMenu((prev) => ({ ...prev, isOpen: false }));
   };
 
   // Filtered containers
@@ -416,6 +437,7 @@ export function App() {
                           isSelected={isDetailOpen && container.id === selectedContainer?.id}
                           onSelect={handleSelectContainer}
                           isRefreshing={isRefreshing}
+                          onContextMenu={handleOpenContextMenu}
                         />
                       ))}
                       {filteredContainers.length === 0 && (
@@ -585,6 +607,17 @@ export function App() {
 
       {/* Floating Glass Toasts */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* Glassmorphic Fast Action Context Menu */}
+      <ContextMenu
+        state={contextMenu}
+        onClose={handleCloseContextMenu}
+        onAction={handleAction}
+        onSelectContainer={handleSelectContainer}
+        onOpenLogs={() => {
+          setActiveTab('logs');
+        }}
+      />
     </div>
   );
 }
