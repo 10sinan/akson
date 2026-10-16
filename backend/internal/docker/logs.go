@@ -197,3 +197,4 @@ func (c *Client) StreamContainerLogs(ctx context.Context, containerID string, ta
 
 	return logsChan, errChan
 }
+
