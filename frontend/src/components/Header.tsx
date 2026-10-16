@@ -20,6 +20,7 @@ interface HeaderProps {
   onOpenAi?: () => void;
   onOpenCommandPalette?: () => void;
   isRefreshing: boolean;
+  isAiOpen?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -35,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAi,
   onOpenCommandPalette,
   isRefreshing,
+  isAiOpen = false,
 }) => {
   return (
     <header className="fixed top-0 left-0 right-0 h-14 bg-[#090a0f] z-40 flex items-center justify-between px-6 pl-20 select-none">
@@ -99,10 +101,14 @@ export const Header: React.FC<HeaderProps> = ({
         {onOpenAi && (
           <button
             onClick={onOpenAi}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-indigo-500/10 border border-blue-500/30 hover:border-blue-400/60 text-xs text-blue-300 hover:text-white transition shadow-sm active:scale-95 cursor-pointer"
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition shadow-sm active:scale-95 cursor-pointer font-mono text-[11px] font-medium ${
+              isAiOpen
+                ? 'bg-blue-600 border-blue-400 text-white shadow-md shadow-blue-500/20'
+                : 'bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-indigo-500/10 border-blue-500/30 hover:border-blue-400/60 text-blue-300 hover:text-white'
+            }`}
           >
-            <Activity className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-            <span className="font-mono text-[11px] font-medium">Gemini Copilot</span>
+            <Activity className={`w-3.5 h-3.5 ${isAiOpen ? 'text-white' : 'text-blue-400'} animate-pulse`} />
+            <span>Gemini Copilot</span>
           </button>
         )}
 

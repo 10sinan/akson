@@ -18,6 +18,7 @@ interface SidebarProps {
   activeTab: ActiveNavTab;
   onSelectTab: (tab: ActiveNavTab) => void;
   onOpenAiModal: () => void;
+  isAiOpen?: boolean;
 }
 
 const NAV_ITEMS: { id: ActiveNavTab; title: string; icon: React.FC<{ className?: string }> }[] = [
@@ -32,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   onOpenAiModal,
+  isAiOpen = false,
 }) => {
   return (
     <aside className="fixed top-0 left-0 bottom-0 w-16 bg-[#090a0f] z-50 flex flex-col items-center py-3 justify-between select-none">
@@ -76,9 +78,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             whileTap={{ scale: 0.95 }}
             onClick={onOpenAiModal}
             title="Gemini AI DevOps Asistanı"
-            className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600/20 to-purple-600/30 text-blue-300 border border-blue-500/40 hover:text-white hover:border-blue-400 flex items-center justify-center transition-all duration-200 shadow-sm cursor-pointer"
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
+              isAiOpen
+                ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-400/50'
+                : 'bg-gradient-to-tr from-blue-600/20 to-purple-600/30 text-blue-300 border border-blue-500/40 hover:text-white hover:border-blue-400'
+            }`}
           >
-            <Sparkles className="w-5 h-5 text-blue-400" />
+            <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-white' : 'text-blue-400'}`} />
           </motion.button>
         </nav>
       </div>

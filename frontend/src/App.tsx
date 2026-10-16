@@ -5,7 +5,7 @@ import { Header } from './components/Header';
 import { ContainerCard } from './components/ContainerCard';
 import { ContainerDetail } from './components/ContainerDetail';
 import { DeployModal } from './components/DeployModal';
-import { AiCopilotModal } from './components/AiCopilotModal';
+import { AiCopilotDrawer } from './components/AiCopilotDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { ToastContainer, type ToastItem } from './components/Toast';
 import { PipelineColumn } from './components/dashboard/PipelineColumn';
@@ -229,7 +229,8 @@ export function App() {
             setIsDetailOpen(false);
           }
         }}
-        onOpenAiModal={() => setIsAiOpen(true)}
+        onOpenAiModal={() => setIsAiOpen((prev) => !prev)}
+        isAiOpen={isAiOpen}
       />
 
       {/* 2. ANA SARMALAYICI & ÜST BAR */}
@@ -245,13 +246,18 @@ export function App() {
           onSearchChange={setSearchQuery}
           onRefresh={handleRefresh}
           onOpenDeploy={() => setActiveTab('deploy')}
-          onOpenAi={() => setIsAiOpen(true)}
+          onOpenAi={() => setIsAiOpen((prev) => !prev)}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           isRefreshing={isRefreshing}
+          isAiOpen={isAiOpen}
         />
 
         {/* 3. GÖMÜLÜ İÇ KANVAS (Recessed Canvas: rounded-tl-3xl border-t border-l border-[#26282e] p-8) */}
-        <main className="ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0d0e13] rounded-tl-3xl border-t border-l border-[#26282e] p-8 flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <main
+          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0d0e13] rounded-tl-3xl border-t border-l border-[#26282e] p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
+            isAiOpen ? '2xl:ml-[444px]' : ''
+          }`}
+        >
           {/* Sayfalar Arası Yumuşak Geçiş (AnimatePresence mode="wait") */}
           <AnimatePresence mode="wait">
             {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
@@ -424,29 +430,31 @@ export function App() {
                   <AnimatePresence mode="popLayout">
                     {!isDetailOpen && (
                       <>
-                        <motion.section
-                          key="col-pipeline"
-                          layout
-                          initial={{ opacity: 0, scale: 0.96, x: -12 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.96, x: -16 }}
-                          transition={wiseGentle}
-                          className="lg:col-span-1"
-                        >
-                          <PipelineColumn
-                            onSelectPipeline={(pipeline) => {
-                              const matched = containers.find(
-                                (c) =>
-                                    pipeline.name.includes(c.name) ||
-                                    pipeline.description.includes(c.name)
-                              );
-                              if (matched) {
-                                setSelectedId(matched.id);
-                              }
-                              setIsDetailOpen(true);
-                            }}
-                          />
-                        </motion.section>
+                        {!isAiOpen && (
+                          <motion.section
+                            key="col-pipeline"
+                            layout
+                            initial={{ opacity: 0, scale: 0.96, x: -12 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, x: -16 }}
+                            transition={wiseGentle}
+                            className="lg:col-span-1"
+                          >
+                            <PipelineColumn
+                              onSelectPipeline={(pipeline) => {
+                                const matched = containers.find(
+                                  (c) =>
+                                      pipeline.name.includes(c.name) ||
+                                      pipeline.description.includes(c.name)
+                                );
+                                if (matched) {
+                                  setSelectedId(matched.id);
+                                }
+                                setIsDetailOpen(true);
+                              }}
+                            />
+                          </motion.section>
+                        )}
 
                         <motion.section
                           key="col-metrics"
@@ -455,7 +463,7 @@ export function App() {
                           animate={{ opacity: 1, scale: 1, x: 0 }}
                           exit={{ opacity: 0, scale: 0.96, x: -16 }}
                           transition={wiseGentle}
-                          className="lg:col-span-1"
+                          className={isAiOpen ? 'lg:col-span-2' : 'lg:col-span-1'}
                         >
                           <MetricsColumn
                             totalCpu={totalCpu}
@@ -558,7 +566,7 @@ export function App() {
         onDeploy={handleDeployNew}
       />
 
-      <AiCopilotModal
+      <AiCopilotDrawer
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
         activeContainer={selectedContainer}
