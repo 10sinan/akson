@@ -415,16 +415,23 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               </button>
             </div>
 
-            {/* Auto-scroll toggle */}
-            <label className="flex items-center gap-1.5 text-xs text-[#8e9192] font-mono cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={autoScroll}
-                onChange={(e) => setAutoScroll(e.target.checked)}
-                className="rounded border-[#26282e] bg-[#0d0e13] text-blue-500 focus:ring-0"
-              />
-              <span>Otomatik Kaydır</span>
-            </label>
+            {/* Auto-scroll toggle and Live Stream indicator */}
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Canlı Akış (tail -f)</span>
+              </span>
+
+              <label className="flex items-center gap-1.5 text-xs text-[#8e9192] font-mono cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={autoScroll}
+                  onChange={(e) => setAutoScroll(e.target.checked)}
+                  className="rounded border-[#26282e] bg-[#0d0e13] text-blue-500 focus:ring-0"
+                />
+                <span>Otomatik Kaydır</span>
+              </label>
+            </div>
           </div>
 
           {/* Terminal Console */}
@@ -434,24 +441,37 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 Arama kriterlerine uygun log bulunamadı.
               </div>
             ) : (
-              filteredLogs.map((log) => (
-                <div key={log.id} className="hover:bg-white/5 px-2 py-0.5 rounded flex items-start gap-3">
-                  <span className="text-slate-500 shrink-0">{log.timestamp}</span>
-                  <span className="text-purple-400 font-semibold shrink-0">[{log.containerName}]</span>
-                  <span
-                    className={`font-bold shrink-0 text-[10px] px-1 rounded ${
-                      log.level === 'error'
-                        ? 'bg-rose-500/20 text-rose-400'
-                        : log.level === 'warn'
-                        ? 'bg-amber-500/20 text-amber-400'
-                        : 'bg-emerald-500/20 text-emerald-400'
-                    }`}
+              filteredLogs.map((log, idx) => {
+                const isLatest = idx === filteredLogs.length - 1;
+                return (
+                  <motion.div
+                    key={log.id}
+                    initial={
+                      isLatest
+                        ? { opacity: 0, x: -6, backgroundColor: 'rgba(52, 211, 153, 0.18)' }
+                        : false
+                    }
+                    animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(255, 255, 255, 0)' }}
+                    transition={{ duration: 1.4, ease: 'easeOut' }}
+                    className="hover:bg-white/5 px-2 py-0.5 rounded flex items-start gap-3 transition-colors"
                   >
-                    {log.level.toUpperCase()}
-                  </span>
-                  <span className="text-slate-200 break-all">{log.message}</span>
-                </div>
-              ))
+                    <span className="text-slate-500 shrink-0">{log.timestamp}</span>
+                    <span className="text-purple-400 font-semibold shrink-0">[{log.containerName}]</span>
+                    <span
+                      className={`font-bold shrink-0 text-[10px] px-1 rounded ${
+                        log.level === 'error'
+                          ? 'bg-rose-500/20 text-rose-400'
+                          : log.level === 'warn'
+                          ? 'bg-amber-500/20 text-amber-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`}
+                    >
+                      {log.level.toUpperCase()}
+                    </span>
+                    <span className="text-slate-200 break-all">{log.message}</span>
+                  </motion.div>
+                );
+              })
             )}
             <div ref={terminalEndRef} />
           </div>

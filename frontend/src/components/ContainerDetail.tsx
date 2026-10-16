@@ -434,9 +434,15 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         {activeTab === 'logs' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#8e9192] font-mono">
-                Docker Engine API stdout/stderr canlı akışı
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Canlı Akış</span>
+                </span>
+                <span className="text-xs text-[#8e9192] font-mono">
+                  Docker Engine API stdout/stderr
+                </span>
+              </div>
               <button
                 onClick={copyLogs}
                 className="flex items-center gap-1 text-xs text-[#8e9192] hover:text-white px-2 py-1 rounded bg-[#16171d] border border-[#26282e] transition cursor-pointer"
@@ -447,11 +453,24 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             </div>
 
             <div className="p-4 rounded-xl bg-[#090a0f] border border-[#26282e] font-mono text-xs text-[#c4c7c8] space-y-1.5 max-h-[350px] overflow-y-auto">
-              {container.logs.map((log, index) => (
-                <div key={index} className="leading-relaxed hover:bg-white/5 px-1 rounded">
-                  {log}
-                </div>
-              ))}
+              {container.logs.map((log, index) => {
+                const isLatest = index === container.logs.length - 1;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={
+                      isLatest
+                        ? { opacity: 0, x: -6, backgroundColor: 'rgba(52, 211, 153, 0.15)' }
+                        : false
+                    }
+                    animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(255, 255, 255, 0)' }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    className="leading-relaxed hover:bg-white/5 px-1.5 py-0.5 rounded transition-colors"
+                  >
+                    {log}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}
