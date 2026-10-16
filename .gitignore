@@ -1,10 +1,10 @@
-# Dependencies
+# Node / Frontend
 node_modules/
-
-# Production build outputs
 dist/
 build/
-bin/
+.DS_Store
+.idea/
+.vscode/
 
 # Environment and local files
 .env
@@ -15,7 +15,19 @@ bin/
 *.log
 logs/
 
-# OS / Editor files
-.DS_Store
-.idea/
-.vscode/
+# Go / Backend
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+akson
+
+# SQLite & Data
+*.db
+*.db-shm
+*.db-wal
+data/

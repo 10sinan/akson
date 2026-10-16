@@ -132,3 +132,4 @@ export const MicroSparkline: React.FC<MicroSparklineProps> = ({
     </div>
   );
 };
+
