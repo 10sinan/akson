@@ -1,0 +1,22 @@
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store
+
+# Go / Backend
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+akson
+
+# SQLite & Data
+*.db
+*.db-shm
+*.db-wal
+data/
+
