@@ -77,16 +77,16 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Subtle Backdrop on smaller screens */}
+          {/* Subtle Backdrop on smaller screens (strictly below header) */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden"
+            className="fixed top-14 bottom-0 left-16 right-0 bg-black/40 backdrop-blur-xs z-30 lg:hidden"
           />
 
-          {/* Gemini-style Left Slide-in Drawer */}
+          {/* Gemini-style Left Slide-in Drawer (Docked into Main Content Canvas) */}
           <motion.aside
             key="gemini-ai-drawer"
             initial={{ x: -420, opacity: 0.8 }}
@@ -98,7 +98,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
               damping: 30,
               mass: 0.85,
             }}
-            className="fixed top-0 bottom-0 left-16 w-[380px] max-w-[calc(100vw-4rem)] bg-[#0e1017]/95 backdrop-blur-2xl border-r border-[#26282e] z-45 flex flex-col shadow-2xl overflow-hidden select-none"
+            className="fixed top-14 bottom-0 left-16 w-[380px] max-w-[calc(100vw-4rem)] bg-[#0e1017]/98 backdrop-blur-2xl border-r border-t border-[#26282e] rounded-tl-3xl rounded-tr-2xl rounded-br-2xl z-35 flex flex-col shadow-2xl overflow-hidden select-none"
           >
             {/* Header with Gemini Sparkle Gradient */}
             <div className="p-4 border-b border-[#26282e] flex items-center justify-between bg-gradient-to-b from-blue-950/20 to-transparent">
@@ -222,3 +222,4 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
     </AnimatePresence>
   );
 };
+
