@@ -30,3 +30,4 @@ func TestDockerClient_PingAndList(t *testing.T) {
 		t.Logf("Container: ID=%s Name=%s Image=%s State=%s", c.ID[:12], c.Name, c.Image, c.State)
 	}
 }
+

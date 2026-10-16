@@ -44,3 +44,4 @@ func (c *Client) Close() error {
 func (c *Client) RawClient() *client.Client {
 	return c.cli
 }
+
