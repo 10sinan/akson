@@ -22,6 +22,7 @@ import {
   RotateCw,
   Plus,
 } from 'lucide-react';
+import { wiseBouncy, wiseSpring, wiseGentle, staggerContainerVariants } from './utils/motion';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('dashboard');
@@ -201,10 +202,10 @@ export function App() {
             {activeTab === 'dashboard' && (
               <motion.div
                 key="dashboard"
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={wiseGentle}
                 className="flex flex-col flex-1 space-y-6"
               >
                 {/* SubHeader Bar */}
@@ -272,7 +273,7 @@ export function App() {
                   {/* 1. SÜTUN: Aktif Servisler (1/3 Alan - Layout Animasyonu ile) */}
                   <motion.section
                     layout
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    transition={wiseSpring}
                     className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all duration-300 ease-in-out lg:col-span-1"
                   >
                     <div className="flex items-center justify-between px-1">
@@ -283,52 +284,65 @@ export function App() {
                         </h2>
                       </div>
 
-                      {/* Filter Pills */}
+                      {/* Wise-Style Sliding Filter Pills */}
                       <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
                         <button
                           onClick={() => setStatusFilter('all')}
-                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                             statusFilter === 'all'
-                              ? 'bg-[#292a2f] text-white font-semibold'
-                              : 'text-[#8e9192]'
+                              ? 'text-white font-semibold'
+                              : 'text-[#8e9192] hover:text-white'
                           }`}
                         >
-                          Tümü
+                          {statusFilter === 'all' && (
+                            <motion.div
+                              layoutId="statusFilterPill"
+                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-white/5"
+                              transition={wiseBouncy}
+                            />
+                          )}
+                          <span className="relative z-10">Tümü</span>
                         </button>
                         <button
                           onClick={() => setStatusFilter('running')}
-                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                             statusFilter === 'running'
-                              ? 'bg-[#292a2f] text-emerald-400 font-semibold'
-                              : 'text-[#8e9192]'
+                              ? 'text-emerald-400 font-semibold'
+                              : 'text-[#8e9192] hover:text-white'
                           }`}
                         >
-                          Aktif
+                          {statusFilter === 'running' && (
+                            <motion.div
+                              layoutId="statusFilterPill"
+                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-emerald-500/10"
+                              transition={wiseBouncy}
+                            />
+                          )}
+                          <span className="relative z-10">Aktif</span>
                         </button>
                         <button
                           onClick={() => setStatusFilter('stopped')}
-                          className={`px-2 py-0.5 rounded transition cursor-pointer ${
+                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                             statusFilter === 'stopped'
-                              ? 'bg-[#292a2f] text-rose-400 font-semibold'
-                              : 'text-[#8e9192]'
+                              ? 'text-rose-400 font-semibold'
+                              : 'text-[#8e9192] hover:text-white'
                           }`}
                         >
-                          Pasif
+                          {statusFilter === 'stopped' && (
+                            <motion.div
+                              layoutId="statusFilterPill"
+                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-rose-500/10"
+                              transition={wiseBouncy}
+                            />
+                          )}
+                          <span className="relative z-10">Pasif</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Cards List with Staggered Children */}
                     <motion.div
-                      variants={{
-                        hidden: { opacity: 0 },
-                        visible: {
-                          opacity: 1,
-                          transition: {
-                            staggerChildren: 0.04,
-                          },
-                        },
-                      }}
+                      variants={staggerContainerVariants}
                       initial="hidden"
                       animate="visible"
                       className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
@@ -356,18 +370,18 @@ export function App() {
                         <motion.section
                           key="col-pipeline"
                           layout
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          initial={{ opacity: 0, scale: 0.96, x: -12 }}
+                          animate={{ opacity: 1, scale: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.96, x: -16 }}
+                          transition={wiseGentle}
                           className="lg:col-span-1"
                         >
                           <PipelineColumn
                             onSelectPipeline={(pipeline) => {
                               const matched = containers.find(
                                 (c) =>
-                                  pipeline.name.includes(c.name) ||
-                                  pipeline.description.includes(c.name)
+                                    pipeline.name.includes(c.name) ||
+                                    pipeline.description.includes(c.name)
                               );
                               if (matched) {
                                 setSelectedId(matched.id);
@@ -380,10 +394,10 @@ export function App() {
                         <motion.section
                           key="col-metrics"
                           layout
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          initial={{ opacity: 0, scale: 0.96, x: -12 }}
+                          animate={{ opacity: 1, scale: 1, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.96, x: -16 }}
+                          transition={wiseGentle}
                           className="lg:col-span-1"
                         >
                           <MetricsColumn
@@ -398,10 +412,10 @@ export function App() {
                       <motion.section
                         key="detail-view"
                         layout
-                        initial={{ opacity: 0, x: 24 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 24 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        initial={{ opacity: 0, x: 28, scale: 0.98 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 24, scale: 0.98 }}
+                        transition={wiseGentle}
                         className="lg:col-span-2 h-full"
                       >
                         <ContainerDetail
@@ -421,10 +435,10 @@ export function App() {
             {activeTab === 'deploy' && (
               <motion.div
                 key="deploy"
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={wiseGentle}
                 className="flex flex-col flex-1"
               >
                 <DeployView
@@ -438,10 +452,10 @@ export function App() {
             {activeTab === 'storage' && (
               <motion.div
                 key="storage"
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={wiseGentle}
                 className="flex flex-col flex-1"
               >
                 <StorageView />
@@ -452,10 +466,10 @@ export function App() {
             {activeTab === 'logs' && (
               <motion.div
                 key="logs"
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={wiseGentle}
                 className="flex flex-col flex-1"
               >
                 <LogsView containers={containers} />
@@ -466,10 +480,10 @@ export function App() {
             {activeTab === 'network' && (
               <motion.div
                 key="network"
-                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                 animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={wiseGentle}
                 className="flex flex-col flex-1"
               >
                 <NetworkView containers={containers} />
