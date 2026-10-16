@@ -11,6 +11,7 @@ import {
 import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 import { ShimmerScan } from './Skeleton';
+import { MicroSparkline } from './MicroSparkline';
 
 interface ContainerCardProps {
   container: ContainerItem;
@@ -131,8 +132,30 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
         )}
       </div>
 
+      {/* Live Micro Sparkline Wave */}
+      <div className="mt-2.5 relative z-10 px-0.5">
+        <MicroSparkline
+          data={
+            isRunning
+              ? [
+                  Math.max(4, Math.round(container.cpuPercent * 8)),
+                  Math.max(6, Math.round(container.cpuPercent * 11)),
+                  Math.max(3, Math.round(container.cpuPercent * 7)),
+                  Math.max(9, Math.round(container.cpuPercent * 13)),
+                  Math.max(5, Math.round(container.cpuPercent * 9)),
+                  Math.max(12, Math.round(container.cpuPercent * 14)),
+                  Math.max(7, Math.round(container.cpuPercent * 10)),
+                ]
+              : [0, 0, 0, 0, 0, 0, 0]
+          }
+          color={isRunning ? (container.cpuPercent > 50 ? 'amber' : 'emerald') : 'zinc'}
+          height={18}
+          isLive={isRunning}
+        />
+      </div>
+
       {/* Bottom: Resource Metric Bar with Animated Spring Fill */}
-      <div className="mt-3 pt-3 border-t border-[#26282e]/60 flex items-center justify-between text-[11px] text-[#8e9192] font-mono relative z-10">
+      <div className="mt-2 pt-2.5 border-t border-[#26282e]/60 flex items-center justify-between text-[11px] text-[#8e9192] font-mono relative z-10">
         <div className="flex items-center gap-1.5">
           <span>CPU</span>
           <div className="w-16 h-1.5 rounded-full bg-[#1a1b21] overflow-hidden">

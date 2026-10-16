@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AnimatedNumber } from '../AnimatedNumber';
 import { ShimmerScan } from '../Skeleton';
+import { MicroSparkline } from '../MicroSparkline';
 
 interface MetricsColumnProps {
   totalCpu: number;
@@ -114,6 +115,29 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Micro Sparkline Realtime Wave */}
+          <div className="pt-1">
+            <div className="flex items-center justify-between text-[10px] text-[#8e9192] font-mono mb-1">
+              <span>Gerçek Zamanlı Yük Dalgalanması</span>
+              <span className="text-emerald-400">Canlı Akış</span>
+            </div>
+            <MicroSparkline
+              data={[
+                Math.max(10, totalCpu * 6 + 12),
+                Math.max(15, totalCpu * 8 + 8),
+                Math.max(8, totalCpu * 5 + 16),
+                Math.max(20, totalCpu * 9 + 4),
+                Math.max(12, totalCpu * 7 + 10),
+                Math.max(25, totalCpu * 10 + 6),
+                Math.max(18, totalCpu * 8 + 14),
+                Math.max(22, totalCpu * 9 + 10),
+              ]}
+              color="blue"
+              height={30}
+              isLive={true}
+            />
           </div>
         </motion.article>
 
