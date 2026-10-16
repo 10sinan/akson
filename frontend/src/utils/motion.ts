@@ -75,3 +75,4 @@ export const cascadeBlockVariants: Variants = {
     transition: wiseSpring,
   },
 };
+

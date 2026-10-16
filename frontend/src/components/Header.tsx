@@ -18,6 +18,7 @@ interface HeaderProps {
   onRefresh: () => void;
   onOpenDeploy: () => void;
   onOpenAi?: () => void;
+  onOpenCommandPalette?: () => void;
   isRefreshing: boolean;
 }
 
@@ -32,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   onOpenDeploy,
   onOpenAi,
+  onOpenCommandPalette,
   isRefreshing,
 }) => {
   return (
@@ -53,18 +55,23 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Middle: Search bar */}
+      {/* Middle: Search bar / Spotlight trigger */}
       <div className="flex-1 max-w-sm mx-6 hidden md:block">
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 text-[#8e9192] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <div
+          onClick={onOpenCommandPalette}
+          className="relative cursor-pointer group"
+        >
+          <Search className="w-3.5 h-3.5 text-[#8e9192] group-hover:text-white transition-colors absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
+            readOnly
             value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onClick={onOpenCommandPalette}
+            onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Konteyner, servis ara... (⌘K)"
-            className="w-full bg-[#1a1b21] border border-[#292a2f] text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none focus:border-white/40 transition-colors placeholder:text-[#8e9192]"
+            className="w-full bg-[#1a1b21] group-hover:bg-[#1e2028] border border-[#292a2f] group-hover:border-white/30 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-[#8e9192] cursor-pointer"
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#8e9192] bg-[#121318] px-1.5 py-0.5 rounded border border-[#292a2f] font-mono pointer-events-none">
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#8e9192] group-hover:text-white bg-[#121318] px-1.5 py-0.5 rounded border border-[#292a2f] font-mono pointer-events-none transition-colors">
             ⌘K
           </kbd>
         </div>

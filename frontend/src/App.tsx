@@ -6,6 +6,7 @@ import { ContainerCard } from './components/ContainerCard';
 import { ContainerDetail } from './components/ContainerDetail';
 import { DeployModal } from './components/DeployModal';
 import { AiCopilotModal } from './components/AiCopilotModal';
+import { CommandPalette } from './components/CommandPalette';
 import { PipelineColumn } from './components/dashboard/PipelineColumn';
 import { MetricsColumn } from './components/dashboard/MetricsColumn';
 import { DeployView } from './components/views/DeployView';
@@ -33,6 +34,7 @@ export function App() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'stopped'>('all');
   const [isDeployOpen, setIsDeployOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Filtered containers
@@ -191,6 +193,7 @@ export function App() {
           onRefresh={handleRefresh}
           onOpenDeploy={() => setActiveTab('deploy')}
           onOpenAi={() => setIsAiOpen(true)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           isRefreshing={isRefreshing}
         />
 
@@ -504,6 +507,17 @@ export function App() {
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
         activeContainer={selectedContainer}
+      />
+
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        containers={containers}
+        onSelectContainer={handleSelectContainer}
+        onSelectTab={setActiveTab}
+        onOpenDeploy={() => setIsDeployOpen(true)}
+        onOpenAi={() => setIsAiOpen(true)}
+        onRefresh={handleRefresh}
       />
     </div>
   );
