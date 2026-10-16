@@ -25,6 +25,7 @@ interface HeaderProps {
   onOpenCommandPalette?: () => void;
   isRefreshing: boolean;
   isAiOpen?: boolean;
+  dockerStatus?: 'online' | 'demo' | 'checking';
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -41,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCommandPalette,
   isRefreshing,
   isAiOpen = false,
+  dockerStatus = 'online',
 }) => {
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
 
@@ -118,13 +120,40 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* Docker Live Badge */}
+        {/* Docker Status Badge */}
         <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1b21] border border-[#292a2f] text-xs font-mono">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            {dockerStatus === 'online' && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            )}
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                dockerStatus === 'online'
+                  ? 'bg-emerald-400'
+                  : dockerStatus === 'checking'
+                  ? 'bg-blue-400 animate-pulse'
+                  : 'bg-amber-400'
+              }`}
+            />
           </span>
-          <span className="text-white text-[11px]">Docker: <span className="text-emerald-400 font-medium">Çevrimiçi</span></span>
+          <span className="text-white text-[11px]">
+            Docker:{' '}
+            <span
+              className={`font-medium ${
+                dockerStatus === 'online'
+                  ? 'text-emerald-400'
+                  : dockerStatus === 'checking'
+                  ? 'text-blue-400'
+                  : 'text-amber-400'
+              }`}
+            >
+              {dockerStatus === 'online'
+                ? 'Çevrimiçi'
+                : dockerStatus === 'checking'
+                ? 'Bağlanıyor...'
+                : 'Demo Modu'}
+            </span>
+          </span>
         </div>
 
         {/* Haptic UI Sound Toggle */}

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
 import { wiseBouncy, wiseSpring, wiseGentle } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
+import { api } from '../api/client';
 import {
   Play,
   Square,
@@ -52,6 +53,36 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
     `Type 'help' or any Linux command below:`,
   ]);
 
+  // Live telemetry state wired to backend SSE streams
+  const [liveCpu, setLiveCpu] = useState(container.cpuPercent);
+  const [liveMemoryMb, setLiveMemoryMb] = useState(container.memoryUsageMb);
+  const [liveLogs, setLiveLogs] = useState<string[]>(container.logs);
+
+  useEffect(() => {
+    setLiveCpu(container.cpuPercent);
+    setLiveMemoryMb(container.memoryUsageMb);
+    setLiveLogs(container.logs);
+  }, [container]);
+
+  useEffect(() => {
+    if (container.status !== 'running') return;
+
+    const cleanupStats = api.createStatsStream(container.id, (stats) => {
+      setLiveCpu(stats.cpu_percent);
+      setLiveMemoryMb(Math.round(stats.memory_usage / (1024 * 1024)));
+    });
+
+    const cleanupLogs = api.createLogStream(container.id, (entry) => {
+      const text = entry.message || (typeof entry === 'string' ? entry : JSON.stringify(entry));
+      setLiveLogs((prev) => [...prev.slice(-499), text]);
+    });
+
+    return () => {
+      cleanupStats();
+      cleanupLogs();
+    };
+  }, [container.id, container.status]);
+
   const copyContainerId = () => {
     navigator.clipboard.writeText(container.id);
     setCopiedId(true);
@@ -59,7 +90,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   };
 
   const copyLogs = () => {
-    navigator.clipboard.writeText(container.logs.join('\n'));
+    navigator.clipboard.writeText(liveLogs.join('\n'));
     setCopiedLogs(true);
     setTimeout(() => setCopiedLogs(false), 2000);
   };
@@ -284,7 +315,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           )}
           <span className="relative z-10 flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-400" />
-            <span>Canlı Loglar ({container.logs.length})</span>
+            <span>Canlı Loglar ({liveLogs.length})</span>
           </span>
         </button>
 
@@ -346,13 +377,13 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#8e9192] font-mono">CPU Kullanımı</span>
                 <span className="text-white font-mono font-bold">
-                  <AnimatedNumber value={container.cpuPercent} decimals={1} suffix="%" />
+                  <AnimatedNumber value={liveCpu} decimals={1} suffix="%" />
                 </span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#1a1b21] overflow-hidden">
                 <div
                   className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                  style={{ width: `${Math.min(container.cpuPercent * 10, 100)}%` }}
+                  style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                 />
               </div>
               <p className="text-[11px] text-[#8e9192]">Docker cgroup stats üzerinden gerçek zamanlı hesaplanıyor.</p>
@@ -363,7 +394,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#8e9192] font-mono">RAM Bellek</span>
                 <span className="text-white font-mono font-bold">
-                  <AnimatedNumber value={container.memoryUsageMb} decimals={0} suffix=" MB" /> / {container.memoryLimitMb} MB
+                  <AnimatedNumber value={liveMemoryMb} decimals={0} suffix=" MB" /> / {container.memoryLimitMb} MB
                 </span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#1a1b21] overflow-hidden">
@@ -371,7 +402,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   className="h-full rounded-full bg-purple-500 transition-all duration-300"
                   style={{
                     width: `${Math.min(
-                      (container.memoryUsageMb / container.memoryLimitMb) * 100,
+                      (liveMemoryMb / container.memoryLimitMb) * 100,
                       100
                     )}%`,
                   }}
@@ -453,8 +484,8 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             </div>
 
             <div className="p-4 rounded-xl bg-[#090a0f] border border-[#26282e] font-mono text-xs text-[#c4c7c8] space-y-1.5 max-h-[350px] overflow-y-auto">
-              {container.logs.map((log, index) => {
-                const isLatest = index === container.logs.length - 1;
+              {liveLogs.map((log, index) => {
+                const isLatest = index === liveLogs.length - 1;
                 return (
                   <motion.div
                     key={index}

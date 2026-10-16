@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar, type ActiveNavTab } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -18,6 +18,7 @@ import { NetworkView } from './components/views/NetworkView';
 import { INITIAL_CONTAINERS } from './data/mockContainers';
 import type { ContainerItem } from './types/container';
 import { soundManager } from './utils/sound';
+import { api } from './api/client';
 import {
   Layers,
   LayoutGrid,
@@ -40,6 +41,38 @@ export function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [dockerStatus, setDockerStatus] = useState<'online' | 'demo' | 'checking'>('checking');
+  const [isLiveBackend, setIsLiveBackend] = useState<boolean>(false);
+
+  // Ping backend on mount to detect live Docker daemon
+  useEffect(() => {
+    let isMounted = true;
+    const initBackend = async () => {
+      try {
+        const health = await api.checkHealth();
+        if (!isMounted) return;
+        const isDockerOk = health.docker === 'ok';
+        setIsLiveBackend(true);
+        setDockerStatus(isDockerOk ? 'online' : 'demo');
+        if (isDockerOk) {
+          const liveContainers = await api.fetchContainers();
+          if (isMounted && liveContainers.length > 0) {
+            setContainers(liveContainers);
+            setSelectedId(liveContainers[0].id);
+          }
+        }
+      } catch {
+        if (isMounted) {
+          setIsLiveBackend(false);
+          setDockerStatus('demo');
+        }
+      }
+    };
+    initBackend();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -107,9 +140,24 @@ export function App() {
   );
 
   // Actions
-  const handleAction = (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => {
+  const handleAction = async (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => {
     const target = containers.find((c) => c.id === id);
     const targetName = target?.name || 'Konteyner';
+
+    // If live Docker daemon is active, call Go backend REST API
+    if (isLiveBackend && dockerStatus === 'online') {
+      try {
+        await api.containerAction(id, action);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        addToast({
+          type: 'error',
+          title: 'Docker Hatası',
+          description: errMsg || `${targetName} üzerinde işlem başarısız oldu.`,
+        });
+        return;
+      }
+    }
 
     if (action === 'delete') {
       const remaining = containers.filter((c) => c.id !== id);
@@ -187,10 +235,20 @@ export function App() {
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     soundManager.playPop();
     setIsRefreshing(true);
-    setTimeout(() => {
+
+    if (isLiveBackend && dockerStatus === 'online') {
+      try {
+        const liveList = await api.fetchContainers();
+        if (liveList.length > 0) {
+          setContainers(liveList);
+        }
+      } catch {
+        // Silently continue with local list on network glitch
+      }
+    } else {
       setContainers((prev) =>
         prev.map((c) => {
           if (c.status !== 'running') return c;
@@ -201,14 +259,17 @@ export function App() {
           };
         })
       );
+    }
+
+    setTimeout(() => {
       setIsRefreshing(false);
       addToast({
         type: 'info',
         title: 'Metrikler Güncellendi',
-        description: 'Tüm konteyner durumları ve telemetri tazelendi.',
+        description: isLiveBackend ? 'Docker motoru ve konteynerler tazelendi.' : 'Tüm konteyner durumları ve telemetri tazelendi.',
         duration: 2500,
       });
-    }, 550);
+    }, 450);
   };
 
   const handleDeployNew = (newContainer: ContainerItem) => {
@@ -278,6 +339,7 @@ export function App() {
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           isRefreshing={isRefreshing}
           isAiOpen={isAiOpen}
+          dockerStatus={dockerStatus}
         />
 
         {/* 3. GÖMÜLÜ İÇ KANVAS (Recessed Canvas: rounded-tl-3xl border-t border-l border-[#26282e] p-8) */}
