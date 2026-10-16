@@ -143,3 +143,4 @@ func (c *Client) StreamContainerStats(ctx context.Context, containerID string) (
 
 	return statsChan, errChan
 }
+
