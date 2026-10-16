@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Search,
   RefreshCw,
@@ -5,7 +6,10 @@ import {
   Cpu,
   Activity,
   Server,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
+import { soundManager } from '../utils/sound';
 
 interface HeaderProps {
   currentTabName: string;
@@ -38,6 +42,8 @@ export const Header: React.FC<HeaderProps> = ({
   isRefreshing,
   isAiOpen = false,
 }) => {
+  const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
+
   return (
     <header className="fixed top-0 left-0 right-0 h-14 bg-[#090a0f] z-40 flex items-center justify-between px-6 pl-20 select-none">
       {/* Left: Breadcrumbs & Cluster Status */}
@@ -120,6 +126,22 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <span className="text-white text-[11px]">Docker: <span className="text-emerald-400 font-medium">Çevrimiçi</span></span>
         </div>
+
+        {/* Haptic UI Sound Toggle */}
+        <button
+          onClick={() => {
+            const enabled = soundManager.toggleSound();
+            setIsMuted(!enabled);
+          }}
+          title={isMuted ? 'Arayüz Dokunsal Seslerini Aç' : 'Arayüz Seslerini Kapat'}
+          className="p-1.5 bg-[#1a1b21] hover:bg-[#232736] text-[#8e9192] hover:text-white rounded-lg border border-[#26282e] transition cursor-pointer active:scale-95"
+        >
+          {isMuted ? (
+            <VolumeX className="w-3.5 h-3.5 text-zinc-500" />
+          ) : (
+            <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+          )}
+        </button>
 
         {/* Refresh Button */}
         <button

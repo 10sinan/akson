@@ -17,6 +17,7 @@ import { LogsView } from './components/views/LogsView';
 import { NetworkView } from './components/views/NetworkView';
 import { INITIAL_CONTAINERS } from './data/mockContainers';
 import type { ContainerItem } from './types/container';
+import { soundManager } from './utils/sound';
 import {
   Layers,
   LayoutGrid,
@@ -163,18 +164,21 @@ export function App() {
     );
 
     if (action === 'start') {
+      soundManager.playSuccess();
       addToast({
         type: 'success',
         title: 'Konteyner Başlatıldı',
         description: `${targetName} başarıyla ayağa kaldırıldı.`,
       });
     } else if (action === 'stop') {
+      soundManager.playPop();
       addToast({
         type: 'warning',
         title: 'Konteyner Durduruldu',
         description: `${targetName} güvenle durduruldu.`,
       });
     } else if (action === 'restart') {
+      soundManager.playClick();
       addToast({
         type: 'info',
         title: 'Konteyner Yeniden Başlatıldı',
@@ -184,6 +188,7 @@ export function App() {
   };
 
   const handleRefresh = () => {
+    soundManager.playPop();
     setIsRefreshing(true);
     setTimeout(() => {
       setContainers((prev) =>
@@ -207,6 +212,7 @@ export function App() {
   };
 
   const handleDeployNew = (newContainer: ContainerItem) => {
+    soundManager.playSuccess();
     setContainers((prev) => [newContainer, ...prev]);
     setSelectedId(newContainer.id);
     setIsDetailOpen(true);
@@ -218,6 +224,7 @@ export function App() {
   };
 
   const handleSelectContainer = (container: ContainerItem) => {
+    soundManager.playClick();
     setSelectedId(container.id);
     setIsDetailOpen(true);
   };
