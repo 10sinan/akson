@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
+import { wiseBouncy, wiseSpring, wiseGentle } from '../utils/motion';
 import {
   Play,
   Square,
@@ -109,7 +110,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
       initial={{ opacity: 0, x: 24 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 24 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      transition={wiseGentle}
       className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full"
     >
       {/* Header of Detail View */}
@@ -161,119 +162,174 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         {/* Action Controls */}
         <div className="flex items-center gap-2 flex-wrap">
           {onOpenAiAnalyze && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={wiseBouncy}
               onClick={onOpenAiAnalyze}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-medium transition cursor-pointer active:scale-95 shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/30 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-medium transition cursor-pointer shadow-sm"
               title="Gemini ile Hata ve Konfigürasyon Analizi"
             >
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
               <span>AI Analizi</span>
-            </button>
+            </motion.button>
           )}
 
           {isRunning ? (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={wiseBouncy}
               onClick={() => onAction('stop', container.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-[#292a2f] hover:border-rose-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-[#292a2f] hover:border-rose-500/40 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
             >
               <Square className="w-3.5 h-3.5 fill-rose-300" />
               <span>Durdur</span>
-            </button>
+            </motion.button>
           ) : (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={wiseBouncy}
               onClick={() => onAction('start', container.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-[#292a2f] hover:border-emerald-500/40 rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-[#292a2f] hover:border-emerald-500/40 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
             >
               <Play className="w-3.5 h-3.5 fill-emerald-300" />
               <span>Başlat</span>
-            </button>
+            </motion.button>
           )}
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            transition={wiseBouncy}
             onClick={() => onAction('restart', container.id)}
             title="Konteyneri Yeniden Başlat"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-[#232736] text-white border border-[#292a2f] rounded-xl text-xs font-medium transition cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1a1b21] hover:bg-[#232736] text-white border border-[#292a2f] rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
           >
             <RotateCw className="w-3.5 h-3.5 text-blue-400" />
             <span>Yeniden Başlat</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            transition={wiseBouncy}
             onClick={() => onAction('delete', container.id)}
             title="Konteyneri Sil"
-            className="p-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-[#292a2f] rounded-xl transition cursor-pointer active:scale-95"
+            className="p-1.5 bg-[#1a1b21] hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 border border-[#292a2f] rounded-xl transition cursor-pointer shadow-sm"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </motion.button>
 
           {onClose && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
+              transition={wiseBouncy}
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-[#1a1b21] hover:bg-[#26282e] hover:border-white/30 text-neutral-300 hover:text-white border border-[#26282e] flex items-center gap-1.5 cursor-pointer transition active:scale-95 shadow-sm ml-1"
+              className="px-3 py-1.5 text-xs font-medium rounded-xl bg-[#1a1b21] hover:bg-[#26282e] hover:border-white/30 text-neutral-300 hover:text-white border border-[#26282e] flex items-center gap-1.5 cursor-pointer transition shadow-sm ml-1"
               title="3 Sütunlu Görünüme Dön"
             >
               <X className="w-3.5 h-3.5" />
               <span>Görünümü Kapat (3 Sütuna Dön)</span>
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#26282e]">
+      {/* Navigation Tabs with Wise Sliding Spring Indicator */}
+      <div className="flex items-center gap-1 border-b border-[#26282e] pb-1">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition cursor-pointer ${
-            activeTab === 'overview'
-              ? 'border-blue-500 text-white font-semibold'
-              : 'border-transparent text-[#8e9192] hover:text-white'
+          className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer select-none rounded-lg ${
+            activeTab === 'overview' ? 'text-white font-semibold' : 'text-[#8e9192] hover:text-white'
           }`}
         >
-          <Activity className="w-4 h-4" />
-          <span>Genel Bakış</span>
+          {activeTab === 'overview' && (
+            <motion.div
+              layoutId="detailSubTabPill"
+              className="absolute inset-0 bg-[#1a1b21] rounded-lg border border-[#292a2f] shadow-sm"
+              transition={wiseBouncy}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-2">
+            <Activity className="w-4 h-4 text-blue-400" />
+            <span>Genel Bakış</span>
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('logs')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition cursor-pointer ${
-            activeTab === 'logs'
-              ? 'border-blue-500 text-white font-semibold'
-              : 'border-transparent text-[#8e9192] hover:text-white'
+          className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer select-none rounded-lg ${
+            activeTab === 'logs' ? 'text-white font-semibold' : 'text-[#8e9192] hover:text-white'
           }`}
         >
-          <Terminal className="w-4 h-4" />
-          <span>Canlı Loglar ({container.logs.length})</span>
+          {activeTab === 'logs' && (
+            <motion.div
+              layoutId="detailSubTabPill"
+              className="absolute inset-0 bg-[#1a1b21] rounded-lg border border-[#292a2f] shadow-sm"
+              transition={wiseBouncy}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-emerald-400" />
+            <span>Canlı Loglar ({container.logs.length})</span>
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('env')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition cursor-pointer ${
-            activeTab === 'env'
-              ? 'border-blue-500 text-white font-semibold'
-              : 'border-transparent text-[#8e9192] hover:text-white'
+          className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer select-none rounded-lg ${
+            activeTab === 'env' ? 'text-white font-semibold' : 'text-[#8e9192] hover:text-white'
           }`}
         >
-          <Key className="w-4 h-4" />
-          <span>Ortam Değişkenleri ({container.env.length})</span>
+          {activeTab === 'env' && (
+            <motion.div
+              layoutId="detailSubTabPill"
+              className="absolute inset-0 bg-[#1a1b21] rounded-lg border border-[#292a2f] shadow-sm"
+              transition={wiseBouncy}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-2">
+            <Key className="w-4 h-4 text-amber-400" />
+            <span>Ortam Değişkenleri ({container.env.length})</span>
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('terminal')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition cursor-pointer ${
-            activeTab === 'terminal'
-              ? 'border-blue-500 text-white font-semibold'
-              : 'border-transparent text-[#8e9192] hover:text-white'
+          className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer select-none rounded-lg ${
+            activeTab === 'terminal' ? 'text-white font-semibold' : 'text-[#8e9192] hover:text-white'
           }`}
         >
-          <Network className="w-4 h-4" />
-          <span>Shell Terminali (PTY)</span>
+          {activeTab === 'terminal' && (
+            <motion.div
+              layoutId="detailSubTabPill"
+              className="absolute inset-0 bg-[#1a1b21] rounded-lg border border-[#292a2f] shadow-sm"
+              transition={wiseBouncy}
+            />
+          )}
+          <span className="relative z-10 flex items-center gap-2">
+            <Network className="w-4 h-4 text-purple-400" />
+            <span>Shell Terminali (PTY)</span>
+          </span>
         </button>
       </div>
 
-      {/* Tab Content */}
+      {/* Tab Content with Fluid Spring Transitions */}
       <div className="flex-1 overflow-y-auto">
-        {/* OVERVIEW TAB */}
-        {activeTab === 'overview' && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8, filter: 'blur(3px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -8, filter: 'blur(3px)' }}
+            transition={wiseSpring}
+            className="h-full"
+          >
+            {/* OVERVIEW TAB */}
+            {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Metric Card 1: CPU */}
             <div className="p-4 rounded-xl bg-[#16171d] border border-[#26282e] space-y-3">
@@ -453,6 +509,8 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             </div>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </motion.div>
   );
