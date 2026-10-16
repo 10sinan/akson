@@ -7,6 +7,7 @@ import { ContainerDetail } from './components/ContainerDetail';
 import { DeployModal } from './components/DeployModal';
 import { AiCopilotModal } from './components/AiCopilotModal';
 import { CommandPalette } from './components/CommandPalette';
+import { ToastContainer, type ToastItem } from './components/Toast';
 import { PipelineColumn } from './components/dashboard/PipelineColumn';
 import { MetricsColumn } from './components/dashboard/MetricsColumn';
 import { DeployView } from './components/views/DeployView';
@@ -36,6 +37,19 @@ export function App() {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const addToast = (toast: Omit<ToastItem, 'id'>) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { ...toast, id }]);
+    setTimeout(() => {
+      dismissToast(id);
+    }, toast.duration || 3500);
+  };
 
   // Filtered containers
   const filteredContainers = useMemo(() => {
@@ -72,12 +86,20 @@ export function App() {
 
   // Actions
   const handleAction = (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => {
+    const target = containers.find((c) => c.id === id);
+    const targetName = target?.name || 'Konteyner';
+
     if (action === 'delete') {
       const remaining = containers.filter((c) => c.id !== id);
       setContainers(remaining);
       if (selectedId === id && remaining.length > 0) {
         setSelectedId(remaining[0].id);
       }
+      addToast({
+        type: 'error',
+        title: 'Konteyner Silindi',
+        description: `${targetName} sistemden başarıyla kaldırıldı.`,
+      });
       return;
     }
 
@@ -118,6 +140,26 @@ export function App() {
         return c;
       })
     );
+
+    if (action === 'start') {
+      addToast({
+        type: 'success',
+        title: 'Konteyner Başlatıldı',
+        description: `${targetName} başarıyla ayağa kaldırıldı.`,
+      });
+    } else if (action === 'stop') {
+      addToast({
+        type: 'warning',
+        title: 'Konteyner Durduruldu',
+        description: `${targetName} güvenle durduruldu.`,
+      });
+    } else if (action === 'restart') {
+      addToast({
+        type: 'info',
+        title: 'Konteyner Yeniden Başlatıldı',
+        description: `${targetName} sıfır kesintiyle yeniden başlatıldı.`,
+      });
+    }
   };
 
   const handleRefresh = () => {
@@ -134,6 +176,12 @@ export function App() {
         })
       );
       setIsRefreshing(false);
+      addToast({
+        type: 'info',
+        title: 'Metrikler Güncellendi',
+        description: 'Tüm konteyner durumları ve telemetri tazelendi.',
+        duration: 2500,
+      });
     }, 400);
   };
 
@@ -141,6 +189,11 @@ export function App() {
     setContainers((prev) => [newContainer, ...prev]);
     setSelectedId(newContainer.id);
     setIsDetailOpen(true);
+    addToast({
+      type: 'success',
+      title: 'Konteyner Dağıtıldı',
+      description: `${newContainer.name} (${newContainer.image}) başarıyla oluşturuldu.`,
+    });
   };
 
   const handleSelectContainer = (container: ContainerItem) => {
@@ -519,6 +572,9 @@ export function App() {
         onOpenAi={() => setIsAiOpen(true)}
         onRefresh={handleRefresh}
       />
+
+      {/* Floating Glass Toasts */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }
