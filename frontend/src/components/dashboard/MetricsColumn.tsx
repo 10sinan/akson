@@ -8,6 +8,7 @@ import {
   Network,
   ShieldCheck,
 } from 'lucide-react';
+import { AnimatedNumber } from '../AnimatedNumber';
 
 interface MetricsColumnProps {
   totalCpu: number;
@@ -82,7 +83,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 <span>Konteyner CPU</span>
               </div>
               <div className="text-lg font-bold text-white mt-1">
-                %{totalCpu.toFixed(1)}
+                <AnimatedNumber value={totalCpu} decimals={1} prefix="%" />
               </div>
               <div className="w-full bg-[#1a1b21] h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
@@ -98,7 +99,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 <span>RAM Tahsisi</span>
               </div>
               <div className="text-lg font-bold text-white mt-1">
-                {totalMemoryMb} MB
+                <AnimatedNumber value={totalMemoryMb} decimals={0} suffix=" MB" />
               </div>
               <div className="w-full bg-[#1a1b21] h-1.5 rounded-full mt-2 overflow-hidden">
                 <div

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
 import { wiseBouncy, wiseSpring, wiseGentle } from '../utils/motion';
+import { AnimatedNumber } from './AnimatedNumber';
 import {
   Play,
   Square,
@@ -335,7 +336,9 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             <div className="p-4 rounded-xl bg-[#16171d] border border-[#26282e] space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#8e9192] font-mono">CPU Kullanımı</span>
-                <span className="text-white font-mono font-bold">{container.cpuPercent.toFixed(1)}%</span>
+                <span className="text-white font-mono font-bold">
+                  <AnimatedNumber value={container.cpuPercent} decimals={1} suffix="%" />
+                </span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#1a1b21] overflow-hidden">
                 <div
@@ -351,7 +354,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[#8e9192] font-mono">RAM Bellek</span>
                 <span className="text-white font-mono font-bold">
-                  {container.memoryUsageMb} MB / {container.memoryLimitMb} MB
+                  <AnimatedNumber value={container.memoryUsageMb} decimals={0} suffix=" MB" /> / {container.memoryLimitMb} MB
                 </span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#1a1b21] overflow-hidden">

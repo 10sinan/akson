@@ -9,6 +9,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface ContainerCardProps {
   container: ContainerItem;
@@ -119,11 +120,18 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
               transition={wiseSpring}
             />
           </div>
-          <span className="text-white">{container.cpuPercent.toFixed(1)}%</span>
+          <span className="text-white">
+            <AnimatedNumber value={container.cpuPercent} decimals={1} suffix="%" />
+          </span>
         </div>
 
         <div>
-          <span>RAM: <strong className="text-white">{container.memoryUsageMb} MB</strong></span>
+          <span>
+            RAM:{' '}
+            <strong className="text-white">
+              <AnimatedNumber value={container.memoryUsageMb} decimals={0} suffix=" MB" />
+            </strong>
+          </span>
         </div>
       </div>
     </motion.div>
