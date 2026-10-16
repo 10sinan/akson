@@ -10,17 +10,20 @@ import {
 } from 'lucide-react';
 import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
+import { ShimmerScan } from './Skeleton';
 
 interface ContainerCardProps {
   container: ContainerItem;
   isSelected: boolean;
   onSelect: (container: ContainerItem) => void;
+  isRefreshing?: boolean;
 }
 
 export const ContainerCard: React.FC<ContainerCardProps> = ({
   container,
   isSelected,
   onSelect,
+  isRefreshing = false,
 }) => {
   // Select appropriate icon
   const getIcon = () => {
@@ -61,6 +64,9 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           transition={wiseSpring}
         />
       )}
+
+      {/* Shimmer Sweep on Refresh */}
+      {isRefreshing && <ShimmerScan />}
 
       {/* Top Header of Card */}
       <div className="flex items-start justify-between gap-3 relative z-10">

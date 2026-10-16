@@ -182,7 +182,7 @@ export function App() {
         description: 'Tüm konteyner durumları ve telemetri tazelendi.',
         duration: 2500,
       });
-    }, 400);
+    }, 550);
   };
 
   const handleDeployNew = (newContainer: ContainerItem) => {
@@ -409,6 +409,7 @@ export function App() {
                           container={container}
                           isSelected={isDetailOpen && container.id === selectedContainer?.id}
                           onSelect={handleSelectContainer}
+                          isRefreshing={isRefreshing}
                         />
                       ))}
                       {filteredContainers.length === 0 && (
@@ -459,6 +460,7 @@ export function App() {
                           <MetricsColumn
                             totalCpu={totalCpu}
                             totalMemoryMb={totalMemory}
+                            isRefreshing={isRefreshing}
                           />
                         </motion.section>
                       </>

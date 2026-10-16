@@ -9,15 +9,18 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { AnimatedNumber } from '../AnimatedNumber';
+import { ShimmerScan } from '../Skeleton';
 
 interface MetricsColumnProps {
   totalCpu: number;
   totalMemoryMb: number;
+  isRefreshing?: boolean;
 }
 
 export const MetricsColumn: React.FC<MetricsColumnProps> = ({
   totalCpu,
   totalMemoryMb,
+  isRefreshing = false,
 }) => {
   return (
     <section className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all">
@@ -57,8 +60,9 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           }}
           whileHover={{ y: -2 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          className="p-4 bg-[#121318] rounded-xl border border-[#26282e] hover:border-white/30 transition-colors space-y-3 cursor-default"
+          className="relative overflow-hidden p-4 bg-[#121318] rounded-xl border border-[#26282e] hover:border-white/30 transition-colors space-y-3 cursor-default"
         >
+          {isRefreshing && <ShimmerScan />}
           <div className="flex items-start justify-between">
             <div>
               <span className="text-xs font-semibold text-white">
