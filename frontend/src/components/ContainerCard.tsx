@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, type Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
 import {
   Globe,
@@ -8,24 +8,13 @@ import {
   Layers,
   Zap,
 } from 'lucide-react';
+import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 
 interface ContainerCardProps {
   container: ContainerItem;
   isSelected: boolean;
   onSelect: (container: ContainerItem) => void;
 }
-
-const containerCardItemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.25,
-      ease: 'easeOut',
-    },
-  },
-};
 
 export const ContainerCard: React.FC<ContainerCardProps> = ({
   container,
@@ -52,21 +41,30 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
 
   return (
     <motion.div
-      variants={containerCardItemVariants}
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      variants={staggerItemVariants}
+      whileHover={{ y: -3, scale: 1.01 }}
+      whileTap={{ scale: 0.972, y: 0 }}
+      transition={wiseBouncy}
       onClick={() => onSelect(container)}
-      className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none ${
+      className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none relative overflow-hidden ${
         isSelected
-          ? 'bg-[#16171d] border-blue-500/80 shadow-lg shadow-blue-500/5 ring-1 ring-blue-500/40'
-          : 'bg-[#121318] border-[#26282e] hover:border-white/20 hover:bg-[#16171d]/60'
+          ? 'bg-[#16171d] border-blue-500/80 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/50'
+          : 'bg-[#121318] border-[#26282e] hover:border-white/25 hover:bg-[#16171d]/80'
       }`}
     >
+      {/* Active Subtle Gradient Glow */}
+      {isSelected && (
+        <motion.div
+          layoutId="cardActiveHighlight"
+          className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-transparent to-transparent pointer-events-none"
+          transition={wiseSpring}
+        />
+      )}
+
       {/* Top Header of Card */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 relative z-10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#1a1b21] border border-[#292a2f] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#1a1b21] border border-[#292a2f] flex items-center justify-center shrink-0 shadow-inner">
             {getIcon()}
           </div>
           <div>
@@ -77,13 +75,18 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           </div>
         </div>
 
-        {/* Status Dot */}
+        {/* Status Dot with Breathing Glow */}
         <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'
-            }`}
-          />
+          <span className="relative flex h-2 w-2">
+            {isRunning && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            )}
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                isRunning ? 'bg-emerald-400' : 'bg-zinc-600'
+              }`}
+            />
+          </span>
           <span className="text-[11px] font-mono text-[#c4c7c8]">
             {container.statusText}
           </span>
@@ -91,7 +94,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       </div>
 
       {/* Middle: Tag & Port preview */}
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] font-mono">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 text-[10px] font-mono relative z-10">
         <span className="px-2 py-0.5 rounded bg-[#1a1b21] text-slate-300 border border-[#292a2f]">
           {container.image}:{container.tag}
         </span>
@@ -102,16 +105,18 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
         )}
       </div>
 
-      {/* Bottom: Resource Metric Bar */}
-      <div className="mt-3 pt-3 border-t border-[#26282e]/60 flex items-center justify-between text-[11px] text-[#8e9192] font-mono">
+      {/* Bottom: Resource Metric Bar with Animated Spring Fill */}
+      <div className="mt-3 pt-3 border-t border-[#26282e]/60 flex items-center justify-between text-[11px] text-[#8e9192] font-mono relative z-10">
         <div className="flex items-center gap-1.5">
           <span>CPU</span>
           <div className="w-16 h-1.5 rounded-full bg-[#1a1b21] overflow-hidden">
-            <div
+            <motion.div
               className={`h-full rounded-full ${
                 container.cpuPercent > 50 ? 'bg-amber-400' : 'bg-blue-400'
               }`}
-              style={{ width: `${Math.min(container.cpuPercent * 10, 100)}%` }}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(container.cpuPercent * 10, 100)}%` }}
+              transition={wiseSpring}
             />
           </div>
           <span className="text-white">{container.cpuPercent.toFixed(1)}%</span>
