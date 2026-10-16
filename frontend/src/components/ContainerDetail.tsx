@@ -112,10 +112,19 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 24 }}
       transition={wiseGentle}
-      className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full"
+      className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full relative overflow-hidden"
     >
+      {/* Ambient Status Mesh Glow */}
+      <div
+        className={`absolute -top-24 -right-24 w-80 h-80 rounded-full bg-gradient-to-br ${
+          isRunning
+            ? 'from-emerald-500/10 via-emerald-500/[0.02] to-transparent'
+            : 'from-zinc-500/[0.04] via-transparent to-transparent'
+        } blur-3xl pointer-events-none transition-all duration-700`}
+      />
+
       {/* Header of Detail View */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#26282e]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#26282e] relative z-10">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-xl bg-[#1a1b21] border border-[#292a2f] flex items-center justify-center shrink-0 shadow-inner">
             {getIcon()}

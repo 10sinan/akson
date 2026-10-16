@@ -41,6 +41,20 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
     }
   };
 
+  const getAmbientGlow = () => {
+    switch (container.status) {
+      case 'running':
+        return 'from-emerald-500/10 via-emerald-500/[0.02] to-transparent';
+      case 'degraded':
+        return 'from-amber-500/10 via-amber-500/[0.02] to-transparent';
+      case 'restarting':
+        return 'from-blue-500/10 via-blue-500/[0.02] to-transparent';
+      case 'stopped':
+      default:
+        return 'from-zinc-500/[0.04] via-transparent to-transparent';
+    }
+  };
+
   const isRunning = container.status === 'running';
 
   return (
@@ -50,12 +64,17 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       whileTap={{ scale: 0.972, y: 0 }}
       transition={wiseBouncy}
       onClick={() => onSelect(container)}
-      className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none relative overflow-hidden ${
+      className={`p-4 rounded-xl border transition-colors duration-200 cursor-pointer select-none relative overflow-hidden group ${
         isSelected
           ? 'bg-[#16171d] border-blue-500/80 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/50'
           : 'bg-[#121318] border-[#26282e] hover:border-white/25 hover:bg-[#16171d]/80'
       }`}
     >
+      {/* Ambient Status Mesh Glow */}
+      <div
+        className={`absolute -top-10 -right-10 w-44 h-44 rounded-full bg-gradient-to-br ${getAmbientGlow()} blur-2xl pointer-events-none transition-all duration-700`}
+      />
+
       {/* Active Subtle Gradient Glow */}
       {isSelected && (
         <motion.div
