@@ -95,7 +95,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </span>
           <span
             className={`w-2 h-2 rounded-full ${
-              isRunning ? 'bg-white' : 'bg-zinc-600'
+              isRunning ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'
             }`}
           />
         </div>
@@ -109,7 +109,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
           >
-            <Square className="w-3.5 h-3.5 fill-current text-white" />
+            <Square className="w-3.5 h-3.5 fill-current text-amber-400" />
             <span>Konteyneri Durdur</span>
           </button>
         ) : (
@@ -120,7 +120,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
           >
-            <Play className="w-3.5 h-3.5 fill-current text-white" />
+            <Play className="w-3.5 h-3.5 fill-current text-emerald-400" />
             <span>Konteyneri Başlat</span>
           </button>
         )}
@@ -133,7 +133,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           }}
           className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
         >
-          <RotateCw className="w-3.5 h-3.5 text-white" />
+          <RotateCw className="w-3.5 h-3.5 text-zinc-300" />
           <span>Yeniden Başlat</span>
         </button>
 
@@ -145,7 +145,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           }}
           className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
         >
-          <ExternalLink className="w-3.5 h-3.5 text-white" />
+          <ExternalLink className="w-3.5 h-3.5 text-zinc-300" />
           <span>Detayları Aç</span>
         </button>
 
@@ -158,7 +158,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
           >
-            <Terminal className="w-3.5 h-3.5 text-white" />
+            <Terminal className="w-3.5 h-3.5 text-sky-400" />
             <span>Canlı Loglar</span>
           </button>
         )}
@@ -180,9 +180,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             onAction('delete', container.id);
             onClose();
           }}
-          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-rose-400/90 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition cursor-pointer"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
           <span>Konteyneri Sil</span>
         </button>
       </motion.div>

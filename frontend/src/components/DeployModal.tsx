@@ -87,8 +87,8 @@ export const DeployModal: React.FC<DeployModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#262626] pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#121212] border border-[#262626] flex items-center justify-center text-white">
-              <Rocket className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 shadow-sm">
+              <Rocket className="w-4 h-4 text-rose-400" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white font-mono">Yeni Konteyner Dağıt (Deploy)</h3>

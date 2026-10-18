@@ -103,17 +103,17 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Cluster Telemetry Pill */}
         <div className="hidden xl:flex items-center gap-3 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-lg text-[11px] font-mono text-zinc-300">
           <div className="flex items-center gap-1">
-            <Cpu className="w-3 h-3 text-zinc-400" />
-            <span>CPU: <strong className="text-white">{totalCpu.toFixed(1)}%</strong></span>
+            <Cpu className="w-3 h-3 text-emerald-400" />
+            <span>CPU: <strong className="text-emerald-400">{totalCpu.toFixed(1)}%</strong></span>
           </div>
           <div className="w-[1px] h-3 bg-zinc-800" />
           <div className="flex items-center gap-1">
-            <Activity className="w-3 h-3 text-zinc-400" />
-            <span>RAM: <strong className="text-white">{totalMemoryMb} MB</strong></span>
+            <Activity className="w-3 h-3 text-sky-400" />
+            <span>RAM: <strong className="text-sky-400">{totalMemoryMb} MB</strong></span>
           </div>
           <div className="w-[1px] h-3 bg-zinc-800" />
           <div>
-            <span>Servisler: <strong className="text-white">{runningContainers}</strong>/{totalContainers}</span>
+            <span>Servisler: <strong className="text-emerald-400">{runningContainers}</strong>/{totalContainers}</span>
           </div>
         </div>
         {/* Gemini AI Copilot Trigger */}
@@ -122,11 +122,11 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenAi}
             className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition shadow-sm active:scale-95 cursor-pointer font-mono text-[11px] font-medium ${
               isAiOpen
-                ? 'bg-white text-black border-white shadow-sm'
-                : 'bg-zinc-900 border-zinc-800 hover:border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-800'
+                ? 'bg-violet-500/20 text-violet-300 border-violet-500/40 shadow-sm'
+                : 'bg-zinc-900 border-zinc-800 hover:border-violet-500/30 text-zinc-300 hover:text-white hover:bg-zinc-800'
             }`}
           >
-            <Activity className={`w-3.5 h-3.5 ${isAiOpen ? 'text-black' : 'text-zinc-400'}`} />
+            <Activity className={`w-3.5 h-3.5 ${isAiOpen ? 'text-violet-300' : 'text-violet-400'}`} />
             <span>Gemini Copilot</span>
           </button>
         )}
@@ -144,9 +144,9 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             />
           </span>
-          <span className="text-white text-[11px]">
+          <span className="text-zinc-300 text-[11px]">
             Docker:{' '}
-            <span className="font-medium text-white">
+            <span className={`font-medium ${dockerStatus === 'online' ? 'text-emerald-400' : 'text-white'}`}>
               {dockerStatus === 'online'
                 ? 'Çevrimiçi'
                 : dockerStatus === 'checking'

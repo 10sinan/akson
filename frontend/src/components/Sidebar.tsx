@@ -93,11 +93,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title="Gemini AI DevOps Asistanı"
             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
               isAiOpen
-                ? 'bg-white text-black shadow-sm ring-1 ring-white/50'
-                : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:border-zinc-700 hover:bg-zinc-800'
+                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40 shadow-sm ring-1 ring-violet-500/30'
+                : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-violet-300 hover:border-violet-500/30 hover:bg-zinc-800'
             }`}
           >
-            <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-black' : 'text-zinc-400'}`} />
+            <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-violet-300' : 'text-zinc-400 group-hover:text-violet-400'}`} />
           </motion.button>
         </nav>
       </div>

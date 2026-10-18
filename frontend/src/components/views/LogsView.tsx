@@ -164,8 +164,10 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               Servis Logları & Canlı Denetleyici
             </h1>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626] text-zinc-300 font-sans text-xs font-medium">
-              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-white animate-pulse' : 'bg-zinc-600'}`} />
-              {isStreaming ? 'Canlı Akış' : 'Duraklatıldı'}
+              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : 'bg-zinc-600'}`} />
+              <span className={isStreaming ? 'text-emerald-400' : 'text-zinc-400'}>
+                {isStreaming ? 'Canlı Akış' : 'Duraklatıldı'}
+              </span>
             </div>
           </div>
           <p className="text-xs text-zinc-400 mt-1 font-sans">
@@ -178,9 +180,9 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
           <button
             onClick={handleAnalyzeWithAI}
             disabled={isAnalyzing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-[#262626] text-zinc-300 hover:text-white text-xs font-medium font-sans transition cursor-pointer active:scale-95 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-300 hover:text-white hover:bg-violet-500/20 text-xs font-medium font-sans transition cursor-pointer active:scale-95 shadow-sm"
           >
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
             <span>{isAnalyzing ? 'Teşhis Ediliyor...' : 'Gemini AI Teşhis'}</span>
           </button>
 
@@ -197,7 +199,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
             className="p-2 bg-[#121212] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-[#262626] rounded-xl transition cursor-pointer active:scale-95"
             title="Logları Kopyala"
           >
-            {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
           </button>
 
           <button
@@ -212,10 +214,10 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
 
       {/* AI Report Card (if generated) */}
       {aiReport && (
-        <div className="bg-[#121212] border border-[#262626] rounded-2xl p-4 shadow-xl flex flex-col gap-2 font-mono text-xs text-zinc-200">
+        <div className="bg-[#121212] border border-violet-500/30 rounded-2xl p-4 shadow-xl flex flex-col gap-2 font-mono text-xs text-zinc-200">
           <div className="flex items-center justify-between border-b border-[#262626] pb-2">
             <div className="flex items-center gap-2 font-semibold text-white font-sans">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Sparkles className="w-4 h-4 text-violet-400" />
               <span>Gemini Canlı Teşhis & Çözüm Önerisi</span>
             </div>
             <button
@@ -330,14 +332,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('info')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'info'
-                    ? 'text-white font-semibold'
+                    ? 'text-sky-400 font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'info' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
+                    className="absolute inset-0 bg-sky-500/15 rounded-lg border border-sky-500/30 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -347,14 +349,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('warn')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'warn'
-                    ? 'text-white font-semibold'
+                    ? 'text-amber-400 font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'warn' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
+                    className="absolute inset-0 bg-amber-500/15 rounded-lg border border-amber-500/30 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -364,14 +366,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('error')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'error'
-                    ? 'text-white font-semibold'
+                    ? 'text-rose-400 font-semibold'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'error' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
+                    className="absolute inset-0 bg-rose-500/15 rounded-lg border border-rose-500/30 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -409,10 +411,10 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                     <span
                       className={`font-bold shrink-0 text-[10px] px-1.5 py-0.5 rounded font-mono ${
                         log.level === 'error'
-                          ? 'bg-white/10 text-white border border-white/20'
+                          ? 'bg-rose-500/10 text-rose-400 border border-rose-500/25'
                           : log.level === 'warn'
-                          ? 'bg-zinc-800 text-zinc-300 border border-[#262626]'
-                          : 'bg-zinc-900 text-zinc-400 border border-[#262626]'
+                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/25'
+                          : 'bg-sky-500/10 text-sky-400 border border-sky-500/25'
                       }`}
                     >
                       {log.level.toUpperCase()}

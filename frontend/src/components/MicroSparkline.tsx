@@ -45,7 +45,7 @@ export const MicroSparkline: React.FC<MicroSparklineProps> = ({
   // Area path for gradient fill
   const areaD = `${pathD} L ${width} ${height} L 0 ${height} Z`;
 
-  // Color mapping strictly monochrome
+  // Color mapping: refined cyber-DevOps palette
   const colorMap = {
     white: {
       stroke: '#ffffff',
@@ -53,28 +53,28 @@ export const MicroSparkline: React.FC<MicroSparklineProps> = ({
       glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.3))',
     },
     emerald: {
-      stroke: '#ffffff',
-      stop: '#ffffff',
-      glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.3))',
+      stroke: '#34d399',
+      stop: '#10b981',
+      glow: 'drop-shadow(0 0 4px rgba(52, 211, 153, 0.4))',
     },
     blue: {
-      stroke: '#e4e4e7',
-      stop: '#d4d4d8',
-      glow: 'none',
+      stroke: '#38bdf8',
+      stop: '#0284c7',
+      glow: 'drop-shadow(0 0 4px rgba(56, 189, 248, 0.4))',
     },
     amber: {
-      stroke: '#a1a1aa',
-      stop: '#71717a',
-      glow: 'none',
+      stroke: '#fbbf24',
+      stop: '#d97706',
+      glow: 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.4))',
     },
     purple: {
-      stroke: '#ffffff',
-      stop: '#a1a1aa',
-      glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.2))',
+      stroke: '#a78bfa',
+      stop: '#7c3aed',
+      glow: 'drop-shadow(0 0 4px rgba(167, 139, 250, 0.4))',
     },
     zinc: {
-      stroke: '#71717a',
-      stop: '#52525b',
+      stroke: '#52525b',
+      stop: '#3f3f46',
       glow: 'none',
     },
   }[color] || {

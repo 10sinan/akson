@@ -75,6 +75,42 @@ export const PIPELINE_STEPS: StepInfo[] = [
   },
 ];
 
+const getStepStyles = (id: number) => {
+  switch (id) {
+    case 1:
+      return {
+        text: 'text-sky-400',
+        badge: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
+        activeRing: 'ring-2 ring-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.35)]',
+      };
+    case 2:
+      return {
+        text: 'text-amber-400',
+        badge: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+        activeRing: 'ring-2 ring-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.35)]',
+      };
+    case 3:
+      return {
+        text: 'text-emerald-400',
+        badge: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+        activeRing: 'ring-2 ring-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.35)]',
+      };
+    case 4:
+      return {
+        text: 'text-violet-400',
+        badge: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
+        activeRing: 'ring-2 ring-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.35)]',
+      };
+    case 5:
+    default:
+      return {
+        text: 'text-rose-400',
+        badge: 'bg-rose-500/10 border-rose-500/25 text-rose-400',
+        activeRing: 'ring-2 ring-rose-400 shadow-[0_0_16px_rgba(251,113,133,0.35)]',
+      };
+  }
+};
+
 interface PipelinePathStepperProps {
   currentStep: number; // 1 to 5
   isDeploying?: boolean;
@@ -96,6 +132,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
   const activeHover = hoveredStep !== null ? hoveredStep : currentStep;
   const currentStepData = PIPELINE_STEPS.find((s) => s.id === activeHover) || PIPELINE_STEPS[0];
+  const activeStepStyles = getStepStyles(currentStepData.id);
 
   const handleStepClick = (stepId: number) => {
     soundManager.playClick();
@@ -104,7 +141,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
   return (
     <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden space-y-4">
-      {/* Ambient background glow - neutral */}
+      {/* Ambient background glow - subtle */}
       <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
 
@@ -112,7 +149,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 relative z-10">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-white" />
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
               Görsel Dağıtım Tüneli (Pipeline Path)
             </h3>
@@ -137,9 +174,9 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           {/* Base Inactive Track */}
           <div className="w-full h-full bg-zinc-800" />
 
-          {/* Active Progress Track */}
+          {/* Active Progress Track with subtle semantic gradient */}
           <motion.div
-            className="absolute top-0 left-0 bottom-0 bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+            className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-sky-400 via-emerald-400 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.4)]"
             initial={{ width: '0%' }}
             animate={{
               width: `${((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100}%`,
@@ -150,7 +187,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           {/* Laser Energy Pulse (Active when deploying) */}
           {isDeploying && (
             <motion.div
-              className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-white to-transparent opacity-90 blur-[1px]"
+              className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-90 blur-[1px]"
               animate={{ left: ['-10%', '110%'] }}
               transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
             />
@@ -163,6 +200,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
             const Icon = step.icon;
+            const stepStyles = getStepStyles(step.id);
 
             return (
               <div
@@ -179,15 +217,15 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   transition={snappySpring}
                   className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center relative transition-all duration-200 ${
                     isCompleted
-                      ? 'bg-zinc-200 text-black shadow-md'
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
                       : isCurrent
-                      ? 'bg-white text-black shadow-lg ring-2 ring-white/80'
-                      : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-600 group-hover:text-white'
+                      ? `bg-white text-black ${stepStyles.activeRing}`
+                      : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-700 group-hover:text-zinc-300'
                   }`}
                 >
                   {/* Icon or Status */}
                   {isCompleted ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3] text-emerald-400" />
                   ) : isCurrent && isDeploying ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-black" />
                   ) : (
@@ -198,7 +236,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   <span
                     className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
                       isCompleted
-                        ? 'bg-zinc-900 text-zinc-300 border-zinc-700'
+                        ? 'bg-zinc-900 text-emerald-400 border-emerald-500/40'
                         : isCurrent
                         ? 'bg-white text-black border-white'
                         : 'bg-zinc-900 text-zinc-500 border-zinc-800'
@@ -216,7 +254,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                         ? 'text-white font-bold'
                         : isCompleted
                         ? 'text-zinc-300'
-                        : 'text-zinc-500 group-hover:text-white'
+                        : 'text-zinc-500 group-hover:text-zinc-300'
                     }`}
                   >
                     {step.title.split('. ')[1]}
@@ -243,7 +281,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center shrink-0">
+              <div className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${activeStepStyles.badge}`}>
                 <currentStepData.icon className="w-4 h-4" />
               </div>
               <div>
@@ -256,19 +294,19 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               <span
                 className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${
                   currentStepData.id < currentStep
-                    ? 'bg-zinc-800 text-white border-zinc-700'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : currentStepData.id === currentStep
-                    ? 'bg-white/10 text-white border-white/20'
+                    ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
                     : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                 }`}
               >
                 {currentStepData.id < currentStep ? (
                   <>
-                    <Check className="w-3 h-3 text-white" /> Tamamlandı
+                    <Check className="w-3 h-3 text-emerald-400" /> Tamamlandı
                   </>
                 ) : currentStepData.id === currentStep ? (
                   <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Aktif İstasyon
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" /> Aktif İstasyon
                   </>
                 ) : (
                   'Sırada'
@@ -280,7 +318,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
             <div className="space-y-1">
               <div className="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1">
-                <Check className="w-3 h-3 text-zinc-300" /> Yapılan / Doğrulanan
+                <Check className="w-3 h-3 text-emerald-400" /> Yapılan / Doğrulanan
               </div>
               <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
                 {currentStepData.doneDetails}
@@ -289,7 +327,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
             <div className="space-y-1">
               <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider flex items-center gap-1">
-                <Info className="w-3 h-3 text-zinc-400" /> Bu Adımda Yapılması Gereken
+                <Info className="w-3 h-3 text-amber-400" /> Bu Adımda Yapılması Gereken
               </div>
               <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
                 {currentStepData.todoDetails}
@@ -306,11 +344,11 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
               {isDeployed ? (
-                <CheckCircle2 className="w-5 h-5 text-white" />
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               ) : isDeploying ? (
-                <Loader2 className="w-5 h-5 animate-spin text-white" />
+                <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
               ) : (
-                <Sparkles className="w-5 h-5 text-white" />
+                <Sparkles className="w-5 h-5 text-zinc-200" />
               )}
             </div>
             <div>

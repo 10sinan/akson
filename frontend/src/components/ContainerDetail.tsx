@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ContainerItem } from '../types/container';
-import { wiseBouncy, wiseSpring, wiseGentle } from '../utils/motion';
+import { snappyEase, wiseBouncy, wiseGentle } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 import { api } from '../api/client';
 import {
@@ -120,21 +120,37 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
     setTerminalInput('');
   };
 
-  const getIcon = () => {
+  const getCategoryStyles = () => {
     switch (container.category) {
       case 'core':
-        return <Zap className="w-5 h-5 text-zinc-300" />;
+        return {
+          icon: <Zap className="w-5 h-5 text-sky-400" />,
+          badgeClass: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
+        };
       case 'service':
-        return <Globe className="w-5 h-5 text-zinc-300" />;
+        return {
+          icon: <Globe className="w-5 h-5 text-emerald-400" />,
+          badgeClass: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+        };
       case 'database':
-        return <Database className="w-5 h-5 text-zinc-300" />;
+        return {
+          icon: <Database className="w-5 h-5 text-amber-400" />,
+          badgeClass: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+        };
       case 'worker':
-        return <Cpu className="w-5 h-5 text-zinc-300" />;
+        return {
+          icon: <Cpu className="w-5 h-5 text-violet-400" />,
+          badgeClass: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
+        };
       default:
-        return <Layers className="w-5 h-5 text-zinc-400" />;
+        return {
+          icon: <Layers className="w-5 h-5 text-zinc-300" />,
+          badgeClass: 'bg-zinc-800 border-zinc-700 text-zinc-300',
+        };
     }
   };
 
+  const catStyles = getCategoryStyles();
   const isRunning = container.status === 'running';
 
   return (
@@ -148,8 +164,12 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
       {/* Header of Detail View */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-zinc-800 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-inner">
-            {getIcon()}
+          <div
+            className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 shadow-inner ${
+              isRunning ? catStyles.badgeClass : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+            }`}
+          >
+            {catStyles.icon}
           </div>
           <div>
             <div className="flex items-center gap-3">
@@ -159,7 +179,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-sans border ${
                   isRunning
-                    ? 'bg-zinc-900 text-white border-zinc-800'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
                     : 'bg-zinc-900 text-zinc-500 border-zinc-800'
                 }`}
               >
@@ -185,7 +205,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               >
                 <span>{container.id.slice(0, 12)}</span>
                 {copiedId ? (
-                  <Check className="w-3.5 h-3.5 text-white" />
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}
@@ -202,10 +222,10 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               whileTap={{ scale: 0.96 }}
               transition={wiseBouncy}
               onClick={onOpenAiAnalyze}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-medium font-sans transition cursor-pointer shadow-sm hover:bg-zinc-800"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 text-violet-300 hover:text-white border border-violet-500/30 hover:border-violet-500/50 text-xs font-medium font-sans transition cursor-pointer shadow-sm hover:bg-violet-500/20"
               title="Gemini ile Hata ve Konfigürasyon Analizi"
             >
-              <Sparkles className="w-3.5 h-3.5 text-zinc-300" />
+              <Sparkles className="w-3.5 h-3.5 text-violet-400" />
               <span>AI Analizi</span>
             </motion.button>
           )}
@@ -227,9 +247,9 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               whileTap={{ scale: 0.96 }}
               transition={wiseBouncy}
               onClick={() => onAction('start', container.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-zinc-200 text-black border border-white rounded-xl text-xs font-medium font-sans transition cursor-pointer shadow-sm font-semibold"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-semibold font-sans transition cursor-pointer shadow-[0_0_16px_rgba(52,211,153,0.3)]"
             >
-              <Play className="w-3.5 h-3.5 fill-black" />
+              <Play className="w-3 h-3 fill-black" />
               <span>Başlat</span>
             </motion.button>
           )}
@@ -357,10 +377,10 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 8, filter: 'blur(3px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -8, filter: 'blur(3px)' }}
-            transition={wiseSpring}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={snappyEase}
             className="h-full"
           >
             {/* OVERVIEW TAB: Clean 2x2 Grid without Nested Box Fatigue */}
@@ -376,13 +396,13 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-white transition-all duration-300"
+                      className="h-full rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)] transition-all duration-300"
                       style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                     />
                   </div>
                   <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
                     <span>Durum: {liveCpu > 80 ? 'Yüksek Yük' : 'Nominal'}</span>
-                    <span className="font-mono text-zinc-300">Anlık SSE Akışı</span>
+                    <span className="font-mono text-emerald-400/90">Anlık SSE Akışı</span>
                   </div>
                 </div>
 
@@ -397,7 +417,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-zinc-300 transition-all duration-300"
+                      className="h-full rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.4)] transition-all duration-300"
                       style={{
                         width: `${Math.min(
                           (liveMemoryMb / container.memoryLimitMb) * 100,
@@ -408,7 +428,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
                     <span>Limit: {container.memoryLimitMb} MB</span>
-                    <span className="font-mono text-zinc-300">
+                    <span className="font-mono text-sky-400/90">
                       %{Math.round((liveMemoryMb / container.memoryLimitMb) * 100)} Doluluk
                     </span>
                   </div>
@@ -435,9 +455,9 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                           href={`https://${container.traefikRoute}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-white hover:underline flex items-center gap-1 font-mono text-xs"
+                          className="text-sky-400 hover:underline flex items-center gap-1 font-mono text-xs"
                         >
-                          {container.traefikRoute}
+                          <span>{container.traefikRoute}</span>
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       </div>

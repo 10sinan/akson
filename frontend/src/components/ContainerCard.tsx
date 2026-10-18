@@ -29,22 +29,43 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   isRefreshing = false,
   onContextMenu,
 }) => {
-  // Select appropriate icon (monochrome)
-  const getIcon = () => {
+  // Select appropriate category styling & color
+  const getCategoryStyles = () => {
     switch (container.category) {
       case 'core':
-        return <Zap className="w-4 h-4 text-zinc-300" />;
+        return {
+          icon: <Zap className="w-4 h-4 text-sky-400" />,
+          badgeClass: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
+          sparkColor: 'blue' as const,
+        };
       case 'service':
-        return <Globe className="w-4 h-4 text-zinc-300" />;
+        return {
+          icon: <Globe className="w-4 h-4 text-emerald-400" />,
+          badgeClass: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+          sparkColor: 'emerald' as const,
+        };
       case 'database':
-        return <Database className="w-4 h-4 text-zinc-300" />;
+        return {
+          icon: <Database className="w-4 h-4 text-amber-400" />,
+          badgeClass: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+          sparkColor: 'amber' as const,
+        };
       case 'worker':
-        return <Cpu className="w-4 h-4 text-zinc-300" />;
+        return {
+          icon: <Cpu className="w-4 h-4 text-violet-400" />,
+          badgeClass: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
+          sparkColor: 'purple' as const,
+        };
       default:
-        return <Layers className="w-4 h-4 text-zinc-400" />;
+        return {
+          icon: <Layers className="w-4 h-4 text-zinc-300" />,
+          badgeClass: 'bg-zinc-800 border-zinc-700 text-zinc-300',
+          sparkColor: 'zinc' as const,
+        };
     }
   };
 
+  const catStyles = getCategoryStyles();
   const isRunning = container.status === 'running';
 
   return (
@@ -83,8 +104,12 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       {/* Header: Icon, Name, Image and Status */}
       <div className="flex items-center justify-between gap-2.5 relative z-10">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
-            {getIcon()}
+          <div
+            className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${
+              isRunning ? catStyles.badgeClass : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+            }`}
+          >
+            {catStyles.icon}
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-white tracking-tight truncate font-sans">
@@ -106,7 +131,13 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
 
         {/* Status Dot & Context Menu Button */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800">
+          <div
+            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${
+              isRunning
+                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+            }`}
+          >
             <span className="relative flex h-2 w-2 items-center justify-center">
               <span
                 className={`inline-block rounded-full ${
@@ -116,11 +147,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
                 }`}
               />
             </span>
-            <span
-              className={`text-[11px] font-sans font-medium ${
-                isRunning ? 'text-white' : 'text-zinc-400'
-              }`}
-            >
+            <span className="text-[11px] font-sans font-medium">
               {container.statusText}
             </span>
           </div>
@@ -154,7 +181,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-zinc-400 font-sans">CPU</span>
           <span className="text-white font-medium">
-            <AnimatedNumber value={container.cpuPercent} decimals={1} suffix="%" />
+            <AnimatedNumber value={container.cpuPercent} decimals={1} prefix="%" />
           </span>
           <div className="w-16 h-4 opacity-75">
             <MicroSparkline
@@ -171,7 +198,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
                     ]
                   : [0, 0, 0, 0, 0, 0, 0]
               }
-              color={isRunning ? 'white' : 'zinc'}
+              color={isRunning ? catStyles.sparkColor : 'zinc'}
               height={16}
               isLive={isRunning}
             />

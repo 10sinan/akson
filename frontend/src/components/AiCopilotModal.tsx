@@ -67,13 +67,13 @@ export const AiCopilotModal: React.FC<AiCopilotModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#262626] pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#121212] border border-[#262626] flex items-center justify-center text-white">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shadow-sm">
+              <Sparkles className="w-5 h-5 text-violet-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-white font-mono">Gemini AI DevOps Asistanı</h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-[#262626] font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/25 font-mono">
                   Beta
                 </span>
               </div>
@@ -120,8 +120,8 @@ export const AiCopilotModal: React.FC<AiCopilotModalProps> = ({
               }`}
             >
               {m.role === 'assistant' && (
-                <div className="w-6 h-6 rounded-lg bg-[#121212] border border-[#262626] flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5 text-white" />
+                <div className="w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-violet-400" />
                 </div>
               )}
               <div

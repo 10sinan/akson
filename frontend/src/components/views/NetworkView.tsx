@@ -67,8 +67,8 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
             <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
               Ağ Topolojisi & Traefik v3 Proxy
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626] text-zinc-300 font-sans text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-sans text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
               Traefik v3.0.1 Aktif
             </span>
           </div>
@@ -83,15 +83,15 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
             disabled={isRefreshing}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-[#121212] hover:bg-zinc-800 text-white border border-[#262626] hover:border-zinc-500 rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 shadow-sm"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-white ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-zinc-300 ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Sertifikaları Yenile</span>
           </button>
         </div>
       </div>
 
       {refreshSuccess && (
-        <div className="p-3 bg-white/5 border border-white/20 text-white rounded-xl text-xs font-sans flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-white" />
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-sans flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>Let's Encrypt TLS-ALPN-01 sertifikaları başarıyla doğrulandı ve güncellendi.</span>
         </div>
       )}
@@ -100,8 +100,8 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
       <div className="p-4 rounded-2xl bg-[#0a0a0a] border border-[#262626] flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Step 1: Ingress */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="w-9 h-9 rounded-xl bg-[#121212] border border-[#262626] flex items-center justify-center shrink-0">
-            <Globe className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center shrink-0">
+            <Globe className="w-4 h-4 text-sky-400" />
           </div>
           <div>
             <span className="text-xs font-semibold text-white font-sans block">Dış Giriş Noktaları</span>
@@ -113,12 +113,12 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
 
         {/* Step 2: SSL & Proxy Core */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="w-9 h-9 rounded-xl bg-[#121212] border border-[#262626] flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
             <span className="text-xs font-semibold text-white font-sans block">Traefik v3 Core</span>
-            <span className="text-[11px] text-zinc-300 font-mono">Let's Encrypt TLS 1.3</span>
+            <span className="text-[11px] text-emerald-400/90 font-mono">Let's Encrypt TLS 1.3</span>
           </div>
         </div>
 
@@ -126,12 +126,12 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
 
         {/* Step 3: Isolated Network */}
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="w-9 h-9 rounded-xl bg-[#121212] border border-[#262626] flex items-center justify-center shrink-0">
-            <Server className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0">
+            <Server className="w-4 h-4 text-violet-400" />
           </div>
           <div>
             <span className="text-xs font-semibold text-white font-sans block">İzole Köprü Ağı</span>
-            <span className="text-[11px] text-zinc-300 font-mono">akson-bridge (172.20.0.0/16)</span>
+            <span className="text-[11px] text-violet-300/90 font-mono">akson-bridge (172.20.0.0/16)</span>
           </div>
         </div>
       </div>
@@ -172,7 +172,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
                   <td className="p-3.5">
                     {route.tls ? (
                       <span className="inline-flex items-center gap-1 text-white font-sans text-xs">
-                        <Lock className="w-3 h-3 text-white" /> TLS 1.3
+                        <Lock className="w-3 h-3 text-emerald-400" /> TLS 1.3
                       </span>
                     ) : (
                       <span className="text-zinc-500 font-sans text-xs">TCP</span>
@@ -180,15 +180,17 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
                   </td>
                   <td className="p-3.5 text-right">
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-sans px-2.5 py-0.5 rounded-full font-medium border ${
+                      className={`inline-flex items-center gap-1.5 text-[10px] font-sans px-2.5 py-0.5 rounded-full font-medium border ${
                         route.status === 'healthy'
-                          ? 'text-white bg-white/10 border-white/20'
-                          : 'text-zinc-400 bg-zinc-800 border-[#262626]'
+                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25'
+                          : 'text-amber-400 bg-amber-500/10 border-amber-500/25'
                       }`}
                     >
                       <span
                         className={`w-1.5 h-1.5 rounded-full ${
-                          route.status === 'healthy' ? 'bg-white animate-pulse' : 'bg-zinc-600'
+                          route.status === 'healthy'
+                            ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse'
+                            : 'bg-amber-400'
                         }`}
                       />
                       {route.status === 'healthy' ? 'Aktif' : 'Beklemede'}
@@ -212,7 +214,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
       <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
           <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-white" />
+            <Server className="w-4 h-4 text-violet-400" />
             <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
               İzole Alt Ağ Düğümleri: akson-bridge (172.20.0.0/16)
             </h2>
@@ -250,7 +252,9 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
                 <span className="font-semibold text-white text-xs font-sans truncate">{c.name}</span>
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    c.status === 'running' ? 'bg-white animate-pulse' : 'bg-zinc-600'
+                    c.status === 'running'
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse'
+                      : 'bg-zinc-600'
                   }`}
                 />
               </div>

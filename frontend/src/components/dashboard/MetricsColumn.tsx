@@ -42,8 +42,8 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             Sistem Sağlığı & Telemetri
           </h2>
         </div>
-        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           Canlı
         </span>
       </div>
@@ -70,7 +70,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 cx="50"
                 cy="50"
                 r={radius}
-                className="stroke-white"
+                className="stroke-emerald-400"
                 strokeWidth="8"
                 strokeLinecap="round"
                 fill="transparent"
@@ -91,8 +91,8 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           </div>
 
           <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-white font-medium font-sans">
-              <CheckCircle2 className="w-4 h-4 text-zinc-300" />
+            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium font-sans">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>Tüm Düğümler Stabil</span>
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
@@ -109,7 +109,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                   Math.max(18, totalCpu * 10 + 6),
                   Math.max(14, totalCpu * 8 + 12),
                 ]}
-                color="zinc"
+                color="emerald"
                 height={22}
                 isLive={true}
               />
@@ -123,7 +123,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
-                <Cpu className="w-3.5 h-3.5 text-zinc-400" />
+                <Cpu className="w-3.5 h-3.5 text-emerald-400" />
                 İşlemci (Konteyner CPU)
               </span>
               <span className="text-white font-mono font-medium">
@@ -132,7 +132,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-white h-full rounded-full transition-all duration-500"
+                className="bg-emerald-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(52,211,153,0.4)]"
                 style={{ width: `${Math.min(100, Math.max(3, totalCpu * 5))}%` }}
               />
             </div>
@@ -142,7 +142,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
-                <Activity className="w-3.5 h-3.5 text-zinc-400" />
+                <Activity className="w-3.5 h-3.5 text-sky-400" />
                 Bellek Tahsisi (RAM)
               </span>
               <span className="text-white font-mono font-medium">
@@ -152,7 +152,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-zinc-300 h-full rounded-full transition-all duration-500"
+                className="bg-sky-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(56,189,248,0.4)]"
                 style={{ width: `${Math.min(100, Math.max(3, ramPercent))}%` }}
               />
             </div>
@@ -162,7 +162,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
-                <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
+                <HardDrive className="w-3.5 h-3.5 text-violet-400" />
                 NVMe Depolama
               </span>
               <span className="text-white font-mono font-medium">
@@ -171,7 +171,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-zinc-400 h-full rounded-full transition-all duration-500"
+                className="bg-violet-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(167,139,250,0.4)]"
                 style={{ width: '25.6%' }}
               />
             </div>

@@ -103,15 +103,16 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             {/* Header */}
             <div className="p-4 border-b border-[#262626] flex items-center justify-between bg-[#121212]">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[#171717] border border-[#262626] flex items-center justify-center text-white shadow-sm">
-                  <Sparkles className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-violet-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-white font-mono tracking-tight">
                       Gemini Copilot
                     </h3>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-[#262626] font-mono font-medium">
+                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
                       Canlı
                     </span>
                   </div>
@@ -134,23 +135,23 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             <div className="p-3 border-b border-[#262626] flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-[10px]">
               <button
                 onClick={() => handleQuickChip('Konteynerin canlı loglarını denetle ve hataları bul')}
-                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1 transition cursor-pointer shrink-0"
+                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <Terminal className="w-3 h-3 text-white" />
+                <Terminal className="w-3 h-3 text-sky-400" />
                 <span>Log Denetle</span>
               </button>
               <button
                 onClick={() => handleQuickChip('CPU ve Bellek kullanımını analiz et')}
-                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1 transition cursor-pointer shrink-0"
+                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <Cpu className="w-3 h-3 text-white" />
+                <Cpu className="w-3 h-3 text-violet-400" />
                 <span>Telemetri</span>
               </button>
               <button
                 onClick={() => handleQuickChip('Dockerfile güvenlik ve boyut iyileştirmesi yap')}
-                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1 transition cursor-pointer shrink-0"
+                className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <ShieldCheck className="w-3 h-3 text-white" />
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
                 <span>Güvenlik</span>
               </button>
             </div>
@@ -165,8 +166,8 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                   }`}
                 >
                   {m.role === 'assistant' && (
-                    <div className="w-6 h-6 rounded-lg bg-[#121212] border border-[#262626] flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-white" />
+                    <div className="w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot className="w-3.5 h-3.5 text-violet-400" />
                     </div>
                   )}
                   <motion.div
@@ -190,8 +191,8 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
               ))}
 
               {isTyping && (
-                <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono py-1 px-2">
-                  <Sparkles className="w-3.5 h-3.5 animate-spin text-white" />
+                <div className="flex items-center gap-2 text-xs text-violet-300 font-mono py-1 px-2">
+                  <Sparkles className="w-3.5 h-3.5 animate-spin text-violet-400" />
                   <span>Gemini analiz ediyor...</span>
                 </div>
               )}

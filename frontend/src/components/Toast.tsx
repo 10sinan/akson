@@ -29,28 +29,28 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
   const getIcon = (type: ToastItem['type']) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-white shrink-0" />;
+        return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-zinc-200 shrink-0" />;
+        return <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-zinc-400 shrink-0" />;
+        return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
       case 'info':
       default:
-        return <Info className="w-4 h-4 text-zinc-300 shrink-0" />;
+        return <Info className="w-4 h-4 text-sky-400 shrink-0" />;
     }
   };
 
   const getBorderColor = (type: ToastItem['type']) => {
     switch (type) {
       case 'success':
-        return 'border-white/40';
+        return 'border-emerald-500/30';
       case 'error':
-        return 'border-white/20';
+        return 'border-rose-500/30';
       case 'warning':
-        return 'border-zinc-600';
+        return 'border-amber-500/30';
       case 'info':
       default:
-        return 'border-[#262626]';
+        return 'border-sky-500/30';
     }
   };
 

@@ -72,6 +72,20 @@ const TEMPLATE_IMAGES: TemplateImage[] = [
   },
 ];
 
+const getTemplateCategoryBadge = (category: string) => {
+  switch (category) {
+    case 'service':
+      return 'bg-sky-500/10 text-sky-400 border-sky-500/25';
+    case 'database':
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+    case 'core':
+      return 'bg-violet-500/10 text-violet-400 border-violet-500/25';
+    case 'worker':
+    default:
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25';
+  }
+};
+
 export const DeployView: React.FC<DeployViewProps> = ({
   onDeploySuccess,
   onNavigateDashboard,
@@ -245,12 +259,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-white" />
+                    <Layers className="w-4 h-4 text-sky-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       1. Adım: Docker İmajı & Şablon Seçimi
                     </h2>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-white/5 px-2 py-0.5 rounded border border-[#262626] font-mono">
+                  <span className="text-[10px] text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25 font-mono">
                     Docker Registry
                   </span>
                 </div>
@@ -268,7 +282,9 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     >
                       <div className="flex items-center justify-between font-bold">
                         <span className="text-white font-sans">{tpl.name}</span>
-                        <span className="text-[10px] text-zinc-400 font-mono">:{tpl.tag}</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono border ${getTemplateCategoryBadge(tpl.category)}`}>
+                          :{tpl.tag}
+                        </span>
                       </div>
                       <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 font-sans">
                         {tpl.desc}
@@ -311,12 +327,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-white" />
+                    <Sliders className="w-4 h-4 text-amber-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       2. Adım: Port & Ortam Değişkenleri (ENV)
                     </h2>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-white/5 px-2 py-0.5 rounded border border-[#262626] font-mono">
+                  <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25 font-mono">
                     Network & Config
                   </span>
                 </div>
@@ -411,12 +427,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-white" />
+                    <Globe className="w-4 h-4 text-emerald-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       3. Adım: Ağ Köprüsü & Traefik SSL Rotalama
                     </h2>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-white/5 px-2 py-0.5 rounded border border-[#262626] font-mono">
+                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 font-mono">
                     Traefik v3 SSL
                   </span>
                 </div>
@@ -458,12 +474,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-white" />
+                    <Cpu className="w-4 h-4 text-violet-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       4. Adım: Donanım Sınırları & Cgroup
                     </h2>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-white/5 px-2 py-0.5 rounded border border-[#262626] font-mono">
+                  <span className="text-[10px] text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/25 font-mono">
                     Cgroupv2
                   </span>
                 </div>
@@ -526,12 +542,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-white" />
+                    <Rocket className="w-4 h-4 text-rose-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       5. Adım: Dağıtım Özeti & Onay
                     </h2>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-white/5 px-2 py-0.5 rounded border border-[#262626] font-mono">
+                  <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/25 font-mono">
                     Hazır
                   </span>
                 </div>
@@ -614,8 +630,10 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </span>
               </div>
               <span className="text-[10px] text-zinc-300 flex items-center gap-1.5 font-sans px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626]">
-                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-white animate-pulse' : 'bg-zinc-600'}`} />
-                {isDeploying ? 'Akış Aktif' : 'Docker SDK Hazır'}
+                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : 'bg-zinc-600'}`} />
+                <span className={isDeploying ? 'text-emerald-400' : 'text-zinc-300'}>
+                  {isDeploying ? 'Akış Aktif' : 'Docker SDK Hazır'}
+                </span>
               </span>
             </div>
 
@@ -623,29 +641,49 @@ export const DeployView: React.FC<DeployViewProps> = ({
               Yukarıdaki görsel dağıtım tünelinden işlem başlatıldığında Docker Engine SDK çıktıları bu konsola anlık olarak yansıtılır.
             </p>
 
-            <div className="h-[340px] overflow-y-auto space-y-1.5 text-[11px] text-zinc-300 pr-1 bg-[#000000] p-3 rounded-xl border border-[#262626] font-mono">
+            <div className="h-[340px] overflow-y-auto space-y-1.5 text-[11px] pr-1 bg-[#000000] p-3 rounded-xl border border-[#262626] font-mono">
               {deployLogs.length === 0 ? (
                 <div className="text-zinc-600 italic pt-24 text-center text-xs font-sans">
                   "Canlıya Dağıt" butonuna basıldığında tünel istasyonlarının çıktıları burada akacaktır.
                 </div>
               ) : (
-                deployLogs.map((log, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={`leading-relaxed ${
-                      log.includes('🎉')
-                        ? 'text-white font-bold'
-                        : log.includes('ERR')
-                        ? 'text-zinc-400 underline font-semibold'
-                        : 'text-zinc-300'
-                    }`}
-                  >
-                    {log}
-                  </motion.div>
-                ))
+                deployLogs.map((log, idx) => {
+                  const isSuccess = log.includes('🎉') || log.includes('başarıyla');
+                  const isErr = log.includes('ERR') || log.includes('fail');
+                  const isImageStep = log.includes('[1/5: image]');
+                  const isConfigStep = log.includes('[2/5: config]');
+                  const isNetworkStep = log.includes('[3/5: network]');
+                  const isCgroupStep = log.includes('[4/5: cgroup]');
+                  const isDeployStep = log.includes('[5/5: deploy]');
+
+                  const colorClass = isSuccess
+                    ? 'text-emerald-400 font-bold'
+                    : isErr
+                    ? 'text-rose-400 underline font-semibold'
+                    : isImageStep
+                    ? 'text-sky-300'
+                    : isConfigStep
+                    ? 'text-amber-300'
+                    : isNetworkStep
+                    ? 'text-emerald-300'
+                    : isCgroupStep
+                    ? 'text-violet-300'
+                    : isDeployStep
+                    ? 'text-rose-300'
+                    : 'text-zinc-300';
+
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className={`leading-relaxed ${colorClass}`}
+                    >
+                      {log}
+                    </motion.div>
+                  );
+                })
               )}
             </div>
           </div>
