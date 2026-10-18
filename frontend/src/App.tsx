@@ -328,6 +328,7 @@ export function App() {
         }}
         onOpenAiModal={() => setIsAiOpen((prev) => !prev)}
         isAiOpen={isAiOpen}
+        hasRunningContainers={runningCount > 0}
       />
 
       {/* 2. ANA SARMALAYICI & ÜST BAR */}
@@ -335,6 +336,7 @@ export function App() {
         {/* Üst Başlık Çubuğu */}
         <Header
           currentTabName={getTabTitle()}
+          activeTab={activeTab}
           totalContainers={containers.length}
           runningContainers={runningCount}
           totalCpu={totalCpu}
