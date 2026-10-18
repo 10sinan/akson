@@ -44,15 +44,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   hasRunningContainers = true,
 }) => {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#262626] z-50 flex flex-col items-center py-3 justify-between select-none">
+    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-[#0c0d10] border-r border-[#262626] z-50 flex flex-col items-center py-3 justify-between select-none">
       {/* Header ve Main Content ile kesintisiz köşe birleşim köprüsü (Inverted corner bridge) */}
       <div
         className="absolute top-14 -right-6 w-6 h-6 pointer-events-none z-50 overflow-hidden"
         aria-hidden="true"
       >
         <svg className="w-6 h-6 block" viewBox="0 0 24 24" fill="none">
-          {/* Köşedeki boşluğu kapatan siyah kama */}
-          <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#000000" />
+          {/* Köşedeki boşluğu kapatan kama */}
+          <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#0c0d10" />
           {/* Main content rounded-tl-3xl kavisini tamamlayan köşe çizgisi */}
           <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#262626" strokeWidth="1" fill="none" />
         </svg>
@@ -187,7 +187,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="relative group cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300 relative shadow-sm hover:border-zinc-500 transition-colors">
             AK
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c0d10] shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
           </div>
 
           {/* Instant Tooltip */}

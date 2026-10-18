@@ -316,7 +316,7 @@ export function App() {
   };
 
   return (
-    <div className="bg-black text-zinc-200 min-h-screen flex selection:bg-white/20 selection:text-white">
+    <div className="bg-[#0c0d10] text-zinc-200 min-h-screen flex selection:bg-white/20 selection:text-white">
       {/* 1. SOL SABİT MENÜ */}
       <Sidebar
         activeTab={activeTab}
@@ -332,7 +332,7 @@ export function App() {
       />
 
       {/* 2. ANA SARMALAYICI & ÜST BAR */}
-      <div className="flex-1 flex flex-col min-w-0 bg-black">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#0c0d10]">
         {/* Üst Başlık Çubuğu */}
         <Header
           currentTabName={getTabTitle()}
