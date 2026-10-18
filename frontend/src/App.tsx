@@ -18,13 +18,13 @@ import { NetworkView } from './components/views/NetworkView';
 import type { ContainerItem } from './types/container';
 import { soundManager } from './utils/sound';
 import { api } from './api/client';
+import { LiveTopologyGraph } from './components/dashboard/LiveTopologyGraph';
 import {
   Layers,
   LayoutGrid,
-  Database,
-  Terminal as TerminalIcon,
   RotateCw,
   Plus,
+  Workflow,
 } from 'lucide-react';
 import { wiseBouncy, wiseSpring, wiseGentle, staggerContainerVariants } from './utils/motion';
 
@@ -42,6 +42,7 @@ export function App() {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [dockerStatus, setDockerStatus] = useState<'online' | 'demo' | 'checking'>('checking');
   const [isLiveBackend, setIsLiveBackend] = useState<boolean>(false);
+  const [dashboardView, setDashboardView] = useState<'topology' | 'columns'>('topology');
 
   // Ping backend on mount to detect live Docker daemon
   useEffect(() => {
@@ -310,8 +311,8 @@ export function App() {
   };
 
   return (
-    <div className="bg-[#090a0f] text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
-      {/* 1. SOL SABİT MENÜ (Dikişsiz L-Şekilli Ray: bg-[#090a0f] - Sıfır border-r) */}
+    <div className="bg-[#08090e] text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
+      {/* 1. SOL SABİT MENÜ */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={(tab) => {
@@ -325,8 +326,8 @@ export function App() {
       />
 
       {/* 2. ANA SARMALAYICI & ÜST BAR */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#090a0f]">
-        {/* Üst Başlık Çubuğu (Seamless L-Shaped Header: h-14, pl-20, Sıfır border-b) */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#08090e]">
+        {/* Üst Başlık Çubuğu */}
         <Header
           currentTabName={getTabTitle()}
           totalContainers={containers.length}
@@ -344,9 +345,9 @@ export function App() {
           dockerStatus={dockerStatus}
         />
 
-        {/* 3. GÖMÜLÜ İÇ KANVAS (Recessed Canvas: rounded-tl-3xl border-t border-l border-[#26282e] p-8) */}
+        {/* 3. GÖMÜLÜ İÇ KANVAS */}
         <main
-          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0d0e13] rounded-tl-3xl border-t border-l border-[#26282e] p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
+          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0c0e15] rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
@@ -363,49 +364,52 @@ export function App() {
                 className="flex flex-col flex-1 space-y-6"
               >
                 {/* SubHeader Bar */}
-                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#1e1f25]">
+                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/5">
                   <div>
-                    <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-sans">
                       Akson Kontrol Paneli
                     </h1>
-                    <p className="text-xs text-[#8e9192] mt-1">
-                      Yerel konteyner ortamları, Traefik ters vekil ve anlık donanım telemetrisi
+                    <p className="text-xs text-[#8e9192] mt-1 font-sans">
+                      İnteraktif servis topolojisi, Traefik ters vekil ve anlık donanım telemetrisi
                     </p>
                   </div>
 
                   {/* Aksiyon & Görünüm Butonları */}
                   <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className="flex items-center bg-[#151722] p-1 rounded-xl border border-[#232736] shadow-sm">
+                    <div className="flex items-center bg-[#10131d] p-1 rounded-xl border border-[#202536] shadow-sm">
                       <button
-                        onClick={() => setIsDetailOpen(false)}
-                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer active:scale-95 ${
-                          !isDetailOpen
-                            ? 'bg-[#242838] text-white shadow-sm border border-white/5 font-semibold'
+                        onClick={() => {
+                          soundManager.playClick();
+                          setDashboardView('topology');
+                        }}
+                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans transition cursor-pointer active:scale-95 ${
+                          dashboardView === 'topology'
+                            ? 'bg-[#181d2c] text-white shadow-sm border border-emerald-500/30 font-semibold'
+                            : 'text-[#8e9192] hover:text-white'
+                        }`}
+                      >
+                        <Workflow className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Canlı Topoloji Şeması</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          soundManager.playClick();
+                          setDashboardView('columns');
+                        }}
+                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans transition cursor-pointer active:scale-95 ${
+                          dashboardView === 'columns'
+                            ? 'bg-[#181d2c] text-white shadow-sm border border-blue-500/30 font-semibold'
                             : 'text-[#8e9192] hover:text-white'
                         }`}
                       >
                         <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
                         <span className="hidden sm:inline">3 Sütunlu Görünüm</span>
                       </button>
-                      <button
-                        onClick={() => setActiveTab('storage')}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
-                      >
-                        <Database className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Birimler</span>
-                      </button>
-                      <button
-                        onClick={() => setActiveTab('logs')}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8e9192] hover:text-white transition cursor-pointer active:scale-95"
-                      >
-                        <TerminalIcon className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Loglar</span>
-                      </button>
                     </div>
 
                     <button
                       onClick={handleRefresh}
-                      className="flex items-center space-x-1 px-3 py-2 bg-[#1a1b21] hover:bg-[#232736] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#292a2f] shadow-sm transition cursor-pointer active:scale-95"
+                      className="flex items-center space-x-1 px-3 py-2 bg-[#14151b] hover:bg-[#1a1c24] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#22242b] shadow-sm transition cursor-pointer active:scale-95 font-sans"
                       title="Metrikleri Yenile"
                     >
                       <RotateCw className={`w-3.5 h-3.5 text-[#8e9192] ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -414,7 +418,7 @@ export function App() {
 
                     <button
                       onClick={() => setActiveTab('deploy')}
-                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer"
+                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer font-sans"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Yeni Servis Dağıt</span>
@@ -422,172 +426,204 @@ export function App() {
                   </div>
                 </div>
 
-                {/* Master-Detail Grid Konteyneri */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start transition-all duration-300">
-                  {/* 1. SÜTUN: Aktif Servisler (1/3 Alan - Layout Animasyonu ile) */}
-                  <motion.section
-                    layout
-                    transition={wiseSpring}
-                    className="space-y-4 bg-[#14151b] p-4 rounded-2xl border border-[#22242b] transition-all duration-300 ease-in-out lg:col-span-1"
-                  >
-                    <div className="flex items-center justify-between px-1">
-                      <div className="flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-blue-400" />
-                        <h2 className="text-sm font-semibold text-white tracking-tight font-sans">
-                          Aktif Servisler ({filteredContainers.length})
-                        </h2>
-                      </div>
+                {/* GÖRÜNÜM 1: CANLI TOPOLOJİ VE DÜĞÜM AKIŞI (Default) */}
+                {dashboardView === 'topology' ? (
+                  <div className="space-y-6">
+                    <LiveTopologyGraph
+                      containers={containers}
+                      selectedId={selectedId}
+                      onSelectContainer={handleSelectContainer}
+                      onAction={handleAction}
+                    />
 
-                      {/* Wise-Style Sliding Filter Pills */}
-                      <div className="flex items-center gap-1 bg-[#101116] p-1 rounded-lg border border-[#22242b] text-[11px] font-sans">
-                        <button
-                          onClick={() => setStatusFilter('all')}
-                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
-                            statusFilter === 'all'
-                              ? 'text-white font-semibold'
-                              : 'text-[#8e9192] hover:text-white'
-                          }`}
+                    {/* Detay Paneli (Düğüm seçilince açılır) */}
+                    <AnimatePresence>
+                      {isDetailOpen && selectedContainer && (
+                        <motion.section
+                          key="node-detail-panel"
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 16 }}
+                          transition={wiseSpring}
                         >
-                          {statusFilter === 'all' && (
-                            <motion.div
-                              layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-white/5"
-                              transition={wiseBouncy}
-                            />
-                          )}
-                          <span className="relative z-10">Tümü</span>
-                        </button>
-                        <button
-                          onClick={() => setStatusFilter('running')}
-                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
-                            statusFilter === 'running'
-                              ? 'text-emerald-400 font-semibold'
-                              : 'text-[#8e9192] hover:text-white'
-                          }`}
-                        >
-                          {statusFilter === 'running' && (
-                            <motion.div
-                              layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-emerald-500/10"
-                              transition={wiseBouncy}
-                            />
-                          )}
-                          <span className="relative z-10">Aktif</span>
-                        </button>
-                        <button
-                          onClick={() => setStatusFilter('stopped')}
-                          className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
-                            statusFilter === 'stopped'
-                              ? 'text-rose-400 font-semibold'
-                              : 'text-[#8e9192] hover:text-white'
-                          }`}
-                        >
-                          {statusFilter === 'stopped' && (
-                            <motion.div
-                              layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-rose-500/10"
-                              transition={wiseBouncy}
-                            />
-                          )}
-                          <span className="relative z-10">Pasif</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Cards List with Staggered Children */}
-                    <motion.div
-                      variants={staggerContainerVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="space-y-2.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
-                    >
-                      {filteredContainers.map((container) => (
-                        <ContainerCard
-                          key={container.id}
-                          container={container}
-                          isSelected={isDetailOpen && container.id === selectedContainer?.id}
-                          onSelect={handleSelectContainer}
-                          isRefreshing={isRefreshing}
-                          onContextMenu={handleOpenContextMenu}
-                        />
-                      ))}
-                      {filteredContainers.length === 0 && (
-                        <div className="p-8 text-center text-xs text-[#8e9192] font-sans bg-[#101116] rounded-xl border border-[#22242b]">
-                          Arama kriterlerine uygun konteyner bulunamadı.
-                        </div>
+                          <ContainerDetail
+                            container={selectedContainer}
+                            onAction={handleAction}
+                            onClose={() => setIsDetailOpen(false)}
+                            onOpenAiAnalyze={() => setIsAiOpen(true)}
+                          />
+                        </motion.section>
                       )}
-                    </motion.div>
-                  </motion.section>
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  /* GÖRÜNÜM 2: 3 SÜTUNLU KLASİK MASTER-DETAIL */
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start transition-all duration-300">
+                    {/* 1. SÜTUN: Aktif Servisler */}
+                    <motion.section
+                      layout
+                      transition={wiseSpring}
+                      className="space-y-4 bg-[#14151b] p-4 rounded-2xl border border-[#22242b] transition-all duration-300 ease-in-out lg:col-span-1"
+                    >
+                      <div className="flex items-center justify-between px-1">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-blue-400" />
+                          <h2 className="text-sm font-semibold text-white tracking-tight font-sans">
+                            Aktif Servisler ({filteredContainers.length})
+                          </h2>
+                        </div>
 
-                  {/* 3 SÜTUN / 1/3+2/3 GEÇİŞİ (AnimatePresence mode="popLayout") */}
-                  <AnimatePresence mode="popLayout">
-                    {!isDetailOpen && (
-                      <>
-                        {!isAiOpen && (
+                        {/* Wise-Style Sliding Filter Pills */}
+                        <div className="flex items-center gap-1 bg-[#101116] p-1 rounded-lg border border-[#22242b] text-[11px] font-sans">
+                          <button
+                            onClick={() => setStatusFilter('all')}
+                            className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
+                              statusFilter === 'all'
+                                ? 'text-white font-semibold'
+                                : 'text-[#8e9192] hover:text-white'
+                            }`}
+                          >
+                            {statusFilter === 'all' && (
+                              <motion.div
+                                layoutId="statusFilterPill"
+                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-white/5"
+                                transition={wiseBouncy}
+                              />
+                            )}
+                            <span className="relative z-10">Tümü</span>
+                          </button>
+                          <button
+                            onClick={() => setStatusFilter('running')}
+                            className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
+                              statusFilter === 'running'
+                                ? 'text-emerald-400 font-semibold'
+                                : 'text-[#8e9192] hover:text-white'
+                            }`}
+                          >
+                            {statusFilter === 'running' && (
+                              <motion.div
+                                layoutId="statusFilterPill"
+                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-emerald-500/10"
+                                transition={wiseBouncy}
+                              />
+                            )}
+                            <span className="relative z-10">Aktif</span>
+                          </button>
+                          <button
+                            onClick={() => setStatusFilter('stopped')}
+                            className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
+                              statusFilter === 'stopped'
+                                ? 'text-rose-400 font-semibold'
+                                : 'text-[#8e9192] hover:text-white'
+                            }`}
+                          >
+                            {statusFilter === 'stopped' && (
+                              <motion.div
+                                layoutId="statusFilterPill"
+                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-rose-500/10"
+                                transition={wiseBouncy}
+                              />
+                            )}
+                            <span className="relative z-10">Pasif</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Cards List with Staggered Children */}
+                      <motion.div
+                        variants={staggerContainerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-2.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
+                      >
+                        {filteredContainers.map((container) => (
+                          <ContainerCard
+                            key={container.id}
+                            container={container}
+                            isSelected={isDetailOpen && container.id === selectedContainer?.id}
+                            onSelect={handleSelectContainer}
+                            isRefreshing={isRefreshing}
+                            onContextMenu={handleOpenContextMenu}
+                          />
+                        ))}
+                        {filteredContainers.length === 0 && (
+                          <div className="p-8 text-center text-xs text-[#8e9192] font-sans bg-[#101116] rounded-xl border border-[#22242b]">
+                            Arama kriterlerine uygun konteyner bulunamadı.
+                          </div>
+                        )}
+                      </motion.div>
+                    </motion.section>
+
+                    {/* 3 SÜTUN / 1/3+2/3 GEÇİŞİ */}
+                    <AnimatePresence mode="popLayout">
+                      {!isDetailOpen && (
+                        <>
+                          {!isAiOpen && (
+                            <motion.section
+                              key="col-pipeline"
+                              layout
+                              initial={{ opacity: 0, scale: 0.96, x: -12 }}
+                              animate={{ opacity: 1, scale: 1, x: 0 }}
+                              exit={{ opacity: 0, scale: 0.96, x: -16 }}
+                              transition={wiseGentle}
+                              className="lg:col-span-1"
+                            >
+                              <PipelineColumn
+                                containers={containers}
+                                onSelectPipeline={(pipeline) => {
+                                  const matched = containers.find(
+                                    (c) =>
+                                        pipeline.name.includes(c.name) ||
+                                        pipeline.description.includes(c.name)
+                                  );
+                                  if (matched) {
+                                    setSelectedId(matched.id);
+                                  }
+                                  setIsDetailOpen(true);
+                                }}
+                              />
+                            </motion.section>
+                          )}
+
                           <motion.section
-                            key="col-pipeline"
+                            key="col-metrics"
                             layout
                             initial={{ opacity: 0, scale: 0.96, x: -12 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             exit={{ opacity: 0, scale: 0.96, x: -16 }}
                             transition={wiseGentle}
-                            className="lg:col-span-1"
+                            className={isAiOpen ? 'lg:col-span-2' : 'lg:col-span-1'}
                           >
-                            <PipelineColumn
-                              containers={containers}
-                              onSelectPipeline={(pipeline) => {
-                                const matched = containers.find(
-                                  (c) =>
-                                      pipeline.name.includes(c.name) ||
-                                      pipeline.description.includes(c.name)
-                                );
-                                if (matched) {
-                                  setSelectedId(matched.id);
-                                }
-                                setIsDetailOpen(true);
-                              }}
+                            <MetricsColumn
+                              totalCpu={totalCpu}
+                              totalMemoryMb={totalMemory}
+                              isRefreshing={isRefreshing}
                             />
                           </motion.section>
-                        )}
+                        </>
+                      )}
 
+                      {isDetailOpen && selectedContainer && (
                         <motion.section
-                          key="col-metrics"
+                          key="detail-view"
                           layout
-                          initial={{ opacity: 0, scale: 0.96, x: -12 }}
-                          animate={{ opacity: 1, scale: 1, x: 0 }}
-                          exit={{ opacity: 0, scale: 0.96, x: -16 }}
+                          initial={{ opacity: 0, x: 28, scale: 0.98 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: 24, scale: 0.98 }}
                           transition={wiseGentle}
-                          className={isAiOpen ? 'lg:col-span-2' : 'lg:col-span-1'}
+                          className="lg:col-span-2 h-full"
                         >
-                          <MetricsColumn
-                            totalCpu={totalCpu}
-                            totalMemoryMb={totalMemory}
-                            isRefreshing={isRefreshing}
+                          <ContainerDetail
+                            container={selectedContainer}
+                            onAction={handleAction}
+                            onClose={() => setIsDetailOpen(false)}
+                            onOpenAiAnalyze={() => setIsAiOpen(true)}
                           />
                         </motion.section>
-                      </>
-                    )}
-
-                    {isDetailOpen && selectedContainer && (
-                      <motion.section
-                        key="detail-view"
-                        layout
-                        initial={{ opacity: 0, x: 28, scale: 0.98 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: 24, scale: 0.98 }}
-                        transition={wiseGentle}
-                        className="lg:col-span-2 h-full"
-                      >
-                        <ContainerDetail
-                          container={selectedContainer}
-                          onAction={handleAction}
-                          onClose={() => setIsDetailOpen(false)}
-                          onOpenAiAnalyze={() => setIsAiOpen(true)}
-                        />
-                      </motion.section>
-                    )}
-                  </AnimatePresence>
-                </div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
               </motion.div>
             )}
 
