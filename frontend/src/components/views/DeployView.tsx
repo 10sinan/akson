@@ -232,6 +232,33 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
   return (
     <div className="flex flex-col flex-1 space-y-5">
+      {/* Header Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
+              Yeni Servis Dağıtımı & Orkestrasyon
+            </h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-400 font-sans text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)] animate-pulse" />
+              Dağıtım Motoru Aktif
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400 mt-1 font-sans">
+            5 adımlı görsel tünel üzerinden imaj seçimi, Traefik SSL ve cgroup donanım sınırlarıyla konteyner ayağa kaldırın.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 text-xs text-zinc-400 bg-[#121212] border border-[#262626] px-3.5 py-2 rounded-xl font-sans">
+            <Rocket className="w-4 h-4 text-rose-400" />
+            <span className="text-white font-mono font-medium">5 Aşamalı Tünel</span>
+            <span className="text-zinc-600">•</span>
+            <span className="text-emerald-400 font-medium">Sıfır Kesinti (Zero-Downtime)</span>
+          </div>
+        </div>
+      </div>
+
       {/* 1. ÜST GÖRSEL DAĞITIM TÜNELİ (PIPELINE PATH STEPPER) */}
       <PipelinePathStepper
         currentStep={currentStep}
