@@ -428,18 +428,18 @@ export function App() {
                   <motion.section
                     layout
                     transition={wiseSpring}
-                    className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all duration-300 ease-in-out lg:col-span-1"
+                    className="space-y-4 bg-[#14151b] p-4 rounded-2xl border border-[#22242b] transition-all duration-300 ease-in-out lg:col-span-1"
                   >
                     <div className="flex items-center justify-between px-1">
                       <div className="flex items-center gap-2">
                         <Layers className="w-4 h-4 text-blue-400" />
-                        <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                        <h2 className="text-sm font-semibold text-white tracking-tight font-sans">
                           Aktif Servisler ({filteredContainers.length})
                         </h2>
                       </div>
 
                       {/* Wise-Style Sliding Filter Pills */}
-                      <div className="flex items-center gap-1 bg-[#121318] p-1 rounded-lg border border-[#26282e] text-[10px] font-mono">
+                      <div className="flex items-center gap-1 bg-[#101116] p-1 rounded-lg border border-[#22242b] text-[11px] font-sans">
                         <button
                           onClick={() => setStatusFilter('all')}
                           className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
@@ -451,7 +451,7 @@ export function App() {
                           {statusFilter === 'all' && (
                             <motion.div
                               layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-white/5"
+                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-white/5"
                               transition={wiseBouncy}
                             />
                           )}
@@ -468,7 +468,7 @@ export function App() {
                           {statusFilter === 'running' && (
                             <motion.div
                               layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-emerald-500/10"
+                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-emerald-500/10"
                               transition={wiseBouncy}
                             />
                           )}
@@ -485,7 +485,7 @@ export function App() {
                           {statusFilter === 'stopped' && (
                             <motion.div
                               layoutId="statusFilterPill"
-                              className="absolute inset-0 bg-[#292a2f] rounded shadow-sm border border-rose-500/10"
+                              className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-rose-500/10"
                               transition={wiseBouncy}
                             />
                           )}
@@ -499,7 +499,7 @@ export function App() {
                       variants={staggerContainerVariants}
                       initial="hidden"
                       animate="visible"
-                      className="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
+                      className="space-y-2.5 max-h-[calc(100vh-280px)] overflow-y-auto pr-1"
                     >
                       {filteredContainers.map((container) => (
                         <ContainerCard
@@ -512,7 +512,7 @@ export function App() {
                         />
                       ))}
                       {filteredContainers.length === 0 && (
-                        <div className="p-8 text-center text-xs text-[#8e9192] font-mono bg-[#121318] rounded-xl border border-[#26282e]">
+                        <div className="p-8 text-center text-xs text-[#8e9192] font-sans bg-[#101116] rounded-xl border border-[#22242b]">
                           Arama kriterlerine uygun konteyner bulunamadı.
                         </div>
                       )}
