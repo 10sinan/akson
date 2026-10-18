@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { wiseSpring } from '../../utils/motion';
+import { snappySpring } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
 import {
   Rocket,
@@ -217,7 +217,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
   };
 
   return (
-    <div className="flex flex-col flex-1 space-y-6">
+    <div className="flex flex-col flex-1 space-y-5">
       {/* 1. ÜST GÖRSEL DAĞITIM TÜNELİ (PIPELINE PATH STEPPER) */}
       <PipelinePathStepper
         currentStep={currentStep}
@@ -231,16 +231,16 @@ export const DeployView: React.FC<DeployViewProps> = ({
       />
 
       {/* 2. ADIM KONFİGÜRASYON FORMU & CANLI ETKİLEŞİM */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Column (7 cols): Step Configuration Panel */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="lg:col-span-7 flex flex-col gap-5">
+          <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-5 shadow-sm">
             {/* Step 1: Image & Source */}
             {currentStep === 1 && (
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={wiseSpring}
+                transition={snappySpring}
                 className="space-y-4 text-xs font-sans"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
@@ -306,7 +306,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={wiseSpring}
+                transition={snappySpring}
                 className="space-y-4 text-xs font-sans"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
@@ -406,7 +406,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={wiseSpring}
+                transition={snappySpring}
                 className="space-y-4 text-xs font-sans"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
@@ -453,7 +453,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={wiseSpring}
+                transition={snappySpring}
                 className="space-y-4 text-xs font-sans"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
@@ -521,7 +521,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={wiseSpring}
+                transition={snappySpring}
                 className="space-y-4 text-xs font-sans"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">

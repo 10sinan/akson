@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   ArrowRight,
 } from 'lucide-react';
-import { wiseSpring, wiseBouncy } from '../../utils/motion';
+import { snappySpring, snappyEase } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
 
 export interface StepInfo {
@@ -103,7 +103,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
   };
 
   return (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-6">
+    <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden space-y-4">
       {/* Ambient background glow - neutral */}
       <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
@@ -131,9 +131,9 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
       </div>
 
       {/* Interactive Path Canvas */}
-      <div className="relative py-4 select-none">
+      <div className="relative py-2 select-none">
         {/* SVG Connecting Track Line */}
-        <div className="absolute top-[42px] left-[6%] right-[6%] h-[3px] bg-zinc-900 -translate-y-1/2 rounded-full z-0 overflow-hidden">
+        <div className="absolute top-[38px] left-[6%] right-[6%] h-[3px] bg-zinc-900 -translate-y-1/2 rounded-full z-0 overflow-hidden">
           {/* Base Inactive Track */}
           <div className="w-full h-full bg-zinc-800" />
 
@@ -174,10 +174,10 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               >
                 {/* Node Circle */}
                 <motion.div
-                  whileHover={{ scale: 1.12 }}
-                  whileTap={{ scale: 0.94 }}
-                  transition={wiseBouncy}
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center relative transition-all duration-300 ${
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.96 }}
+                  transition={snappySpring}
+                  className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center relative transition-all duration-200 ${
                     isCompleted
                       ? 'bg-zinc-200 text-black shadow-md'
                       : isCurrent
@@ -185,27 +185,18 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                       : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-600 group-hover:text-white'
                   }`}
                 >
-                  {/* Pulse Ring when Active or Deploying */}
-                  {isCurrent && (
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl border-2 border-white/50"
-                      animate={{ scale: [1, 1.25, 1], opacity: [0.8, 0, 0.8] }}
-                      transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-                    />
-                  )}
-
                   {/* Icon or Status */}
                   {isCompleted ? (
-                    <Check className="w-5 h-5 stroke-[3]" />
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3]" />
                   ) : isCurrent && isDeploying ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-black" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-black" />
                   ) : (
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
 
                   {/* Step Number Badge */}
                   <span
-                    className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
+                    className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
                       isCompleted
                         ? 'bg-zinc-900 text-zinc-300 border-zinc-700'
                         : isCurrent
@@ -247,8 +238,8 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
-          transition={wiseSpring}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 relative font-mono text-xs shadow-inner"
+          transition={snappyEase}
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-3.5 relative font-mono text-xs shadow-inner"
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2.5">
@@ -367,7 +358,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   ? 'bg-zinc-800 text-white border border-zinc-700 cursor-default font-semibold'
                 : isDeploying
                   ? 'bg-zinc-900 text-zinc-400 border border-zinc-700 cursor-wait'
-                  : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold shadow-md active:scale-[0.98]'
+                  : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold shadow-[0_0_24px_rgba(255,255,255,0.22)] hover:shadow-[0_0_32px_rgba(255,255,255,0.32)] active:scale-[0.98]'
               }`}
             >
               {isDeployed ? (

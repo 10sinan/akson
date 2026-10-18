@@ -139,21 +139,21 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 24 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 24 }}
+      exit={{ opacity: 0, x: 20 }}
       transition={wiseGentle}
-      className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 flex flex-col gap-6 shadow-2xl h-full relative overflow-hidden"
+      className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-2xl h-full relative overflow-hidden"
     >
       {/* Header of Detail View */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-zinc-800 relative z-10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-zinc-800 relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0 shadow-inner">
             {getIcon()}
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-bold text-white tracking-tight font-sans">
+              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight font-sans">
                 {container.name}
               </h2>
               <span
@@ -165,7 +165,9 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    isRunning ? 'bg-white animate-pulse' : 'bg-zinc-600'
+                    isRunning
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                      : 'bg-zinc-600'
                   }`}
                 />
                 {container.statusText}

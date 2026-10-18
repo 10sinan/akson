@@ -16,7 +16,7 @@ import {
   Plus,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
-import { wiseBouncy } from '../../utils/motion';
+import { snappySpring } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
 import { MicroSparkline } from '../MicroSparkline';
 
@@ -59,8 +59,8 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
   return (
     <div
-      className={`relative w-full rounded-3xl bg-zinc-950 border border-zinc-800 p-5 sm:p-6 ${
-        isDetailOpen ? 'lg:p-6' : 'lg:p-8'
+      className={`relative w-full rounded-2xl bg-zinc-950 border border-zinc-800 p-4 sm:p-5 ${
+        isDetailOpen ? 'lg:p-5' : 'lg:p-6'
       } overflow-hidden shadow-2xl transition-all duration-300`}
     >
       {/* 1. HAFİF MİMARİ IZGARA VE AMBİYANS IŞIĞI (Dot Matrix Architecture Canvas) */}
@@ -69,24 +69,24 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
       <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-white/[0.015] blur-[100px] pointer-events-none" />
 
       {/* 2. TOPOLOJİ BAŞLIĞI VE CANLI DURUM */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-zinc-800">
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-zinc-800">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse shadow-sm" />
-            <h2 className="text-base font-bold text-white tracking-tight font-sans flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+            <h2 className="text-sm sm:text-base font-bold text-white tracking-tight font-sans flex items-center gap-2">
               Canlı Altyapı & Servis Topolojisi
             </h2>
-            <span className="text-[11px] font-mono text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-mono text-zinc-300 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full">
               Canlı Ağ Akışı
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-1 font-sans">
+          <p className="text-xs text-zinc-400 mt-0.5 font-sans">
             Trafik akışı, Traefik ters vekil yönlendirmeleri ve bağlı Docker servisleri
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800">
+        <div className="flex items-center gap-3 text-xs font-mono">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800">
             <span className="text-zinc-400 font-sans">Aktif Düğümler:</span>
             <span className="text-white font-bold">{runningCount}</span>
             <span className="text-zinc-500">/</span>
@@ -96,88 +96,76 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
       </div>
 
       {/* 3. İNTERAKTİF DÜĞÜM AKIŞ ŞEMASI (Interactive Node Flow) */}
-      <div className="relative z-10 py-6 sm:py-8">
+      <div className="relative z-10 py-4 sm:py-5">
         <div
-          className={`grid items-center gap-4 ${
+          className={`grid items-center gap-3 ${
             isDetailOpen
-              ? 'grid-cols-1 md:grid-cols-3'
-              : 'grid-cols-1 lg:grid-cols-12 gap-6'
+              ? 'grid-cols-1 sm:grid-cols-3'
+              : 'grid-cols-1 lg:grid-cols-12 gap-4'
           }`}
         >
           {/* A. SOL İSTASYON: İNTERNET GİRİŞİ (Ingress Gateway) */}
-          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-center lg:items-start space-y-2.5`}>
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-start space-y-1.5`}>
             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
-              01. Dış Dünya (Ingress)
+              01. Ingress
             </span>
-            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-lg flex items-center gap-3.5 group hover:border-zinc-700 transition-all">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-300 animate-spin-slow" />
+            <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900 border border-zinc-800 shadow-md flex items-center gap-3 group hover:border-zinc-700 transition-all`}>
+              <div className={`${isDetailOpen ? 'w-8 h-8' : 'w-9 h-9'} rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0`}>
+                <Globe className={`${isDetailOpen ? 'w-4 h-4' : 'w-4 h-4'} text-zinc-300`} />
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Genel Ağ Girişi</h3>
-                <div className="text-[11px] text-zinc-300 font-mono mt-0.5">:80 / :443 HTTPS</div>
-                <div className="text-[10px] text-zinc-400 font-sans mt-0.5">● Trafik Açık</div>
+                <div className="text-[10px] text-zinc-300 font-mono mt-0.5">:80 / :443 HTTPS</div>
+                <div className="text-[9px] text-zinc-400 font-sans mt-0.5">● Trafik Açık</div>
               </div>
             </div>
           </div>
 
-          {/* B. BAĞLANTI OKU 1 */}
+          {/* B. BAĞLANTI ÇİZGİSİ 1 */}
           {!isDetailOpen && (
             <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-              <div className="relative w-full h-[2px] bg-zinc-800 overflow-hidden rounded-full">
-                <motion.div
-                  className="absolute top-0 bottom-0 w-8 bg-white"
-                  animate={{ x: ['-100%', '300%'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                />
-              </div>
+              <div className="w-full h-[2px] bg-zinc-800 rounded-full" />
             </div>
           )}
 
           {/* C. ORTA İSTASYON: TRAEFIK V3 TERS VEKİL (Proxy Hub) */}
-          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-center lg:items-start space-y-2.5`}>
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-start space-y-1.5`}>
             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
               02. SSL / Ters Vekil
             </span>
-            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-lg flex items-center gap-3.5 group hover:border-zinc-700 transition-all">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-300" />
+            <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900 border border-zinc-800 shadow-md flex items-center gap-3 group hover:border-zinc-700 transition-all`}>
+              <div className={`${isDetailOpen ? 'w-8 h-8' : 'w-9 h-9'} rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0`}>
+                <ShieldCheck className={`${isDetailOpen ? 'w-4 h-4' : 'w-4 h-4'} text-zinc-300`} />
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Traefik v3 Hub</h3>
-                <div className="text-[11px] text-zinc-300 font-mono mt-0.5">TLS-ALPN-01 ACME</div>
-                <div className="text-[10px] text-zinc-400 font-mono mt-0.5">akson-bridge</div>
+                <div className="text-[10px] text-zinc-300 font-mono mt-0.5">TLS ACME</div>
+                <div className="text-[9px] text-zinc-400 font-mono mt-0.5">akson-bridge</div>
               </div>
             </div>
           </div>
 
-          {/* D. BAĞLANTI OKU 2 */}
+          {/* D. BAĞLANTI ÇİZGİSİ 2 */}
           {!isDetailOpen && (
             <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-              <div className="relative w-full h-[2px] bg-zinc-800 overflow-hidden rounded-full">
-                <motion.div
-                  className="absolute top-0 bottom-0 w-8 bg-white"
-                  animate={{ x: ['-100%', '300%'] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.4 }}
-                />
-              </div>
+              <div className="w-full h-[2px] bg-zinc-800 rounded-full" />
             </div>
           )}
 
           {/* E. SAĞ İSTASYON: İZLEME VE TOPLAM YÜK (Cluster Heartbeat) */}
-          <div className={`${isDetailOpen ? '' : 'lg:col-span-4'} flex flex-col items-center lg:items-start space-y-2.5`}>
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-4'} flex flex-col items-start space-y-1.5`}>
             <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider font-semibold">
-              03. İzole Ağ (172.20.0.0/16)
+              03. İzole Ağ
             </span>
-            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-zinc-900 border border-zinc-800 shadow-lg flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-                  <Server className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-300" />
+            <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900 border border-zinc-800 shadow-md flex items-center justify-between gap-3`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`${isDetailOpen ? 'w-8 h-8' : 'w-9 h-9'} rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0`}>
+                  <Server className={`${isDetailOpen ? 'w-4 h-4' : 'w-4 h-4'} text-zinc-300`} />
                 </div>
-                <div>
-                  <h3 className="text-xs font-bold text-white font-sans">Docker Motoru</h3>
-                  <div className="text-[11px] text-zinc-300 font-mono mt-0.5">Linux 6.6 cgroups-v2</div>
-                  <div className="text-[10px] text-zinc-400 font-sans mt-0.5">● Soket Aktif</div>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-bold text-white font-sans truncate">Docker Motoru</h3>
+                  <div className="text-[10px] text-zinc-300 font-mono mt-0.5 truncate">cgroups-v2</div>
+                  <div className="text-[9px] text-zinc-400 font-sans mt-0.5">● Soket Aktif</div>
                 </div>
               </div>
             </div>
@@ -185,7 +173,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
         </div>
 
         {/* 4. CANLI BAĞLI SERVİS DÜĞÜMLERİ (Service Nodes Grid) */}
-        <div className="mt-8 pt-6 border-t border-zinc-800 space-y-3">
+        <div className="mt-5 pt-4 border-t border-zinc-800 space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold text-white uppercase tracking-wider font-sans flex items-center gap-2">
               <Activity className="w-4 h-4 text-white" />
@@ -204,7 +192,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                     soundManager.playClick();
                     onDeployClick();
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition shadow-sm active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition shadow-[0_0_20px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(255,255,255,0.28)] active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Yeni Servis Dağıt</span>
@@ -234,9 +222,9 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                     isActiveSelection ? 'kapatmak' : 'açmak'
                   } için tıklayın.`}
                   aria-pressed={isActiveSelection}
-                  whileHover={{ y: -3, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={wiseBouncy}
+                  whileHover={{ y: -2, scale: 1.01 }}
+                  whileTap={{ scale: 0.985 }}
+                  transition={snappySpring}
                   onClick={() => {
                     soundManager.playClick();
                     onSelectContainer(container);
@@ -248,11 +236,13 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       onSelectContainer(container);
                     }
                   }}
-                  className={`relative p-4 rounded-2xl border cursor-pointer select-none transition-all duration-200 overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                  className={`relative p-3 sm:p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-200 overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
                     isActiveSelection
                       ? 'bg-zinc-900 border-white shadow-xl shadow-black ring-2 ring-white/30'
                       : isSelected
                       ? 'bg-zinc-900 border-zinc-400 ring-1 ring-white/20'
+                      : isRunning
+                      ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-[0_0_20px_rgba(16,185,129,0.06)]'
                       : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
                   }`}
                 >
@@ -265,7 +255,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   <div className="flex items-center justify-between gap-2 relative z-10">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
-                        className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 transition-colors ${
+                        className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
                           isActiveSelection
                             ? 'bg-zinc-800 border-zinc-700 text-white'
                             : 'bg-zinc-900 border-zinc-800 text-zinc-300'
@@ -294,7 +284,9 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       <span className="relative flex h-2 w-2 items-center justify-center">
                         <span
                           className={`inline-block rounded-full ${
-                            isRunning ? 'h-2 w-2 bg-white' : 'h-1.5 w-1.5 border border-zinc-500'
+                            isRunning
+                              ? 'h-2 w-2 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                              : 'h-1.5 w-1.5 border border-zinc-500'
                           }`}
                         />
                       </span>
@@ -309,7 +301,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   </div>
 
                   {/* Middle: Live Sparkline Pulse Wave */}
-                  <div className="mt-3 relative z-10">
+                  <div className="mt-2.5 relative z-10">
                     <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1">
                       <span>Yük Dalgalanması</span>
                       <span className="text-white font-medium">%{container.cpuPercent} CPU</span>
@@ -329,13 +321,13 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                           : [0, 0, 0, 0, 0, 0, 0]
                       }
                       color={isRunning ? 'white' : 'zinc'}
-                      height={20}
+                      height={18}
                       isLive={isRunning}
                     />
                   </div>
 
                   {/* Bottom: Port & IP Specs */}
-                  <div className="mt-2.5 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400 relative z-10">
+                  <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400 relative z-10">
                     <span className="text-zinc-300 truncate max-w-[120px]">
                       {container.ports.length > 0
                         ? `:${container.ports[0].hostPort}➔${container.ports[0].containerPort}`

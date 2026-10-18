@@ -63,6 +63,8 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       className={`p-3.5 rounded-xl border transition-all duration-200 cursor-pointer select-none relative overflow-hidden group ${
         isSelected
           ? 'bg-zinc-900 border-white shadow-lg shadow-black ring-1 ring-white/30'
+          : isRunning
+          ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-[0_0_16px_rgba(16,185,129,0.05)]'
           : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
       }`}
     >
@@ -108,7 +110,9 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
             <span className="relative flex h-2 w-2 items-center justify-center">
               <span
                 className={`inline-block rounded-full ${
-                  isRunning ? 'h-2 w-2 bg-white' : 'h-1.5 w-1.5 border border-zinc-500'
+                  isRunning
+                    ? 'h-2 w-2 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                    : 'h-1.5 w-1.5 border border-zinc-500'
                 }`}
               />
             </span>

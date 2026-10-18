@@ -1,78 +1,80 @@
 import type { Transition, Variants } from 'framer-motion';
 
 /**
- * Wise Design System inspired spring physics constants.
- * Natural, tactile, and weighted transitions instead of mechanical bezier easings.
+ * Akson Altın Denge Motion Physics:
+ * Fast, crisp start with a silky-smooth natural deceleration.
+ * Zero elastic bouncing or rubber-band wobble.
+ * Target duration: 160ms - 200ms.
  */
 
-// Bouncy spring for buttons, tabs, pills, and small micro-interactions
-export const wiseBouncy: Transition = {
+// Snappy critically-damped spring (180ms, zero bounce, firm braking)
+export const snappySpring: Transition = {
   type: 'spring',
-  stiffness: 440,
-  damping: 26,
-  mass: 0.6,
+  stiffness: 380,
+  damping: 32,
+  mass: 0.7,
 };
 
-// Balanced spring for cards, layout shifts, and modal dialogs
-export const wiseSpring: Transition = {
-  type: 'spring',
-  stiffness: 340,
-  damping: 30,
-  mass: 0.8,
+// Natural decelerated curve (starts fast, finishes with an organic silky brake)
+export const snappyEase: Transition = {
+  duration: 0.18,
+  ease: [0.16, 1, 0.3, 1],
 };
 
-// Gentle, smooth spring for large area transitions, master-detail unfolding, and pages
-export const wiseGentle: Transition = {
-  type: 'spring',
-  stiffness: 260,
-  damping: 28,
-  mass: 1.0,
+// Ultra-fast micro transition for tabs, tooltips, and instant clicks
+export const snappyFast: Transition = {
+  duration: 0.12,
+  ease: [0.16, 1, 0.3, 1],
 };
 
-// Micro-interaction presets for tactile tap compression
+// Aliases mapped to snappy physics for backward compatibility
+export const wiseBouncy: Transition = snappySpring;
+export const wiseSpring: Transition = snappySpring;
+export const wiseGentle: Transition = snappyEase;
+
+// Subtle tactile tap presets without excessive movement
 export const wiseTapProps = {
-  whileHover: { y: -2.5, scale: 1.008 },
-  whileTap: { scale: 0.972, y: 0 },
-  transition: wiseBouncy,
+  whileHover: { y: -1 },
+  whileTap: { scale: 0.985 },
+  transition: snappyFast,
 };
 
 // Button press preset
 export const wiseButtonTapProps = {
-  whileHover: { scale: 1.02 },
-  whileTap: { scale: 0.96 },
-  transition: wiseBouncy,
+  whileHover: { scale: 1.01 },
+  whileTap: { scale: 0.98 },
+  transition: snappyFast,
 };
 
-// Cascading stagger container for lists (cards, metrics, logs)
+// Rapid cascading stagger container for lists (zero perceptual wait)
 export const staggerContainerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.02,
+      staggerChildren: 0.015,
+      delayChildren: 0.01,
     },
   },
 };
 
-// Cascading child item variant
+// Crisp cascading child item variant (no heavy blur, micro 4px offset)
 export const staggerItemVariants: Variants = {
-  hidden: { opacity: 0, y: 12, filter: 'blur(3px)' },
+  hidden: { opacity: 0, y: 4 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
-    transition: wiseSpring,
+    transition: snappyEase,
   },
 };
 
-// Cascading detail blocks reveal (header -> metrics -> tab content)
+// Cascading detail blocks reveal
 export const cascadeBlockVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 6 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: wiseSpring,
+    transition: snappyEase,
   },
 };
 

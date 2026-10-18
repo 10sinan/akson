@@ -27,7 +27,7 @@ import {
   Workflow,
   Activity,
 } from 'lucide-react';
-import { wiseBouncy, wiseSpring, wiseGentle, staggerContainerVariants } from './utils/motion';
+import { wiseBouncy, wiseSpring, wiseGentle, snappyEase, snappySpring, staggerContainerVariants } from './utils/motion';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('dashboard');
@@ -356,25 +356,25 @@ export function App() {
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
-          {/* Sayfalar Arası Yumuşak Geçiş (AnimatePresence mode="wait") */}
-          <AnimatePresence mode="wait">
+          {/* Sayfalar Arası Akıcı Geçiş (AnimatePresence mode="popLayout" - No Blank Flash) */}
+          <AnimatePresence mode="popLayout" initial={false}>
             {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
             {activeTab === 'dashboard' && (
               <motion.div
                 key="dashboard"
-                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={wiseGentle}
-                className="flex flex-col flex-1 space-y-6"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                transition={snappyEase}
+                className="flex flex-col flex-1 space-y-5"
               >
                 {/* SubHeader Bar */}
-                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800">
+                <div className="pb-4 mb-1 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800">
                   <div>
                     <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-sans">
                       Akson Kontrol Paneli
                     </h1>
-                    <p className="text-xs text-zinc-400 mt-1 font-sans">
+                    <p className="text-xs text-zinc-400 mt-0.5 font-sans">
                       İnteraktif servis topolojisi, Traefik ters vekil ve anlık donanım telemetrisi
                     </p>
                   </div>
@@ -423,7 +423,7 @@ export function App() {
 
                     <button
                       onClick={() => setActiveTab('deploy')}
-                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl shadow-sm transition active:scale-95 cursor-pointer font-sans"
+                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(255,255,255,0.28)] transition active:scale-95 cursor-pointer font-sans"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Yeni Servis Dağıt</span>
@@ -434,16 +434,16 @@ export function App() {
                 {/* GÖRÜNÜM 1: CANLI TOPOLOJİ VE DÜĞÜM AKIŞI (Default) */}
                 {dashboardView === 'topology' ? (
                   <div
-                    className={`transition-all duration-300 ${
+                    className={`transition-all duration-200 ${
                       isDetailOpen
-                        ? 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'
+                        ? 'grid grid-cols-1 xl:grid-cols-12 gap-5 items-start'
                         : 'w-full'
                     }`}
                   >
                     {/* SOL PANEL: Canlı Topoloji & Dağıtım Tüneli */}
                     <div
-                      className={`transition-all duration-300 ${
-                        isDetailOpen ? 'lg:col-span-7 flex flex-col gap-6' : 'w-full'
+                      className={`transition-all duration-200 ${
+                        isDetailOpen ? 'xl:col-span-7 flex flex-col gap-5' : 'w-full'
                       }`}
                     >
                       <LiveTopologyGraph
@@ -461,11 +461,11 @@ export function App() {
                       {isDetailOpen && (
                         <motion.section
                           key={selectedId || 'node-detail-panel'}
-                          initial={{ opacity: 0, x: 24, scale: 0.98 }}
-                          animate={{ opacity: 1, x: 0, scale: 1 }}
-                          exit={{ opacity: 0, x: 24, scale: 0.98 }}
-                          transition={wiseSpring}
-                          className="lg:col-span-5 w-full lg:sticky lg:top-20"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20, transition: { duration: 0.08 } }}
+                          transition={snappySpring}
+                          className="xl:col-span-5 w-full xl:sticky xl:top-20"
                         >
                           {selectedContainer ? (
                             <ContainerDetail
@@ -675,10 +675,10 @@ export function App() {
             {activeTab === 'deploy' && (
               <motion.div
                 key="deploy"
-                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={wiseGentle}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                transition={snappyEase}
                 className="flex flex-col flex-1"
               >
                 <DeployView
@@ -692,10 +692,10 @@ export function App() {
             {activeTab === 'storage' && (
               <motion.div
                 key="storage"
-                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={wiseGentle}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                transition={snappyEase}
                 className="flex flex-col flex-1"
               >
                 <StorageView containers={containers} />
@@ -706,10 +706,10 @@ export function App() {
             {activeTab === 'logs' && (
               <motion.div
                 key="logs"
-                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={wiseGentle}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                transition={snappyEase}
                 className="flex flex-col flex-1"
               >
                 <LogsView containers={containers} />
@@ -720,10 +720,10 @@ export function App() {
             {activeTab === 'network' && (
               <motion.div
                 key="network"
-                initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-                transition={wiseGentle}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, transition: { duration: 0.08 } }}
+                transition={snappyEase}
                 className="flex flex-col flex-1"
               >
                 <NetworkView containers={containers} />

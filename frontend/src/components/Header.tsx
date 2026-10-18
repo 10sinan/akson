@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span
               className={`inline-block rounded-full ${
                 dockerStatus === 'online'
-                  ? 'h-2 w-2 bg-white'
+                  ? 'h-2 w-2 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
                   : dockerStatus === 'checking'
                   ? 'h-2 w-2 bg-zinc-400 animate-pulse'
                   : 'h-1.5 w-1.5 border border-zinc-400'

@@ -155,9 +155,9 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1 space-y-6">
+    <div className="flex flex-col flex-1 space-y-5">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-1 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
@@ -281,7 +281,9 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 <span className="relative z-10 truncate font-mono">{c.name}</span>
                 <span
                   className={`relative z-10 w-2 h-2 rounded-full ${
-                    c.status === 'running' ? 'bg-white' : 'bg-zinc-600'
+                    c.status === 'running'
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                      : 'bg-zinc-600'
                   }`}
                 />
               </motion.button>
@@ -396,18 +398,10 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 Arama kriterlerine uygun log bulunamadı.
               </div>
             ) : (
-              filteredLogs.map((log, idx) => {
-                const isLatest = idx === filteredLogs.length - 1;
+              filteredLogs.map((log) => {
                 return (
-                  <motion.div
+                  <div
                     key={log.id}
-                    initial={
-                      isLatest
-                        ? { opacity: 0, x: -6, backgroundColor: 'rgba(255, 255, 255, 0.08)' }
-                        : false
-                    }
-                    animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(255, 255, 255, 0)' }}
-                    transition={{ duration: 1.4, ease: 'easeOut' }}
                     className="hover:bg-white/[0.04] px-2 py-0.5 rounded flex items-start gap-3 transition-colors"
                   >
                     <span className="text-zinc-500 shrink-0">{log.timestamp}</span>
@@ -424,7 +418,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                       {log.level.toUpperCase()}
                     </span>
                     <span className="text-zinc-200 break-all">{log.message}</span>
-                  </motion.div>
+                  </div>
                 );
               })
             )}
