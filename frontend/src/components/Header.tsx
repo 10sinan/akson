@@ -239,22 +239,6 @@ export const Header: React.FC<HeaderProps> = ({
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Yeni Servis</span>
         </button>
-
-        <div className="h-4 w-px bg-zinc-800" />
-
-        {/* User Profile */}
-        <div className="flex items-center gap-2.5 cursor-pointer group">
-          <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 group-hover:border-zinc-700 text-xs font-semibold text-white flex items-center justify-center font-mono shadow-sm transition">
-              JD
-            </div>
-            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-400 border-2 border-black ring-1 ring-emerald-500/40" />
-          </div>
-          <div className="text-left hidden xl:block">
-            <div className="text-xs font-semibold text-white leading-none group-hover:text-zinc-200 transition-colors">J. David</div>
-            <div className="text-[10px] text-zinc-500 font-mono mt-0.5">Root Geliştirici</div>
-          </div>
-        </div>
       </div>
     </header>
   );
