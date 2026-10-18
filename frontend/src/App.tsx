@@ -25,6 +25,7 @@ import {
   RotateCw,
   Plus,
   Workflow,
+  Activity,
 } from 'lucide-react';
 import { wiseBouncy, wiseSpring, wiseGentle, staggerContainerVariants } from './utils/motion';
 
@@ -289,8 +290,12 @@ export function App() {
 
   const handleSelectContainer = (container: ContainerItem) => {
     soundManager.playClick();
-    setSelectedId(container.id);
-    setIsDetailOpen(true);
+    if (selectedId === container.id && isDetailOpen) {
+      setIsDetailOpen(false);
+    } else {
+      setSelectedId(container.id);
+      setIsDetailOpen(true);
+    }
   };
 
   const getTabTitle = () => {
@@ -428,31 +433,69 @@ export function App() {
 
                 {/* GÖRÜNÜM 1: CANLI TOPOLOJİ VE DÜĞÜM AKIŞI (Default) */}
                 {dashboardView === 'topology' ? (
-                  <div className="space-y-6">
-                    <LiveTopologyGraph
-                      containers={containers}
-                      selectedId={selectedId}
-                      onSelectContainer={handleSelectContainer}
-                      onAction={handleAction}
-                      onDeployClick={() => setActiveTab('deploy')}
-                    />
+                  <div
+                    className={`transition-all duration-300 ${
+                      isDetailOpen
+                        ? 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start'
+                        : 'w-full'
+                    }`}
+                  >
+                    {/* SOL PANEL: Canlı Topoloji & Dağıtım Tüneli */}
+                    <div
+                      className={`transition-all duration-300 ${
+                        isDetailOpen ? 'lg:col-span-7 flex flex-col gap-6' : 'w-full'
+                      }`}
+                    >
+                      <LiveTopologyGraph
+                        containers={containers}
+                        selectedId={isDetailOpen ? selectedId : null}
+                        isDetailOpen={isDetailOpen}
+                        onSelectContainer={handleSelectContainer}
+                        onAction={handleAction}
+                        onDeployClick={() => setActiveTab('deploy')}
+                      />
+                    </div>
 
-                    {/* Detay Paneli (Düğüm seçilince açılır) */}
-                    <AnimatePresence>
-                      {isDetailOpen && selectedContainer && (
+                    {/* SAĞ PANEL: Seçilen Düğümün Canlı Detay Sayfası */}
+                    <AnimatePresence mode="wait">
+                      {isDetailOpen && (
                         <motion.section
-                          key="node-detail-panel"
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 16 }}
+                          key={selectedId || 'node-detail-panel'}
+                          initial={{ opacity: 0, x: 24, scale: 0.98 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: 24, scale: 0.98 }}
                           transition={wiseSpring}
+                          className="lg:col-span-5 w-full lg:sticky lg:top-20"
                         >
-                          <ContainerDetail
-                            container={selectedContainer}
-                            onAction={handleAction}
-                            onClose={() => setIsDetailOpen(false)}
-                            onOpenAiAnalyze={() => setIsAiOpen(true)}
-                          />
+                          {selectedContainer ? (
+                            <ContainerDetail
+                              container={selectedContainer}
+                              onAction={handleAction}
+                              onClose={() => setIsDetailOpen(false)}
+                              onOpenAiAnalyze={() => setIsAiOpen(true)}
+                            />
+                          ) : (
+                            <div className="bg-[#14151b] border border-[#22242b] rounded-2xl p-8 text-center space-y-4 shadow-xl">
+                              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                                <Activity className="w-6 h-6" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-white font-sans">
+                                  Servis Detayı Bulunamadı
+                                </h3>
+                                <p className="text-xs text-[#8e9192] font-sans mt-1">
+                                  Seçilen servis düğümüne ait telemetri verisi mevcut değil veya servis sistemden kaldırılmış olabilir.
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setIsDetailOpen(false)}
+                                className="px-4 py-2 rounded-xl bg-white text-slate-900 font-sans font-semibold text-xs transition active:scale-95 cursor-pointer shadow-md"
+                              >
+                                Görünümü Kapat
+                              </button>
+                            </div>
+                          )}
                         </motion.section>
                       )}
                     </AnimatePresence>

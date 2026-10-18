@@ -22,7 +22,8 @@ import { MicroSparkline } from '../MicroSparkline';
 
 interface LiveTopologyGraphProps {
   containers: ContainerItem[];
-  selectedId: string;
+  selectedId: string | null;
+  isDetailOpen?: boolean;
   onSelectContainer: (container: ContainerItem) => void;
   onAction?: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void;
   onDeployClick?: () => void;
@@ -31,6 +32,7 @@ interface LiveTopologyGraphProps {
 export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
   containers,
   selectedId,
+  isDetailOpen = false,
   onSelectContainer,
   onAction,
   onDeployClick,
@@ -53,10 +55,14 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
     }
   };
 
-  const selectedContainer = containers.find((c) => c.id === selectedId) || containers[0] || null;
+  const selectedContainer = selectedId ? containers.find((c) => c.id === selectedId) || null : null;
 
   return (
-    <div className="relative w-full rounded-3xl bg-[#0c0e14] border border-[#1e2230] p-6 lg:p-8 overflow-hidden shadow-2xl">
+    <div
+      className={`relative w-full rounded-3xl bg-[#0c0e14] border border-[#1e2230] p-5 sm:p-6 ${
+        isDetailOpen ? 'lg:p-6' : 'lg:p-8'
+      } overflow-hidden shadow-2xl transition-all duration-300`}
+    >
       {/* 1. HAFİF MİMARİ IZGARA VE AMBİYANS IŞIĞI (Dot Matrix Architecture Canvas) */}
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
       <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
@@ -90,16 +96,22 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
       </div>
 
       {/* 3. İNTERAKTİF DÜĞÜM AKIŞ ŞEMASI (Interactive Node Flow) */}
-      <div className="relative z-10 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+      <div className="relative z-10 py-6 sm:py-8">
+        <div
+          className={`grid items-center gap-4 ${
+            isDetailOpen
+              ? 'grid-cols-1 md:grid-cols-3'
+              : 'grid-cols-1 lg:grid-cols-12 gap-6'
+          }`}
+        >
           {/* A. SOL İSTASYON: İNTERNET GİRİŞİ (Ingress Gateway) */}
-          <div className="lg:col-span-3 flex flex-col items-center lg:items-start space-y-3">
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-center lg:items-start space-y-2.5`}>
             <span className="text-[10px] font-mono text-[#8e9192] uppercase tracking-wider font-semibold">
               01. Dış Dünya (Ingress)
             </span>
-            <div className="w-full p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center gap-3.5 group hover:border-blue-500/50 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
-                <Globe className="w-6 h-6 text-blue-400 animate-spin-slow" />
+            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center gap-3.5 group hover:border-blue-500/50 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 animate-spin-slow" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Genel Ağ Girişi</h3>
@@ -110,24 +122,26 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           </div>
 
           {/* B. BAĞLANTI OKU 1 */}
-          <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-            <div className="relative w-full h-[2px] bg-gradient-to-r from-blue-500 to-indigo-500 overflow-hidden rounded-full">
-              <motion.div
-                className="absolute top-0 bottom-0 w-8 bg-white"
-                animate={{ x: ['-100%', '300%'] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-              />
+          {!isDetailOpen && (
+            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
+              <div className="relative w-full h-[2px] bg-gradient-to-r from-blue-500 to-indigo-500 overflow-hidden rounded-full">
+                <motion.div
+                  className="absolute top-0 bottom-0 w-8 bg-white"
+                  animate={{ x: ['-100%', '300%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* C. ORTA İSTASYON: TRAEFIK V3 TERS VEKİL (Proxy Hub) */}
-          <div className="lg:col-span-3 flex flex-col items-center lg:items-start space-y-3">
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-center lg:items-start space-y-2.5`}>
             <span className="text-[10px] font-mono text-[#8e9192] uppercase tracking-wider font-semibold">
               02. SSL / Ters Vekil
             </span>
-            <div className="w-full p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center gap-3.5 group hover:border-emerald-500/50 transition-all">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6 text-emerald-400" />
+            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center gap-3.5 group hover:border-emerald-500/50 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Traefik v3 Hub</h3>
@@ -138,25 +152,27 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           </div>
 
           {/* D. BAĞLANTI OKU 2 */}
-          <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-            <div className="relative w-full h-[2px] bg-gradient-to-r from-indigo-500 to-emerald-500 overflow-hidden rounded-full">
-              <motion.div
-                className="absolute top-0 bottom-0 w-8 bg-white"
-                animate={{ x: ['-100%', '300%'] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.4 }}
-              />
+          {!isDetailOpen && (
+            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
+              <div className="relative w-full h-[2px] bg-gradient-to-r from-indigo-500 to-emerald-500 overflow-hidden rounded-full">
+                <motion.div
+                  className="absolute top-0 bottom-0 w-8 bg-white"
+                  animate={{ x: ['-100%', '300%'] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.4 }}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* E. SAĞ İSTASYON: İZLEME VE TOPLAM YÜK (Cluster Heartbeat) */}
-          <div className="lg:col-span-4 flex flex-col items-center lg:items-start space-y-3">
+          <div className={`${isDetailOpen ? '' : 'lg:col-span-4'} flex flex-col items-center lg:items-start space-y-2.5`}>
             <span className="text-[10px] font-mono text-[#8e9192] uppercase tracking-wider font-semibold">
               03. İzole Ağ (172.20.0.0/16)
             </span>
-            <div className="w-full p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center justify-between gap-3">
+            <div className="w-full p-3.5 sm:p-4 rounded-2xl bg-[#121520] border border-[#232838] shadow-lg flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
-                  <Server className="w-6 h-6 text-purple-400" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center shrink-0">
+                  <Server className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white font-sans">Docker Motoru</h3>
@@ -173,11 +189,13 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold text-white uppercase tracking-wider font-sans flex items-center gap-2">
               <Activity className="w-4 h-4 text-emerald-400" />
-              Bağlı Servis Düğümleri (Düğüm Seçip Detayı İnceleyin)
+              Bağlı Servis Düğümleri
             </span>
             <div className="flex items-center gap-3">
               <span className="text-[11px] font-sans text-[#8e9192] hidden sm:inline">
-                Tıklanan düğüm aşağıda canlı telemetriyle açılır
+                {isDetailOpen
+                  ? 'Düğüm detayları sağ panelde açıktır (Kapatmak için seçili düğüme tekrar tıklayın)'
+                  : 'Tıklanan düğüm sağ panelde canlı detay görünümünü açar'}
               </span>
               {onDeployClick && (
                 <button
@@ -195,14 +213,27 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2">
+          <div
+            className={`grid gap-3.5 pt-2 ${
+              isDetailOpen
+                ? 'grid-cols-1 sm:grid-cols-2'
+                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+            }`}
+          >
             {containers.map((container) => {
               const isSelected = selectedId === container.id;
               const isRunning = container.status === 'running';
+              const isActiveSelection = isSelected && isDetailOpen;
 
               return (
                 <motion.div
                   key={container.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${container.name} servis düğümü. Detay panelini ${
+                    isActiveSelection ? 'kapatmak' : 'açmak'
+                  } için tıklayın.`}
+                  aria-pressed={isActiveSelection}
                   whileHover={{ y: -3, scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={wiseBouncy}
@@ -210,27 +241,49 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                     soundManager.playClick();
                     onSelectContainer(container);
                   }}
-                  className={`relative p-4 rounded-2xl border cursor-pointer select-none transition-all duration-200 overflow-hidden group ${
-                    isSelected
-                      ? 'bg-[#181d2c] border-emerald-400/80 shadow-xl shadow-emerald-500/15 ring-2 ring-emerald-400/30'
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      soundManager.playClick();
+                      onSelectContainer(container);
+                    }
+                  }}
+                  className={`relative p-4 rounded-2xl border cursor-pointer select-none transition-all duration-200 overflow-hidden group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                    isActiveSelection
+                      ? 'bg-[#181d2c] border-emerald-400 shadow-2xl shadow-emerald-500/25 ring-2 ring-emerald-400/50'
+                      : isSelected
+                      ? 'bg-[#141824] border-emerald-400/60 ring-1 ring-emerald-400/30'
                       : 'bg-[#10131d] border-[#202536] hover:border-white/30 hover:bg-[#141824]'
                   }`}
                 >
                   {/* Active selection glow */}
-                  {isSelected && (
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-400/10 rounded-full blur-xl pointer-events-none" />
+                  {isActiveSelection && (
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
                   )}
 
                   {/* Top: Icon, Node Name, Status Pulse */}
                   <div className="flex items-center justify-between gap-2 relative z-10">
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-[#161a28] border border-[#262c3e] flex items-center justify-center shrink-0">
+                      <div
+                        className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 transition-colors ${
+                          isActiveSelection
+                            ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-400'
+                            : 'bg-[#161a28] border-[#262c3e]'
+                        }`}
+                      >
                         {getCategoryIcon(container.category)}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="text-xs font-bold text-white font-sans tracking-tight truncate">
-                          {container.name}
-                        </h4>
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-white font-sans tracking-tight truncate">
+                            {container.name}
+                          </h4>
+                          {isActiveSelection && (
+                            <span className="shrink-0 text-[9px] font-sans font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.2 rounded-full border border-emerald-500/30">
+                              Açık
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[10px] text-[#8e9192] font-mono truncate">
                           {container.image}:{container.tag}
                         </div>
@@ -248,7 +301,11 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                           }`}
                         />
                       </span>
-                      <span className={`text-[10px] font-sans font-medium ${isRunning ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      <span
+                        className={`text-[10px] font-sans font-medium ${
+                          isRunning ? 'text-emerald-400' : 'text-zinc-500'
+                        }`}
+                      >
                         {container.statusText}
                       </span>
                     </div>
@@ -282,12 +339,12 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
                   {/* Bottom: Port & IP Specs */}
                   <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-[#8e9192] relative z-10">
-                    <span className="text-blue-400">
+                    <span className="text-blue-400 truncate max-w-[120px]">
                       {container.ports.length > 0
                         ? `:${container.ports[0].hostPort}➔${container.ports[0].containerPort}`
-                        : 'Dahili Köprü'}
+                        : container.ipAddress || 'Dahili Köprü'}
                     </span>
-                    <span className="text-slate-300 font-medium">
+                    <span className="text-slate-300 font-medium shrink-0">
                       {container.memoryUsageMb} MB
                     </span>
                   </div>
@@ -304,8 +361,8 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
         </div>
       </div>
 
-      {/* 5. SEÇİLİ DÜĞÜMÜN CANLI ETKİLEŞİM DÜĞMESİ VE KONTROL KONSOLU */}
-      {selectedContainer && (
+      {/* 5. SEÇİLİ DÜĞÜMÜN HIZLI ALT ÇUBUĞU (Yalnızca detay paneli kapalıyken alt bilgi olarak gösterilir) */}
+      {!isDetailOpen && selectedContainer && (
         <div className="mt-6 pt-6 border-t border-white/5 relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 bg-[#10131d] p-4 rounded-2xl border border-[#202536]">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-[#161a28] border border-[#262c3e] flex items-center justify-center shrink-0">
