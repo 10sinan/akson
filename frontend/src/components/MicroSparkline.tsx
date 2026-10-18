@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 interface MicroSparklineProps {
   data?: number[];
-  color?: 'emerald' | 'blue' | 'amber' | 'purple' | 'zinc';
+  color?: 'white' | 'zinc' | 'emerald' | 'blue' | 'amber' | 'purple';
   height?: number;
   className?: string;
   isLive?: boolean;
@@ -11,7 +11,7 @@ interface MicroSparklineProps {
 
 export const MicroSparkline: React.FC<MicroSparklineProps> = ({
   data = [12, 18, 15, 26, 22, 38, 29, 45, 42, 50, 48, 62],
-  color = 'emerald',
+  color = 'white',
   height = 24,
   className = '',
   isLive = true,
@@ -45,34 +45,43 @@ export const MicroSparkline: React.FC<MicroSparklineProps> = ({
   // Area path for gradient fill
   const areaD = `${pathD} L ${width} ${height} L 0 ${height} Z`;
 
-  // Color mapping
+  // Color mapping strictly monochrome
   const colorMap = {
+    white: {
+      stroke: '#ffffff',
+      stop: '#ffffff',
+      glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.3))',
+    },
     emerald: {
-      stroke: '#34d399',
-      stop: '#10b981',
-      glow: 'drop-shadow(0 0 4px rgba(52, 211, 153, 0.4))',
+      stroke: '#ffffff',
+      stop: '#ffffff',
+      glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.3))',
     },
     blue: {
-      stroke: '#60a5fa',
-      stop: '#3b82f6',
-      glow: 'drop-shadow(0 0 4px rgba(96, 165, 250, 0.4))',
+      stroke: '#e4e4e7',
+      stop: '#d4d4d8',
+      glow: 'none',
     },
     amber: {
-      stroke: '#fbbf24',
-      stop: '#f59e0b',
-      glow: 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.4))',
+      stroke: '#a1a1aa',
+      stop: '#71717a',
+      glow: 'none',
     },
     purple: {
-      stroke: '#c084fc',
-      stop: '#a855f7',
-      glow: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.4))',
+      stroke: '#ffffff',
+      stop: '#a1a1aa',
+      glow: 'drop-shadow(0 0 3px rgba(255, 255, 255, 0.2))',
     },
     zinc: {
       stroke: '#71717a',
       stop: '#52525b',
       glow: 'none',
     },
-  }[color];
+  }[color] || {
+    stroke: '#ffffff',
+    stop: '#ffffff',
+    glow: 'none',
+  };
 
   return (
     <div

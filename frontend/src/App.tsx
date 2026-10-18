@@ -316,7 +316,7 @@ export function App() {
   };
 
   return (
-    <div className="bg-black text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
+    <div className="bg-black text-zinc-200 min-h-screen flex selection:bg-white/20 selection:text-white">
       {/* 1. SOL SABİT MENÜ */}
       <Sidebar
         activeTab={activeTab}
@@ -352,7 +352,7 @@ export function App() {
 
         {/* 3. GÖMÜLÜ İÇ KANVAS */}
         <main
-          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-black rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out relative z-10 ${
+          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-black rounded-tl-3xl border-t border-l border-[#262626] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out relative z-10 ${
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
@@ -369,19 +369,19 @@ export function App() {
                 className="flex flex-col flex-1 space-y-6"
               >
                 {/* SubHeader Bar */}
-                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/5">
+                <div className="pb-6 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800">
                   <div>
                     <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-sans">
                       Akson Kontrol Paneli
                     </h1>
-                    <p className="text-xs text-[#8e9192] mt-1 font-sans">
+                    <p className="text-xs text-zinc-400 mt-1 font-sans">
                       İnteraktif servis topolojisi, Traefik ters vekil ve anlık donanım telemetrisi
                     </p>
                   </div>
 
                   {/* Aksiyon & Görünüm Butonları */}
                   <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className="flex items-center bg-[#10131d] p-1 rounded-xl border border-[#202536] shadow-sm">
+                    <div className="flex items-center bg-zinc-900 p-1 rounded-xl border border-zinc-800 shadow-sm">
                       <button
                         onClick={() => {
                           soundManager.playClick();
@@ -389,11 +389,11 @@ export function App() {
                         }}
                         className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans transition cursor-pointer active:scale-95 ${
                           dashboardView === 'topology'
-                            ? 'bg-[#181d2c] text-white shadow-sm border border-emerald-500/30 font-semibold'
-                            : 'text-[#8e9192] hover:text-white'
+                            ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700 font-semibold'
+                            : 'text-zinc-400 hover:text-white'
                         }`}
                       >
-                        <Workflow className="w-3.5 h-3.5 text-emerald-400" />
+                        <Workflow className="w-3.5 h-3.5 text-white" />
                         <span>Canlı Topoloji Şeması</span>
                       </button>
                       <button
@@ -403,27 +403,27 @@ export function App() {
                         }}
                         className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-sans transition cursor-pointer active:scale-95 ${
                           dashboardView === 'columns'
-                            ? 'bg-[#181d2c] text-white shadow-sm border border-blue-500/30 font-semibold'
-                            : 'text-[#8e9192] hover:text-white'
+                            ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700 font-semibold'
+                            : 'text-zinc-400 hover:text-white'
                         }`}
                       >
-                        <LayoutGrid className="w-3.5 h-3.5 text-blue-400" />
+                        <LayoutGrid className="w-3.5 h-3.5 text-white" />
                         <span className="hidden sm:inline">3 Sütunlu Görünüm</span>
                       </button>
                     </div>
 
                     <button
                       onClick={handleRefresh}
-                      className="flex items-center space-x-1 px-3 py-2 bg-[#14151b] hover:bg-[#1a1c24] text-[#e3e1e9] font-medium text-xs rounded-xl border border-[#22242b] shadow-sm transition cursor-pointer active:scale-95 font-sans"
+                      className="flex items-center space-x-1 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-medium text-xs rounded-xl border border-zinc-800 shadow-sm transition cursor-pointer active:scale-95 font-sans"
                       title="Metrikleri Yenile"
                     >
-                      <RotateCw className={`w-3.5 h-3.5 text-[#8e9192] ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <RotateCw className={`w-3.5 h-3.5 text-zinc-400 ${isRefreshing ? 'animate-spin text-white' : ''}`} />
                       <span className="hidden sm:inline text-xs">Yenile</span>
                     </button>
 
                     <button
                       onClick={() => setActiveTab('deploy')}
-                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-slate-100 text-slate-900 font-semibold text-xs rounded-xl shadow-lg transition active:scale-95 cursor-pointer font-sans"
+                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl shadow-sm transition active:scale-95 cursor-pointer font-sans"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Yeni Servis Dağıt</span>
@@ -475,22 +475,22 @@ export function App() {
                               onOpenAiAnalyze={() => setIsAiOpen(true)}
                             />
                           ) : (
-                            <div className="bg-[#14151b] border border-[#22242b] rounded-2xl p-8 text-center space-y-4 shadow-xl">
-                              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+                            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-xl">
+                              <div className="w-12 h-12 rounded-2xl bg-zinc-800 border border-zinc-700 text-zinc-300 flex items-center justify-center mx-auto">
                                 <Activity className="w-6 h-6" />
                               </div>
                               <div>
                                 <h3 className="text-sm font-bold text-white font-sans">
                                   Servis Detayı Bulunamadı
                                 </h3>
-                                <p className="text-xs text-[#8e9192] font-sans mt-1">
+                                <p className="text-xs text-zinc-400 font-sans mt-1">
                                   Seçilen servis düğümüne ait telemetri verisi mevcut değil veya servis sistemden kaldırılmış olabilir.
                                 </p>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => setIsDetailOpen(false)}
-                                className="px-4 py-2 rounded-xl bg-white text-slate-900 font-sans font-semibold text-xs transition active:scale-95 cursor-pointer shadow-md"
+                                className="px-4 py-2 rounded-xl bg-white text-black font-sans font-semibold text-xs transition active:scale-95 cursor-pointer shadow-md hover:bg-zinc-200"
                               >
                                 Görünümü Kapat
                               </button>
@@ -507,30 +507,30 @@ export function App() {
                     <motion.section
                       layout
                       transition={wiseSpring}
-                      className="space-y-4 bg-[#14151b] p-4 rounded-2xl border border-[#22242b] transition-all duration-300 ease-in-out lg:col-span-1"
+                      className="space-y-4 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 transition-all duration-300 ease-in-out lg:col-span-1"
                     >
                       <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-blue-400" />
+                          <Layers className="w-4 h-4 text-zinc-300" />
                           <h2 className="text-sm font-semibold text-white tracking-tight font-sans">
                             Aktif Servisler ({filteredContainers.length})
                           </h2>
                         </div>
 
                         {/* Wise-Style Sliding Filter Pills */}
-                        <div className="flex items-center gap-1 bg-[#101116] p-1 rounded-lg border border-[#22242b] text-[11px] font-sans">
+                        <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800 text-[11px] font-sans">
                           <button
                             onClick={() => setStatusFilter('all')}
                             className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                               statusFilter === 'all'
                                 ? 'text-white font-semibold'
-                                : 'text-[#8e9192] hover:text-white'
+                                : 'text-zinc-400 hover:text-white'
                             }`}
                           >
                             {statusFilter === 'all' && (
                               <motion.div
                                 layoutId="statusFilterPill"
-                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-white/5"
+                                className="absolute inset-0 bg-zinc-800 rounded shadow-sm border border-zinc-700"
                                 transition={wiseBouncy}
                               />
                             )}
@@ -540,14 +540,14 @@ export function App() {
                             onClick={() => setStatusFilter('running')}
                             className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                               statusFilter === 'running'
-                                ? 'text-emerald-400 font-semibold'
-                                : 'text-[#8e9192] hover:text-white'
+                                ? 'text-white font-semibold'
+                                : 'text-zinc-400 hover:text-white'
                             }`}
                           >
                             {statusFilter === 'running' && (
                               <motion.div
                                 layoutId="statusFilterPill"
-                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-emerald-500/10"
+                                className="absolute inset-0 bg-zinc-800 rounded shadow-sm border border-zinc-700"
                                 transition={wiseBouncy}
                               />
                             )}
@@ -557,14 +557,14 @@ export function App() {
                             onClick={() => setStatusFilter('stopped')}
                             className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${
                               statusFilter === 'stopped'
-                                ? 'text-rose-400 font-semibold'
-                                : 'text-[#8e9192] hover:text-white'
+                                ? 'text-white font-semibold'
+                                : 'text-zinc-400 hover:text-white'
                             }`}
                           >
                             {statusFilter === 'stopped' && (
                               <motion.div
                                 layoutId="statusFilterPill"
-                                className="absolute inset-0 bg-[#1d1f27] rounded shadow-sm border border-rose-500/10"
+                                className="absolute inset-0 bg-zinc-800 rounded shadow-sm border border-zinc-700"
                                 transition={wiseBouncy}
                               />
                             )}
@@ -591,7 +591,7 @@ export function App() {
                           />
                         ))}
                         {filteredContainers.length === 0 && (
-                          <div className="p-8 text-center text-xs text-[#8e9192] font-sans bg-[#101116] rounded-xl border border-[#22242b]">
+                          <div className="p-8 text-center text-xs text-zinc-500 font-sans bg-zinc-950 rounded-xl border border-zinc-800">
                             Arama kriterlerine uygun konteyner bulunamadı.
                           </div>
                         )}

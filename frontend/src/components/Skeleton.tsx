@@ -26,7 +26,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => {
 
 export const CardSkeleton: React.FC = () => {
   return (
-    <div className="relative overflow-hidden p-4 rounded-xl border border-[#26282e]/60 bg-[#121318]/60 space-y-3 font-mono">
+    <div className="relative overflow-hidden p-4 rounded-xl border border-[#262626] bg-[#121212] space-y-3 font-mono">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <Skeleton className="w-10 h-10 rounded-xl" />
@@ -38,7 +38,7 @@ export const CardSkeleton: React.FC = () => {
         <Skeleton className="w-14 h-5 rounded-full" />
       </div>
 
-      <div className="pt-3 border-t border-[#26282e]/40 flex justify-between items-center">
+      <div className="pt-3 border-t border-[#262626] flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Skeleton className="w-8 h-2.5 rounded" />
           <Skeleton className="w-16 h-2 rounded-full" />
@@ -64,7 +64,7 @@ export const ShimmerScan: React.FC = () => {
       initial={{ x: '-100%' }}
       animate={{ x: '100%' }}
       transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
-      className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-500/[0.07] to-transparent pointer-events-none z-20"
+      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none z-20"
     />
   );
 };

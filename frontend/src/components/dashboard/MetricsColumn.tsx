@@ -33,23 +33,23 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
   const strokeOffset = circumference - (circumference * overallLoad) / 100;
 
   return (
-    <section className="space-y-4 bg-[#14151b] p-4 rounded-2xl border border-[#22242b] transition-all">
+    <section className="space-y-4 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 transition-all">
       {/* Header */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-emerald-400" />
+          <Activity className="w-4 h-4 text-zinc-300" />
           <h2 className="text-sm font-semibold text-white tracking-tight font-sans">
             Sistem Sağlığı & Telemetri
           </h2>
         </div>
-        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700 font-medium flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
           Canlı
         </span>
       </div>
 
       {/* Main Hero Card: Arc Gauge + Core Meters */}
-      <div className="relative overflow-hidden p-4 bg-[#101116] rounded-xl border border-[#22242b] space-y-4">
+      <div className="relative overflow-hidden p-4 bg-zinc-950 rounded-xl border border-zinc-800 space-y-4">
         {isRefreshing && <ShimmerScan />}
 
         {/* Visual Hero: Radial Health Donut */}
@@ -61,7 +61,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 cx="50"
                 cy="50"
                 r={radius}
-                className="stroke-[#1d1f27]"
+                className="stroke-zinc-800"
                 strokeWidth="8"
                 fill="transparent"
               />
@@ -70,7 +70,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                 cx="50"
                 cy="50"
                 r={radius}
-                className="stroke-emerald-400"
+                className="stroke-white"
                 strokeWidth="8"
                 strokeLinecap="round"
                 fill="transparent"
@@ -86,16 +86,16 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
               <span className="text-xl font-bold text-white tracking-tight font-mono">
                 %{overallLoad}
               </span>
-              <span className="text-[10px] text-[#8e9192] font-sans">Küme Yükü</span>
+              <span className="text-[10px] text-zinc-500 font-sans">Küme Yükü</span>
             </div>
           </div>
 
           <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium font-sans">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="flex items-center gap-1.5 text-xs text-white font-medium font-sans">
+              <CheckCircle2 className="w-4 h-4 text-zinc-300" />
               <span>Tüm Düğümler Stabil</span>
             </div>
-            <p className="text-xs text-[#8e9192] leading-relaxed font-sans">
+            <p className="text-xs text-zinc-400 leading-relaxed font-sans">
               Docker motoru ve sanal köprüler nominal gecikmeyle yanıt veriyor.
             </p>
             <div className="pt-1">
@@ -109,7 +109,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
                   Math.max(18, totalCpu * 10 + 6),
                   Math.max(14, totalCpu * 8 + 12),
                 ]}
-                color="emerald"
+                color="zinc"
                 height={22}
                 isLive={true}
               />
@@ -118,21 +118,21 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
         </div>
 
         {/* Clean Resource Progress Meters (No nested boxed cards!) */}
-        <div className="space-y-3 pt-3 border-t border-white/5">
+        <div className="space-y-3 pt-3 border-t border-zinc-800">
           {/* CPU Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#8e9192] flex items-center gap-1.5 font-sans">
-                <Cpu className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+                <Cpu className="w-3.5 h-3.5 text-zinc-400" />
                 İşlemci (Konteyner CPU)
               </span>
               <span className="text-white font-mono font-medium">
                 <AnimatedNumber value={totalCpu} decimals={1} prefix="%" />
               </span>
             </div>
-            <div className="w-full bg-[#181920] h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-blue-400 h-full rounded-full transition-all duration-500"
+                className="bg-white h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(3, totalCpu * 5))}%` }}
               />
             </div>
@@ -141,18 +141,18 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           {/* RAM Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#8e9192] flex items-center gap-1.5 font-sans">
-                <Activity className="w-3.5 h-3.5 text-purple-400" />
+              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+                <Activity className="w-3.5 h-3.5 text-zinc-400" />
                 Bellek Tahsisi (RAM)
               </span>
               <span className="text-white font-mono font-medium">
                 <AnimatedNumber value={totalMemoryMb} decimals={0} suffix=" MB" />
-                <span className="text-[#8e9192] text-[10px]"> / 2048 MB</span>
+                <span className="text-zinc-500 text-[10px]"> / 2048 MB</span>
               </span>
             </div>
-            <div className="w-full bg-[#181920] h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-purple-400 h-full rounded-full transition-all duration-500"
+                className="bg-zinc-300 h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(3, ramPercent))}%` }}
               />
             </div>
@@ -161,17 +161,17 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           {/* Disk Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#8e9192] flex items-center gap-1.5 font-sans">
-                <HardDrive className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+                <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
                 NVMe Depolama
               </span>
               <span className="text-white font-mono font-medium">
-                128.4 <span className="text-[#8e9192] text-[10px]">/ 500 GB (%25.6)</span>
+                128.4 <span className="text-zinc-500 text-[10px]">/ 500 GB (%25.6)</span>
               </span>
             </div>
-            <div className="w-full bg-[#181920] h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
+                className="bg-zinc-400 h-full rounded-full transition-all duration-500"
                 style={{ width: '25.6%' }}
               />
             </div>
@@ -179,12 +179,12 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
         </div>
 
         {/* Compact Proxy Footer Pill */}
-        <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-[#8e9192]">
+        <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[11px] text-zinc-400">
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
             <span className="font-sans">Traefik v3.0 Rotaları:</span>
           </span>
-          <span className="text-slate-300 font-mono text-[10px]">TLS 1.3 / HTTP2 (Aktif)</span>
+          <span className="text-zinc-300 font-mono text-[10px]">TLS 1.3 / HTTP2 (Aktif)</span>
         </div>
       </div>
     </section>

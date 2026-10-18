@@ -29,19 +29,19 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   isRefreshing = false,
   onContextMenu,
 }) => {
-  // Select appropriate icon
+  // Select appropriate icon (monochrome)
   const getIcon = () => {
     switch (container.category) {
       case 'core':
-        return <Zap className="w-4 h-4 text-amber-400" />;
+        return <Zap className="w-4 h-4 text-zinc-300" />;
       case 'service':
-        return <Globe className="w-4 h-4 text-blue-400" />;
+        return <Globe className="w-4 h-4 text-zinc-300" />;
       case 'database':
-        return <Database className="w-4 h-4 text-emerald-400" />;
+        return <Database className="w-4 h-4 text-zinc-300" />;
       case 'worker':
-        return <Cpu className="w-4 h-4 text-purple-400" />;
+        return <Cpu className="w-4 h-4 text-zinc-300" />;
       default:
-        return <Layers className="w-4 h-4 text-slate-400" />;
+        return <Layers className="w-4 h-4 text-zinc-400" />;
     }
   };
 
@@ -62,15 +62,15 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       }}
       className={`p-3.5 rounded-xl border transition-all duration-200 cursor-pointer select-none relative overflow-hidden group ${
         isSelected
-          ? 'bg-[#151720] border-blue-500/80 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/40'
-          : 'bg-[#121318] border-[#22242b] hover:border-white/20 hover:bg-[#15161c]'
+          ? 'bg-zinc-900 border-white shadow-lg shadow-black ring-1 ring-white/30'
+          : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
       }`}
     >
       {/* Subtle selection ambient accent */}
       {isSelected && (
         <motion.div
           layoutId="cardActiveHighlight"
-          className="absolute inset-0 bg-gradient-to-r from-blue-500/8 via-transparent to-transparent pointer-events-none"
+          className="absolute inset-0 bg-white/[0.04] pointer-events-none"
           transition={wiseSpring}
         />
       )}
@@ -81,19 +81,19 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       {/* Header: Icon, Name, Image and Status */}
       <div className="flex items-center justify-between gap-2.5 relative z-10">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 rounded-lg bg-[#181a22] border border-[#262832] flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
             {getIcon()}
           </div>
           <div className="min-w-0">
             <h3 className="text-sm font-semibold text-white tracking-tight truncate font-sans">
               {container.name}
             </h3>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#8e9192] font-mono mt-0.5 truncate">
+            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
               <span>{container.image}:{container.tag}</span>
               {container.ports.length > 0 && (
                 <>
-                  <span className="text-[#3a3d47]">•</span>
-                  <span className="text-blue-400/90">
+                  <span className="text-zinc-600">•</span>
+                  <span className="text-zinc-300">
                     {container.ports[0].hostPort}:{container.ports[0].containerPort}
                   </span>
                 </>
@@ -104,20 +104,17 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
 
         {/* Status Dot & Context Menu Button */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.03] border border-white/5">
-            <span className="relative flex h-2 w-2">
-              {isRunning && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              )}
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800">
+            <span className="relative flex h-2 w-2 items-center justify-center">
               <span
-                className={`relative inline-flex rounded-full h-2 w-2 ${
-                  isRunning ? 'bg-emerald-400' : 'bg-zinc-600'
+                className={`inline-block rounded-full ${
+                  isRunning ? 'h-2 w-2 bg-white' : 'h-1.5 w-1.5 border border-zinc-500'
                 }`}
               />
             </span>
             <span
               className={`text-[11px] font-sans font-medium ${
-                isRunning ? 'text-emerald-400' : 'text-[#8e9192]'
+                isRunning ? 'text-white' : 'text-zinc-400'
               }`}
             >
               {container.statusText}
@@ -139,7 +136,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
                 );
               }}
               title="Hızlı İşlemler"
-              className="p-1 rounded-md text-[#8e9192] hover:text-white hover:bg-white/5 transition opacity-40 group-hover:opacity-100 cursor-pointer"
+              className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition opacity-40 group-hover:opacity-100 cursor-pointer"
             >
               <MoreHorizontal className="w-3.5 h-3.5" />
             </button>
@@ -148,10 +145,10 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       </div>
 
       {/* Resource Metrics Strip: Sparkline + Clean Numbers */}
-      <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs font-mono relative z-10">
+      <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-xs font-mono relative z-10">
         {/* Left: CPU with inline sparkline */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#8e9192] font-sans">CPU</span>
+          <span className="text-[11px] text-zinc-400 font-sans">CPU</span>
           <span className="text-white font-medium">
             <AnimatedNumber value={container.cpuPercent} decimals={1} suffix="%" />
           </span>
@@ -170,7 +167,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
                     ]
                   : [0, 0, 0, 0, 0, 0, 0]
               }
-              color={isRunning ? (container.cpuPercent > 50 ? 'amber' : 'emerald') : 'zinc'}
+              color={isRunning ? 'white' : 'zinc'}
               height={16}
               isLive={isRunning}
             />
@@ -179,7 +176,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
 
         {/* Right: RAM usage */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-[#8e9192] font-sans">RAM</span>
+          <span className="text-[11px] text-zinc-400 font-sans">RAM</span>
           <span className="text-white font-medium">
             <AnimatedNumber value={container.memoryUsageMb} decimals={0} suffix=" MB" />
           </span>

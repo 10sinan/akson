@@ -103,28 +103,28 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
   };
 
   return (
-    <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-6">
-      {/* Ambient background glow - subtle & natural */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/[0.03] blur-3xl pointer-events-none" />
+    <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-6">
+      {/* Ambient background glow - neutral */}
+      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-white/[0.015] blur-3xl pointer-events-none" />
 
       {/* Header Info */}
       <div className="flex flex-wrap items-center justify-between gap-3 relative z-10">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-white" />
             <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
               Görsel Dağıtım Tüneli (Pipeline Path)
             </h3>
           </div>
-          <p className="text-[11px] text-[#8e9192] mt-0.5 font-mono">
+          <p className="text-[11px] text-zinc-400 mt-0.5 font-mono">
             İstasyonlara tıklayarak detayları inceleyebilir, dağıtım sürecini soldan sağa görsel olarak takip edebilirsiniz.
           </p>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-[11px]">
-          <span className="text-[#8e9192]">Aşama:</span>
-          <span className="px-2.5 py-0.5 rounded-full bg-[#1c1e26] text-slate-200 border border-[#2d303b] font-bold">
+          <span className="text-zinc-400">Aşama:</span>
+          <span className="px-2.5 py-0.5 rounded-full bg-zinc-900 text-zinc-200 border border-zinc-700 font-bold">
             {currentStep} / {PIPELINE_STEPS.length}
           </span>
         </div>
@@ -133,13 +133,13 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
       {/* Interactive Path Canvas */}
       <div className="relative py-4 select-none">
         {/* SVG Connecting Track Line */}
-        <div className="absolute top-[42px] left-[6%] right-[6%] h-[3px] bg-[#1a1b21] -translate-y-1/2 rounded-full z-0 overflow-hidden">
+        <div className="absolute top-[42px] left-[6%] right-[6%] h-[3px] bg-zinc-900 -translate-y-1/2 rounded-full z-0 overflow-hidden">
           {/* Base Inactive Track */}
-          <div className="w-full h-full bg-[#26282e]" />
+          <div className="w-full h-full bg-zinc-800" />
 
-          {/* Active Colored Progress Track */}
+          {/* Active Progress Track */}
           <motion.div
-            className="absolute top-0 left-0 bottom-0 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+            className="absolute top-0 left-0 bottom-0 bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]"
             initial={{ width: '0%' }}
             animate={{
               width: `${((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100}%`,
@@ -179,10 +179,10 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   transition={wiseBouncy}
                   className={`w-12 h-12 rounded-2xl flex items-center justify-center relative transition-all duration-300 ${
                     isCompleted
-                      ? 'bg-emerald-500 text-slate-950 shadow-[0_0_16px_rgba(16,185,129,0.35)]'
+                      ? 'bg-zinc-200 text-black shadow-md'
                       : isCurrent
-                      ? 'bg-white text-slate-950 shadow-[0_0_18px_rgba(255,255,255,0.25)] ring-2 ring-white/80'
-                      : 'bg-[#16171d] text-[#8e9192] border border-[#26282e] group-hover:border-white/30 group-hover:text-white'
+                      ? 'bg-white text-black shadow-lg ring-2 ring-white/80'
+                      : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-600 group-hover:text-white'
                   }`}
                 >
                   {/* Pulse Ring when Active or Deploying */}
@@ -198,7 +198,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   {isCompleted ? (
                     <Check className="w-5 h-5 stroke-[3]" />
                   ) : isCurrent && isDeploying ? (
-                    <Loader2 className="w-5 h-5 animate-spin text-white" />
+                    <Loader2 className="w-5 h-5 animate-spin text-black" />
                   ) : (
                     <Icon className="w-5 h-5" />
                   )}
@@ -207,10 +207,10 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   <span
                     className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
                       isCompleted
-                        ? 'bg-slate-900 text-emerald-400 border-emerald-500/30'
+                        ? 'bg-zinc-900 text-zinc-300 border-zinc-700'
                         : isCurrent
-                        ? 'bg-white text-slate-900 border-white'
-                        : 'bg-[#121318] text-[#8e9192] border-[#26282e]'
+                        ? 'bg-white text-black border-white'
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800'
                     }`}
                   >
                     {step.id}
@@ -224,13 +224,13 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                       isCurrent
                         ? 'text-white font-bold'
                         : isCompleted
-                        ? 'text-emerald-300'
-                        : 'text-[#8e9192] group-hover:text-white'
+                        ? 'text-zinc-300'
+                        : 'text-zinc-500 group-hover:text-white'
                     }`}
                   >
                     {step.title.split('. ')[1]}
                   </div>
-                  <div className="text-[10px] text-[#8e9192] font-mono hidden sm:block truncate max-w-[110px] mt-0.5">
+                  <div className="text-[10px] text-zinc-500 font-mono hidden sm:block truncate max-w-[110px] mt-0.5">
                     {step.shortDesc}
                   </div>
                 </div>
@@ -248,16 +248,16 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={wiseSpring}
-          className="bg-[#0e0f14] border border-[#26282e] rounded-xl p-4 relative font-mono text-xs shadow-inner"
+          className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 relative font-mono text-xs shadow-inner"
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#1e1f25]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#1a1c24] border border-[#2c2f3d] text-white flex items-center justify-center shrink-0">
+              <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center shrink-0">
                 <currentStepData.icon className="w-4 h-4" />
               </div>
               <div>
                 <span className="text-white font-bold">{currentStepData.title}</span>
-                <span className="text-[#8e9192] ml-2 text-[11px]">— {currentStepData.shortDesc}</span>
+                <span className="text-zinc-400 ml-2 text-[11px]">— {currentStepData.shortDesc}</span>
               </div>
             </div>
 
@@ -265,7 +265,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               <span
                 className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ${
                   currentStepData.id < currentStep
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    ? 'bg-zinc-800 text-white border-zinc-700'
                     : currentStepData.id === currentStep
                     ? 'bg-white/10 text-white border-white/20'
                     : 'bg-zinc-800 text-zinc-400 border-zinc-700'
@@ -273,11 +273,11 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               >
                 {currentStepData.id < currentStep ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-400" /> Tamamlandı
+                    <Check className="w-3 h-3 text-white" /> Tamamlandı
                   </>
                 ) : currentStepData.id === currentStep ? (
                   <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Aktif İstasyon
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Aktif İstasyon
                   </>
                 ) : (
                   'Sırada'
@@ -288,19 +288,19 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
             <div className="space-y-1">
-              <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1">
-                <Check className="w-3 h-3" /> Yapılan / Doğrulanan
+              <div className="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1">
+                <Check className="w-3 h-3 text-zinc-300" /> Yapılan / Doğrulanan
               </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans bg-[#121318] p-2.5 rounded-lg border border-[#1e1f25]">
+              <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
                 {currentStepData.doneDetails}
               </p>
             </div>
 
             <div className="space-y-1">
-              <div className="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1">
-                <Info className="w-3 h-3" /> Bu Adımda Yapılması Gereken
+              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider flex items-center gap-1">
+                <Info className="w-3 h-3 text-zinc-400" /> Bu Adımda Yapılması Gereken
               </div>
-              <p className="text-[11px] text-slate-300 leading-relaxed font-sans bg-[#121318] p-2.5 rounded-lg border border-[#1e1f25]">
+              <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
                 {currentStepData.todoDetails}
               </p>
             </div>
@@ -310,16 +310,16 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
       {/* 4. TÜNEL İÇİ DAĞITIM VE AKSİYON ŞERİDİ (Integrated Deploy Action Bar) */}
       {onDeploy && (
-        <div className="relative z-10 pt-4 border-t border-[#26282e]/80 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="relative z-10 pt-4 border-t border-zinc-800 flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Sol Taraf: Tünel Durumu ve Bilgilendirme */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-[#2d303b] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shrink-0">
               {isDeployed ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <CheckCircle2 className="w-5 h-5 text-white" />
               ) : isDeploying ? (
-                <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+                <Loader2 className="w-5 h-5 animate-spin text-white" />
               ) : (
-                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <Sparkles className="w-5 h-5 text-white" />
               )}
             </div>
             <div>
@@ -327,11 +327,11 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                 <span className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                   {isDeployed ? 'Canlıya Alındı' : isDeploying ? 'Dağıtım Yürütülüyor' : 'Dağıtım Emri'}
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-mono text-zinc-300 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
                   Docker Engine SDK
                 </span>
               </div>
-              <p className="text-[11px] text-[#8e9192] font-sans mt-0.5">
+              <p className="text-[11px] text-zinc-400 font-sans mt-0.5">
                 {isDeployed
                   ? 'Tüm istasyonlar onaylandı, servis akson-bridge üzerinde 200 OK yanıtı veriyor.'
                   : isDeploying
@@ -347,7 +347,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               <button
                 type="button"
                 onClick={onNavigateDashboard}
-                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-[#1a1c24] hover:bg-[#222530] text-blue-400 hover:text-white text-xs font-sans font-semibold transition flex items-center justify-center gap-2 border border-blue-500/20 cursor-pointer shadow-md active:scale-95"
+                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-sans font-semibold transition flex items-center justify-center gap-2 border border-zinc-700 cursor-pointer shadow-md active:scale-95"
               >
                 <span>Kontrol Paneline Git</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -362,12 +362,12 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                 soundManager.playClick();
                 onDeploy();
               }}
-              className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold font-sans text-xs tracking-wide transition-all shadow-xl flex items-center justify-center gap-2.5 cursor-pointer ${
+              className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold font-sans text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2.5 cursor-pointer ${
                 isDeployed
-                  ? 'bg-emerald-500 text-slate-950 cursor-default font-extrabold shadow-emerald-500/20'
+                  ? 'bg-zinc-800 text-white border border-zinc-700 cursor-default font-semibold'
                 : isDeploying
-                  ? 'bg-[#181a22] text-slate-200 border border-white/20 cursor-wait'
-                  : 'bg-white hover:bg-slate-100 text-slate-950 ring-2 ring-white/80 font-extrabold shadow-2xl active:scale-[0.98]'
+                  ? 'bg-zinc-900 text-zinc-400 border border-zinc-700 cursor-wait'
+                  : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold shadow-md active:scale-[0.98]'
               }`}
             >
               {isDeployed ? (
@@ -377,7 +377,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                 </>
               ) : isDeploying ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
                   <span>Dağıtılıyor (Adım {currentStep}/5)...</span>
                 </>
               ) : (

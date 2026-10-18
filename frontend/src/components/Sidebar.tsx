@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isAiOpen = false,
 }) => {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#1e2230] z-50 flex flex-col items-center py-3 justify-between select-none">
+    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#262626] z-50 flex flex-col items-center py-3 justify-between select-none">
       {/* Header ve Main Content ile kesintisiz köşe birleşim köprüsü (Inverted corner bridge) */}
       <div
         className="absolute top-14 -right-6 w-6 h-6 pointer-events-none z-50 overflow-hidden"
@@ -46,14 +46,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Köşedeki boşluğu kapatan siyah kama */}
           <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#000000" />
           {/* Main content rounded-tl-3xl kavisini tamamlayan köşe çizgisi */}
-          <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#1e2230" strokeWidth="1" fill="none" />
+          <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#262626" strokeWidth="1" fill="none" />
         </svg>
       </div>
 
       {/* Top: Logo & Main Navigation */}
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Brand Logo */}
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 font-bold tracking-tight">
+        <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-white shadow-sm font-bold tracking-tight">
           <Layers className="w-5 h-5 text-white" />
         </div>
 
@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
                 title={item.title}
-                className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-[#8e9192] hover:text-white"
+                className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-400 hover:text-white"
               >
                 {isActive && (
                   <motion.div
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
 
-          <div className="w-6 h-[1px] bg-[#26282e] my-1" />
+          <div className="w-6 h-[1px] bg-zinc-800 my-1" />
 
           {/* AI Copilot Button */}
           <motion.button
@@ -93,11 +93,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title="Gemini AI DevOps Asistanı"
             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
               isAiOpen
-                ? 'bg-gradient-to-tr from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/30 ring-2 ring-blue-400/50'
-                : 'bg-gradient-to-tr from-blue-600/20 to-purple-600/30 text-blue-300 border border-blue-500/40 hover:text-white hover:border-blue-400'
+                ? 'bg-white text-black shadow-sm ring-1 ring-white/50'
+                : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:border-zinc-700 hover:bg-zinc-800'
             }`}
           >
-            <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-white' : 'text-blue-400'}`} />
+            <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-black' : 'text-zinc-400'}`} />
           </motion.button>
         </nav>
       </div>
@@ -106,19 +106,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex flex-col items-center gap-3 w-full px-2">
         <button
           title="Güvenlik & Sertifikalar"
-          className="w-10 h-10 rounded-xl text-[#8e9192] hover:text-white hover:bg-[#1a1b21] flex items-center justify-center transition-all cursor-pointer"
+          className="w-10 h-10 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
         >
           <Shield className="w-5 h-5" />
         </button>
 
         <button
           title="Sistem Ayarları"
-          className="w-10 h-10 rounded-xl text-[#8e9192] hover:text-white hover:bg-[#1a1b21] flex items-center justify-center transition-all cursor-pointer"
+          className="w-10 h-10 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
         >
           <Settings className="w-5 h-5" />
         </button>
 
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 border border-[#292a2f] flex items-center justify-center text-xs font-semibold text-slate-300">
+        <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300">
           AK
         </div>
       </div>

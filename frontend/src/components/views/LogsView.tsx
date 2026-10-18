@@ -157,18 +157,18 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
   return (
     <div className="flex flex-col flex-1 space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
               Servis Logları & Canlı Denetleyici
             </h1>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-sans text-xs font-medium">
-              <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${isStreaming ? 'animate-pulse' : ''}`} />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626] text-zinc-300 font-sans text-xs font-medium">
+              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-white animate-pulse' : 'bg-zinc-600'}`} />
               {isStreaming ? 'Canlı Akış' : 'Duraklatıldı'}
             </div>
           </div>
-          <p className="text-xs text-[#8e9192] mt-1 font-sans">
+          <p className="text-xs text-zinc-400 mt-1 font-sans">
             Gerçek zamanlı stdout/stderr günlükleri ve konteyner çalışma zamanı denetimi.
           </p>
         </div>
@@ -178,15 +178,15 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
           <button
             onClick={handleAnalyzeWithAI}
             disabled={isAnalyzing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 hover:text-white text-xs font-medium font-sans transition cursor-pointer active:scale-95 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-[#262626] text-zinc-300 hover:text-white text-xs font-medium font-sans transition cursor-pointer active:scale-95 shadow-sm"
           >
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <Sparkles className="w-3.5 h-3.5 text-white" />
             <span>{isAnalyzing ? 'Teşhis Ediliyor...' : 'Gemini AI Teşhis'}</span>
           </button>
 
           <button
             onClick={() => setIsStreaming(!isStreaming)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-black hover:bg-slate-200 text-xs font-semibold font-sans transition cursor-pointer active:scale-95 shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-semibold font-sans transition cursor-pointer active:scale-95 shadow"
           >
             {isStreaming ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
             <span>{isStreaming ? 'Duraklat' : 'Devam Et'}</span>
@@ -194,15 +194,15 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
 
           <button
             onClick={handleCopyLogs}
-            className="p-2 bg-[#14151b] hover:bg-[#1a1c24] text-[#8e9192] hover:text-white border border-[#22242b] rounded-xl transition cursor-pointer active:scale-95"
+            className="p-2 bg-[#121212] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-[#262626] rounded-xl transition cursor-pointer active:scale-95"
             title="Logları Kopyala"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
           </button>
 
           <button
             onClick={handleClearLogs}
-            className="p-2 bg-[#14151b] hover:bg-[#1a1c24] text-[#8e9192] hover:text-rose-400 border border-[#22242b] rounded-xl transition cursor-pointer active:scale-95"
+            className="p-2 bg-[#121212] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-[#262626] rounded-xl transition cursor-pointer active:scale-95"
             title="Logları Temizle"
           >
             <Trash2 className="w-4 h-4" />
@@ -212,15 +212,15 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
 
       {/* AI Report Card (if generated) */}
       {aiReport && (
-        <div className="bg-[#101116] border border-blue-500/30 rounded-2xl p-4 shadow-xl flex flex-col gap-2 font-mono text-xs text-slate-200">
-          <div className="flex items-center justify-between border-b border-white/5 pb-2">
+        <div className="bg-[#121212] border border-[#262626] rounded-2xl p-4 shadow-xl flex flex-col gap-2 font-mono text-xs text-zinc-200">
+          <div className="flex items-center justify-between border-b border-[#262626] pb-2">
             <div className="flex items-center gap-2 font-semibold text-white font-sans">
-              <Sparkles className="w-4 h-4 text-blue-400" />
+              <Sparkles className="w-4 h-4 text-white" />
               <span>Gemini Canlı Teşhis & Çözüm Önerisi</span>
             </div>
             <button
               onClick={() => setAiReport(null)}
-              className="text-[#8e9192] hover:text-white font-sans text-xs"
+              className="text-zinc-400 hover:text-white font-sans text-xs cursor-pointer"
             >
               ✕ Kapat
             </button>
@@ -232,7 +232,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
       {/* Layout Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column (3 cols): Container Switcher */}
-        <div className="lg:col-span-3 bg-[#14151b] border border-[#22242b] rounded-2xl p-4 space-y-3 shadow-sm">
+        <div className="lg:col-span-3 bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-sm">
           <span className="text-xs font-bold text-white uppercase font-sans tracking-wider block">
             Konteyner Filtresi
           </span>
@@ -245,18 +245,18 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
                 selectedContainer === 'all'
                   ? 'text-white font-semibold'
-                  : 'text-[#8e9192] hover:text-white hover:bg-[#181a22]'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
               }`}
             >
               {selectedContainer === 'all' && (
                 <motion.div
                   layoutId="logsContainerPill"
-                  className="absolute inset-0 bg-[#1d1f27] border border-white/10 rounded-xl shadow-sm"
+                  className="absolute inset-0 bg-[#171717] border border-[#262626] rounded-xl shadow-sm"
                   transition={wiseBouncy}
                 />
               )}
               <span className="relative z-10">Tüm Konteynerler</span>
-              <span className="relative z-10 text-[10px] font-mono text-slate-400">{containers.length}</span>
+              <span className="relative z-10 text-[10px] font-mono text-zinc-400">{containers.length}</span>
             </motion.button>
 
             {containers.map((c) => (
@@ -268,20 +268,20 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
                   selectedContainer === c.name
                     ? 'text-white font-semibold'
-                    : 'text-[#8e9192] hover:text-white hover:bg-[#181a22]'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
                 }`}
               >
                 {selectedContainer === c.name && (
                   <motion.div
                     layoutId="logsContainerPill"
-                    className="absolute inset-0 bg-[#1d1f27] border border-white/10 rounded-xl shadow-sm"
+                    className="absolute inset-0 bg-[#171717] border border-[#262626] rounded-xl shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
                 <span className="relative z-10 truncate font-mono">{c.name}</span>
                 <span
                   className={`relative z-10 w-2 h-2 rounded-full ${
-                    c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'
+                    c.status === 'running' ? 'bg-white' : 'bg-zinc-600'
                   }`}
                 />
               </motion.button>
@@ -290,35 +290,35 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
         </div>
 
         {/* Right Column (9 cols): Grep Search, Level Filters & Live Console */}
-        <div className="lg:col-span-9 bg-[#14151b] border border-[#22242b] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+        <div className="lg:col-span-9 bg-[#0a0a0a] border border-[#262626] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
           {/* Controls Bar */}
-          <div className="p-3.5 bg-[#101116] border-b border-white/5 flex flex-wrap items-center justify-between gap-3">
+          <div className="p-3.5 bg-[#121212] border-b border-[#262626] flex flex-wrap items-center justify-between gap-3">
             {/* Grep search */}
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="w-3.5 h-3.5 text-[#8e9192] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchGrep}
                 onChange={(e) => setSearchGrep(e.target.value)}
                 placeholder="Loglarda ara (grep)..."
-                className="w-full bg-[#0a0b10] border border-[#22242b] text-xs text-white rounded-xl pl-9 pr-3 py-1.5 focus:outline-none focus:border-white/40 font-mono placeholder:text-[#8e9192]"
+                className="w-full bg-[#000000] border border-[#262626] text-xs text-white rounded-xl pl-9 pr-3 py-1.5 focus:outline-none focus:border-white font-mono placeholder:text-zinc-500"
               />
             </div>
 
             {/* Level Filters with Sliding Spring Pill */}
-            <div className="flex items-center gap-1 bg-[#0a0b10] p-1 rounded-xl border border-[#22242b] text-[11px] font-sans">
+            <div className="flex items-center gap-1 bg-[#000000] p-1 rounded-xl border border-[#262626] text-[11px] font-sans">
               <button
                 onClick={() => setSelectedLevel('all')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'all'
                     ? 'text-white font-semibold'
-                    : 'text-[#8e9192] hover:text-white'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'all' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-[#1d1f27] rounded-lg border border-white/5 shadow-sm"
+                    className="absolute inset-0 bg-[#171717] rounded-lg border border-[#262626] shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -328,14 +328,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('info')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'info'
-                    ? 'text-emerald-400 font-semibold'
-                    : 'text-[#8e9192] hover:text-white'
+                    ? 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'info' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-emerald-500/15 rounded-lg border border-emerald-500/30 shadow-sm"
+                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -345,14 +345,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('warn')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'warn'
-                    ? 'text-amber-400 font-semibold'
-                    : 'text-[#8e9192] hover:text-white'
+                    ? 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'warn' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-amber-500/15 rounded-lg border border-amber-500/30 shadow-sm"
+                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -362,14 +362,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 onClick={() => setSelectedLevel('error')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
                   selectedLevel === 'error'
-                    ? 'text-rose-400 font-semibold'
-                    : 'text-[#8e9192] hover:text-white'
+                    ? 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {selectedLevel === 'error' && (
                   <motion.div
                     layoutId="logsLevelFilterPill"
-                    className="absolute inset-0 bg-rose-500/15 rounded-lg border border-rose-500/30 shadow-sm"
+                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/20 shadow-sm"
                     transition={wiseBouncy}
                   />
                 )}
@@ -378,21 +378,21 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
             </div>
 
             {/* Auto-scroll toggle */}
-            <label className="flex items-center gap-1.5 text-xs text-[#8e9192] font-sans cursor-pointer select-none">
+            <label className="flex items-center gap-1.5 text-xs text-zinc-400 font-sans cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={autoScroll}
                 onChange={(e) => setAutoScroll(e.target.checked)}
-                className="rounded border-[#22242b] bg-[#0a0b10] text-blue-500 focus:ring-0"
+                className="rounded border-[#262626] bg-[#000000] text-white focus:ring-0 accent-white"
               />
               <span>Otomatik Kaydır</span>
             </label>
           </div>
 
           {/* Terminal Console */}
-          <div className="bg-[#0a0b10] p-4 font-mono text-[11px] leading-relaxed text-[#c4c7c8] space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
+          <div className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
             {filteredLogs.length === 0 ? (
-              <div className="text-[#8e9192] italic pt-8 text-center font-sans">
+              <div className="text-zinc-500 italic pt-8 text-center font-sans">
                 Arama kriterlerine uygun log bulunamadı.
               </div>
             ) : (
@@ -403,27 +403,27 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                     key={log.id}
                     initial={
                       isLatest
-                        ? { opacity: 0, x: -6, backgroundColor: 'rgba(52, 211, 153, 0.18)' }
+                        ? { opacity: 0, x: -6, backgroundColor: 'rgba(255, 255, 255, 0.08)' }
                         : false
                     }
                     animate={{ opacity: 1, x: 0, backgroundColor: 'rgba(255, 255, 255, 0)' }}
                     transition={{ duration: 1.4, ease: 'easeOut' }}
-                    className="hover:bg-white/[0.03] px-2 py-0.5 rounded flex items-start gap-3 transition-colors"
+                    className="hover:bg-white/[0.04] px-2 py-0.5 rounded flex items-start gap-3 transition-colors"
                   >
-                    <span className="text-slate-500 shrink-0">{log.timestamp}</span>
-                    <span className="text-purple-400 font-semibold shrink-0">[{log.containerName}]</span>
+                    <span className="text-zinc-500 shrink-0">{log.timestamp}</span>
+                    <span className="text-white font-semibold shrink-0">[{log.containerName}]</span>
                     <span
-                      className={`font-bold shrink-0 text-[10px] px-1 rounded font-sans ${
+                      className={`font-bold shrink-0 text-[10px] px-1.5 py-0.5 rounded font-mono ${
                         log.level === 'error'
-                          ? 'bg-rose-500/20 text-rose-400'
+                          ? 'bg-white/10 text-white border border-white/20'
                           : log.level === 'warn'
-                          ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-zinc-800 text-zinc-300 border border-[#262626]'
+                          : 'bg-zinc-900 text-zinc-400 border border-[#262626]'
                       }`}
                     >
                       {log.level.toUpperCase()}
                     </span>
-                    <span className="text-slate-200 break-all">{log.message}</span>
+                    <span className="text-zinc-200 break-all">{log.message}</span>
                   </motion.div>
                 );
               })

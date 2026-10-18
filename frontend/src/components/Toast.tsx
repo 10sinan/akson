@@ -29,28 +29,28 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
   const getIcon = (type: ToastItem['type']) => {
     switch (type) {
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+        return <CheckCircle2 className="w-4 h-4 text-white shrink-0" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />;
+        return <AlertCircle className="w-4 h-4 text-zinc-200 shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />;
+        return <AlertTriangle className="w-4 h-4 text-zinc-400 shrink-0" />;
       case 'info':
       default:
-        return <Info className="w-4 h-4 text-blue-400 shrink-0" />;
+        return <Info className="w-4 h-4 text-zinc-300 shrink-0" />;
     }
   };
 
   const getBorderColor = (type: ToastItem['type']) => {
     switch (type) {
       case 'success':
-        return 'border-emerald-500/30';
+        return 'border-white/40';
       case 'error':
-        return 'border-rose-500/30';
+        return 'border-white/20';
       case 'warning':
-        return 'border-amber-500/30';
+        return 'border-zinc-600';
       case 'info':
       default:
-        return 'border-blue-500/30';
+        return 'border-[#262626]';
     }
   };
 
@@ -65,7 +65,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={wiseBouncy}
-            className={`pointer-events-auto bg-[#121318]/95 backdrop-blur-xl border ${getBorderColor(
+            className={`pointer-events-auto bg-[#0a0a0a]/95 backdrop-blur-xl border ${getBorderColor(
               toast.type
             )} rounded-2xl p-4 shadow-2xl flex items-start gap-3 font-mono select-none`}
           >
@@ -78,7 +78,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
                 {toast.title}
               </span>
               {toast.description && (
-                <span className="text-[11px] text-[#8e9192] block mt-0.5 leading-snug">
+                <span className="text-[11px] text-zinc-400 block mt-0.5 leading-snug">
                   {toast.description}
                 </span>
               )}
@@ -87,7 +87,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
             {/* Close Button */}
             <button
               onClick={() => onDismiss(toast.id)}
-              className="text-[#8e9192] hover:text-white p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+              className="text-zinc-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer shrink-0"
             >
               <X className="w-3.5 h-3.5" />
             </button>
