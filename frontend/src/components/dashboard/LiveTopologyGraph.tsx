@@ -141,10 +141,25 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             </div>
           </div>
 
-          {/* B. BAĞLANTI ÇİZGİSİ 1 */}
+          {/* B. HAREKETLİ VERİ AKIŞ KANALI 1 (Ingress ➔ Traefik v3 Hub) */}
           {!isDetailOpen && (
-            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-              <div className="w-full h-[2px] bg-gradient-to-r from-sky-500/30 to-emerald-500/30 rounded-full" />
+            <div className="hidden lg:flex lg:col-span-1 items-center justify-center mt-5 px-1 relative">
+              <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
+                {/* Taban Kılavuz Çizgisi */}
+                <div className="w-full h-[2px] bg-gradient-to-r from-sky-500/25 via-emerald-500/20 to-emerald-500/25" />
+                {/* Akıcı Lazer Işık Dalgası */}
+                <motion.div
+                  className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-sky-400 to-transparent opacity-80 blur-[0.5px]"
+                  animate={{ left: ['-50%', '130%'] }}
+                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                />
+                {/* Parlayan Canlı Veri Fotonu */}
+                <motion.div
+                  className="absolute w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,1)] ring-1 ring-sky-200"
+                  animate={{ left: ['-15%', '115%'] }}
+                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+                />
+              </div>
             </div>
           )}
 
@@ -165,10 +180,25 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             </div>
           </div>
 
-          {/* D. BAĞLANTI ÇİZGİSİ 2 */}
+          {/* D. HAREKETLİ VERİ AKIŞ KANALI 2 (Traefik v3 Hub ➔ Docker Motoru) */}
           {!isDetailOpen && (
-            <div className="hidden lg:flex lg:col-span-1 items-center justify-center">
-              <div className="w-full h-[2px] bg-gradient-to-r from-emerald-500/30 to-violet-500/30 rounded-full" />
+            <div className="hidden lg:flex lg:col-span-1 items-center justify-center mt-5 px-1 relative">
+              <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
+                {/* Taban Kılavuz Çizgisi */}
+                <div className="w-full h-[2px] bg-gradient-to-r from-emerald-500/25 via-violet-500/20 to-violet-500/25" />
+                {/* Akıcı Lazer Işık Dalgası (Senkronize gecikme ile) */}
+                <motion.div
+                  className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80 blur-[0.5px]"
+                  animate={{ left: ['-50%', '130%'] }}
+                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
+                />
+                {/* Parlayan Canlı Veri Fotonu */}
+                <motion.div
+                  className="absolute w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
+                  animate={{ left: ['-15%', '115%'] }}
+                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
+                />
+              </div>
             </div>
           )}
 
@@ -192,8 +222,31 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           </div>
         </div>
 
-        {/* 4. CANLI BAĞLI SERVİS DÜĞÜMLERİ (Service Nodes Grid) */}
-        <div className="mt-5 pt-4 border-t border-zinc-800 space-y-2.5">
+        {/* 4. CANLI VERİ DAĞITIM HATTI & AKSON-BRIDGE TÜNELİ */}
+        <div className="relative my-4 select-none">
+          {/* Akıcı Yatay Işık Hattı */}
+          <div className="relative h-[2px] bg-gradient-to-r from-transparent via-zinc-800 to-transparent overflow-hidden">
+            <motion.div
+              className="absolute top-0 bottom-0 w-36 bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent"
+              animate={{ left: ['-25%', '125%'] }}
+              transition={{ repeat: Infinity, duration: 3.2, ease: 'linear' }}
+            />
+          </div>
+
+          {/* Merkez Kavşak Dağıtım Rozeti */}
+          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-md">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span>
+              akson-bridge: <strong className="text-emerald-400 font-semibold">{runningCount} aktif düğüm hattı</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* 5. CANLI BAĞLI SERVİS DÜĞÜMLERİ (Service Nodes Grid) */}
+        <div className="space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold text-white uppercase tracking-wider font-sans flex items-center gap-2">
               <Activity className="w-4 h-4 text-white" />
