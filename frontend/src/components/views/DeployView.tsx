@@ -10,10 +10,7 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Loader2,
   ArrowRight,
-  Sparkles,
-  CheckCircle2,
   Sliders,
   Cpu,
   Layers,
@@ -225,9 +222,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
       <PipelinePathStepper
         currentStep={currentStep}
         isDeploying={isDeploying}
+        isDeployed={isDeployed}
         onSelectStep={(step) => {
           if (!isDeploying) setCurrentStep(step);
         }}
+        onDeploy={handleStartDeploy}
+        onNavigateDashboard={onNavigateDashboard}
       />
 
       {/* 2. ADIM KONFİGÜRASYON FORMU & CANLI ETKİLEŞİM */}
@@ -588,91 +588,45 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <span className="text-[11px] text-emerald-400 font-sans font-semibold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Tüm Adımlar Hazır
-                </span>
+                <button
+                  type="button"
+                  disabled={isDeploying || isDeployed}
+                  onClick={handleStartDeploy}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 text-xs font-sans font-bold transition cursor-pointer shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  <span>Dağıtımı Başlat</span>
+                </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Column (5 cols): The Big Action Button and Live Terminal Stream */}
+        {/* Right Column (5 cols): Live Terminal Stream */}
         <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* THE BIG DEPLOY BUTTON */}
-          <div className="bg-[#14151b] border border-[#22242b] rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2 font-sans">
-                <Sparkles className="w-4 h-4 text-emerald-400" /> Dağıtım Emri
-              </span>
-              <span className="text-[10px] text-emerald-400 font-mono">Docker Engine SDK</span>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: isDeploying ? 1 : 1.02 }}
-              whileTap={{ scale: isDeploying ? 1 : 0.97 }}
-              disabled={isDeploying || isDeployed}
-              onClick={handleStartDeploy}
-              className={`w-full py-4 px-6 rounded-2xl font-bold font-sans text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-3 cursor-pointer ${
-                isDeployed
-                  ? 'bg-emerald-500 text-slate-950 cursor-default font-extrabold'
-                  : isDeploying
-                  ? 'bg-[#181a22] text-slate-200 border border-white/20 cursor-wait'
-                  : 'bg-white hover:bg-slate-100 text-slate-950 ring-2 ring-white/80 font-extrabold shadow-2xl active:scale-[0.98]'
-              }`}
-            >
-              {isDeployed ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
-                  <span>Başarıyla Canlıya Alındı!</span>
-                </>
-              ) : isDeploying ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
-                  <span>Dağıtılıyor (Adım {currentStep}/5)...</span>
-                </>
-              ) : (
-                <>
-                  <Rocket className="w-5 h-5" />
-                  <span>Canlıya Dağıt (Deploy to Production)</span>
-                </>
-              )}
-            </motion.button>
-
-            <p className="text-[11px] text-[#8e9192] text-center font-sans">
-              Butona tıkladığınızda soldan sağa lazer akışı ile 5 adım canlı olarak işletilir.
-            </p>
-
-            {isDeployed && (
-              <button
-                type="button"
-                onClick={onNavigateDashboard}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#181a22] hover:bg-[#20222d] text-blue-400 hover:text-white text-xs font-sans transition flex items-center justify-center gap-2 border border-blue-500/20 cursor-pointer shadow-md"
-              >
-                <span>Kontrol Paneline Git (Dashboard)</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
           {/* LIVE TERMINAL LOG STREAM */}
-          <div className="bg-[#0a0b10] border border-[#22242b] rounded-2xl p-4 space-y-2.5 font-mono text-xs shadow-inner">
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+          <div className="bg-[#0a0b10] border border-[#22242b] rounded-2xl p-5 space-y-3 font-mono text-xs shadow-inner">
+            <div className="flex items-center justify-between pb-2.5 border-b border-white/5">
               <div className="flex items-center gap-2 text-[#8e9192]">
-                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-[11px] font-bold text-white uppercase tracking-wider font-sans">
+                <Terminal className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                   Canlı Dağıtım Konsolu
                 </span>
               </div>
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-sans">
+              <span className="text-[10px] text-emerald-400 flex items-center gap-1.5 font-sans px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
-                {isDeploying ? 'Akış Aktif' : 'Beklemede'}
+                {isDeploying ? 'Akış Aktif' : 'Docker SDK Hazır'}
               </span>
             </div>
 
-            <div className="h-[240px] overflow-y-auto space-y-1.5 text-[11px] text-slate-300 pr-1">
+            <p className="text-[11px] text-[#8e9192] font-sans">
+              Yukarıdaki görsel dağıtım tünelinden işlem başlatıldığında Docker Engine SDK çıktıları bu konsola anlık olarak yansıtılır.
+            </p>
+
+            <div className="h-[340px] overflow-y-auto space-y-1.5 text-[11px] text-slate-300 pr-1 bg-[#050608] p-3 rounded-xl border border-white/5 font-mono">
               {deployLogs.length === 0 ? (
-                <div className="text-zinc-600 italic pt-16 text-center text-xs font-sans">
-                  "Canlıya Dağıt" butonuna basıldığında adım adım Docker logları burada akacaktır.
+                <div className="text-zinc-600 italic pt-24 text-center text-xs font-sans">
+                  "Canlıya Dağıt" butonuna basıldığında tünel istasyonlarının çıktıları burada akacaktır.
                 </div>
               ) : (
                 deployLogs.map((log, idx) => (

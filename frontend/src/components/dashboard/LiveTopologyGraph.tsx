@@ -13,6 +13,7 @@ import {
   RotateCw,
   ExternalLink,
   Activity,
+  Plus,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
 import { wiseBouncy } from '../../utils/motion';
@@ -24,6 +25,7 @@ interface LiveTopologyGraphProps {
   selectedId: string;
   onSelectContainer: (container: ContainerItem) => void;
   onAction?: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void;
+  onDeployClick?: () => void;
 }
 
 export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
@@ -31,6 +33,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
   selectedId,
   onSelectContainer,
   onAction,
+  onDeployClick,
 }) => {
   // Group or classify containers
   const runningCount = containers.filter((c) => c.status === 'running').length;
@@ -167,14 +170,29 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
         {/* 4. CANLI BAĞLI SERVİS DÜĞÜMLERİ (Service Nodes Grid) */}
         <div className="mt-8 pt-6 border-t border-white/5 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold text-white uppercase tracking-wider font-sans flex items-center gap-2">
               <Activity className="w-4 h-4 text-emerald-400" />
               Bağlı Servis Düğümleri (Düğüm Seçip Detayı İnceleyin)
             </span>
-            <span className="text-[11px] font-sans text-[#8e9192]">
-              Tıklanan düğüm aşağıda canlı telemetriyle açılır
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] font-sans text-[#8e9192] hidden sm:inline">
+                Tıklanan düğüm aşağıda canlı telemetriyle açılır
+              </span>
+              {onDeployClick && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    onDeployClick();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 text-xs font-sans font-bold transition shadow-md active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Yeni Servis Dağıt</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2">

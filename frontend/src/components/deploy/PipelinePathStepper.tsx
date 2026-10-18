@@ -10,6 +10,9 @@ import {
   Loader2,
   Info,
   ShieldCheck,
+  Sparkles,
+  CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 import { wiseSpring, wiseBouncy } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
@@ -75,13 +78,19 @@ export const PIPELINE_STEPS: StepInfo[] = [
 interface PipelinePathStepperProps {
   currentStep: number; // 1 to 5
   isDeploying?: boolean;
+  isDeployed?: boolean;
   onSelectStep?: (stepId: number) => void;
+  onDeploy?: () => void;
+  onNavigateDashboard?: () => void;
 }
 
 export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
   currentStep,
   isDeploying = false,
+  isDeployed = false,
   onSelectStep,
+  onDeploy,
+  onNavigateDashboard,
 }) => {
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
@@ -298,6 +307,89 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           </div>
         </motion.div>
       </AnimatePresence>
+
+      {/* 4. TÜNEL İÇİ DAĞITIM VE AKSİYON ŞERİDİ (Integrated Deploy Action Bar) */}
+      {onDeploy && (
+        <div className="relative z-10 pt-4 border-t border-[#26282e]/80 flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Sol Taraf: Tünel Durumu ve Bilgilendirme */}
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-[#2d303b] flex items-center justify-center shrink-0">
+              {isDeployed ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              ) : isDeploying ? (
+                <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
+              ) : (
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wider font-sans">
+                  {isDeployed ? 'Canlıya Alındı' : isDeploying ? 'Dağıtım Yürütülüyor' : 'Dağıtım Emri'}
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                  Docker Engine SDK
+                </span>
+              </div>
+              <p className="text-[11px] text-[#8e9192] font-sans mt-0.5">
+                {isDeployed
+                  ? 'Tüm istasyonlar onaylandı, servis akson-bridge üzerinde 200 OK yanıtı veriyor.'
+                  : isDeploying
+                  ? `Lazer tüneli devrede — İstasyon ${currentStep}/5 işleniyor...`
+                  : 'Soldan sağa 5 istasyonu işletip servisi canlı Docker ortamına dağıtır.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Sağ Taraf: Ana Aksiyon Butonları */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+            {isDeployed && onNavigateDashboard && (
+              <button
+                type="button"
+                onClick={onNavigateDashboard}
+                className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-[#1a1c24] hover:bg-[#222530] text-blue-400 hover:text-white text-xs font-sans font-semibold transition flex items-center justify-center gap-2 border border-blue-500/20 cursor-pointer shadow-md active:scale-95"
+              >
+                <span>Kontrol Paneline Git</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+
+            <motion.button
+              whileHover={{ scale: isDeploying ? 1 : 1.02 }}
+              whileTap={{ scale: isDeploying ? 1 : 0.98 }}
+              disabled={isDeploying || isDeployed}
+              onClick={() => {
+                soundManager.playClick();
+                onDeploy();
+              }}
+              className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold font-sans text-xs tracking-wide transition-all shadow-xl flex items-center justify-center gap-2.5 cursor-pointer ${
+                isDeployed
+                  ? 'bg-emerald-500 text-slate-950 cursor-default font-extrabold shadow-emerald-500/20'
+                : isDeploying
+                  ? 'bg-[#181a22] text-slate-200 border border-white/20 cursor-wait'
+                  : 'bg-white hover:bg-slate-100 text-slate-950 ring-2 ring-white/80 font-extrabold shadow-2xl active:scale-[0.98]'
+              }`}
+            >
+              {isDeployed ? (
+                <>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>Başarıyla Canlıya Alındı!</span>
+                </>
+              ) : isDeploying ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span>Dağıtılıyor (Adım {currentStep}/5)...</span>
+                </>
+              ) : (
+                <>
+                  <Rocket className="w-4 h-4" />
+                  <span>Canlıya Dağıt (Deploy to Production)</span>
+                </>
+              )}
+            </motion.button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

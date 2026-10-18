@@ -434,6 +434,7 @@ export function App() {
                       selectedId={selectedId}
                       onSelectContainer={handleSelectContainer}
                       onAction={handleAction}
+                      onDeployClick={() => setActiveTab('deploy')}
                     />
 
                     {/* Detay Paneli (Düğüm seçilince açılır) */}
