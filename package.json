@@ -5,9 +5,9 @@
   "description": "Akson - Docker Dağıtım ve Yönetim Paneli",
   "scripts": {
     "dev": "./scripts/dev.sh",
-    "dev:backend": "cd backend && (go run ./cmd/server/main.go 2>/dev/null || /tmp/go/bin/go run ./cmd/server/main.go)",
+    "dev:backend": "cd backend && (go run ./cmd/server/main.go 2>/dev/null || $HOME/.local/go/bin/go run ./cmd/server/main.go)",
     "dev:frontend": "cd frontend && npm run dev",
     "build:frontend": "cd frontend && npm run build",
-    "test:backend": "cd backend && (go test ./... 2>/dev/null || /tmp/go/bin/go test ./...)"
+    "test:backend": "cd backend && (go test ./... 2>/dev/null || $HOME/.local/go/bin/go test ./...)"
   }
 }

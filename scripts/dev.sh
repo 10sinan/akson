@@ -7,6 +7,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Detect Go binary
 if command -v go >/dev/null 2>&1; then
     GO_BIN="go"
+elif [ -x "$HOME/.local/go/bin/go" ]; then
+    GO_BIN="$HOME/.local/go/bin/go"
 elif [ -x "/tmp/go/bin/go" ]; then
     GO_BIN="/tmp/go/bin/go"
 elif [ -x "/usr/local/go/bin/go" ]; then

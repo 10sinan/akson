@@ -15,7 +15,6 @@ import { DeployView } from './components/views/DeployView';
 import { StorageView } from './components/views/StorageView';
 import { LogsView } from './components/views/LogsView';
 import { NetworkView } from './components/views/NetworkView';
-import { INITIAL_CONTAINERS } from './data/mockContainers';
 import type { ContainerItem } from './types/container';
 import { soundManager } from './utils/sound';
 import { api } from './api/client';
@@ -31,8 +30,8 @@ import { wiseBouncy, wiseSpring, wiseGentle, staggerContainerVariants } from './
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveNavTab>('dashboard');
-  const [containers, setContainers] = useState<ContainerItem[]>(INITIAL_CONTAINERS);
-  const [selectedId, setSelectedId] = useState<string>(INITIAL_CONTAINERS[0].id);
+  const [containers, setContainers] = useState<ContainerItem[]>([]);
+  const [selectedId, setSelectedId] = useState<string>('');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'stopped'>('all');
@@ -56,9 +55,11 @@ export function App() {
         setDockerStatus(isDockerOk ? 'online' : 'demo');
         if (isDockerOk) {
           const liveContainers = await api.fetchContainers();
-          if (isMounted && liveContainers.length > 0) {
+          if (isMounted) {
             setContainers(liveContainers);
-            setSelectedId(liveContainers[0].id);
+            if (liveContainers.length > 0) {
+              setSelectedId(liveContainers[0].id);
+            }
           }
         }
       } catch {
@@ -125,7 +126,7 @@ export function App() {
 
   // Selected container
   const selectedContainer = useMemo(() => {
-    return containers.find((c) => c.id === selectedId) || containers[0];
+    return containers.find((c) => c.id === selectedId) || containers[0] || null;
   }, [containers, selectedId]);
 
   // Global metrics summary
@@ -242,8 +243,9 @@ export function App() {
     if (isLiveBackend && dockerStatus === 'online') {
       try {
         const liveList = await api.fetchContainers();
-        if (liveList.length > 0) {
-          setContainers(liveList);
+        setContainers(liveList);
+        if (liveList.length > 0 && !liveList.some((c) => c.id === selectedId)) {
+          setSelectedId(liveList[0].id);
         }
       } catch {
         // Silently continue with local list on network glitch
@@ -660,7 +662,7 @@ export function App() {
       <AiCopilotDrawer
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
-        activeContainer={selectedContainer}
+        activeContainer={selectedContainer || undefined}
       />
 
       <CommandPalette
