@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isAiOpen = false,
 }) => {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-[#08090e] border-r border-[#1a1d28] z-50 flex flex-col items-center py-3 justify-between select-none">
+    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#1a1d28] z-50 flex flex-col items-center py-3 justify-between select-none">
       {/* Top: Logo & Main Navigation */}
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Brand Logo */}

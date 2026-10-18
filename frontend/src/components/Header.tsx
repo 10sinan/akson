@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-[#08090e] border-b border-[#1a1d28] z-40 flex items-center justify-between px-6 pl-20 select-none">
+    <header className="fixed top-0 left-0 right-0 h-14 bg-black border-b border-[#1a1d28] z-40 flex items-center justify-between px-6 pl-20 select-none">
       {/* Left: Breadcrumbs & Cluster Status */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">

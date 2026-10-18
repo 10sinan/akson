@@ -311,7 +311,7 @@ export function App() {
   };
 
   return (
-    <div className="bg-[#08090e] text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
+    <div className="bg-black text-[#e3e1e9] min-h-screen flex selection:bg-white/20 selection:text-white">
       {/* 1. SOL SABİT MENÜ */}
       <Sidebar
         activeTab={activeTab}
@@ -326,7 +326,7 @@ export function App() {
       />
 
       {/* 2. ANA SARMALAYICI & ÜST BAR */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#08090e]">
+      <div className="flex-1 flex flex-col min-w-0 bg-black">
         {/* Üst Başlık Çubuğu */}
         <Header
           currentTabName={getTabTitle()}
@@ -347,7 +347,7 @@ export function App() {
 
         {/* 3. GÖMÜLÜ İÇ KANVAS */}
         <main
-          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-[#0c0e15] rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
+          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-black rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
