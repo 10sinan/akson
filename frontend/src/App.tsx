@@ -352,7 +352,7 @@ export function App() {
 
         {/* 3. GÖMÜLÜ İÇ KANVAS */}
         <main
-          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-black rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out ${
+          className={`ml-16 mt-14 min-h-[calc(100vh-3.5rem)] bg-black rounded-tl-3xl border-t border-l border-[#1e2230] p-6 lg:p-8 flex-1 flex flex-col min-w-0 overflow-y-auto transition-all duration-300 ease-in-out relative z-10 ${
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >

@@ -36,7 +36,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isAiOpen = false,
 }) => {
   return (
-    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#1a1d28] z-50 flex flex-col items-center py-3 justify-between select-none">
+    <aside className="fixed top-0 left-0 bottom-0 w-16 bg-black border-r border-[#1e2230] z-50 flex flex-col items-center py-3 justify-between select-none">
+      {/* Header ve Main Content ile kesintisiz köşe birleşim köprüsü (Inverted corner bridge) */}
+      <div
+        className="absolute top-14 -right-6 w-6 h-6 pointer-events-none z-50 overflow-hidden"
+        aria-hidden="true"
+      >
+        <svg className="w-6 h-6 block" viewBox="0 0 24 24" fill="none">
+          {/* Köşedeki boşluğu kapatan siyah kama */}
+          <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#000000" />
+          {/* Main content rounded-tl-3xl kavisini tamamlayan köşe çizgisi */}
+          <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#1e2230" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
       {/* Top: Logo & Main Navigation */}
       <div className="flex flex-col items-center gap-6 w-full">
         {/* Brand Logo */}

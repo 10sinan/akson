@@ -47,7 +47,18 @@ export const Header: React.FC<HeaderProps> = ({
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-black border-b border-[#1a1d28] z-40 flex items-center justify-between px-6 pl-20 select-none">
+    <header className="fixed top-0 left-0 md:left-16 right-0 h-14 bg-black border-b border-[#1e2230] z-40 flex items-center justify-between px-4 sm:px-6 pl-20 md:pl-6 select-none">
+      {/* Sol alt birleşim köşesi: Main canvas rounded-tl-3xl kavisini tamamlayan köprü */}
+      <div
+        className="hidden md:block absolute -bottom-6 left-0 w-6 h-6 pointer-events-none z-40 overflow-hidden"
+        aria-hidden="true"
+      >
+        <svg className="w-6 h-6 block" viewBox="0 0 24 24" fill="none">
+          <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#000000" />
+          <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#1e2230" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
       {/* Left: Breadcrumbs & Cluster Status */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
