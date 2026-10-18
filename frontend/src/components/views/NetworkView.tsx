@@ -8,7 +8,6 @@ import {
   Server,
   CheckCircle2,
   RefreshCw,
-  ArrowRight,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
 
@@ -96,10 +95,10 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
         </div>
       )}
 
-      {/* Visual Traffic Flow Pipeline Strip (Replaces bulky box-in-a-box) */}
-      <div className="p-4 rounded-2xl bg-[#0a0a0a] border border-[#262626] flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Visual Traffic Flow Pipeline Strip (Animated Cyber Conduits) */}
+      <div className="p-4 rounded-2xl bg-[#0a0a0a] border border-[#262626] flex flex-col md:flex-row items-center justify-between gap-4 select-none">
         {/* Step 1: Ingress */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
           <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center shrink-0">
             <Globe className="w-4 h-4 text-sky-400" />
           </div>
@@ -109,10 +108,39 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
           </div>
         </div>
 
-        <ArrowRight className="w-4 h-4 text-zinc-600 hidden md:block shrink-0" />
+        {/* HAREKETLİ VERİ AKIŞ KANALI 1 (Dış Giriş ➔ Traefik v3 Core) */}
+        <div className="hidden md:flex flex-1 max-w-[160px] items-center justify-center px-2 relative">
+          <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
+            {/* Taban Kılavuz Çizgisi */}
+            <div className="w-full h-[2px] bg-gradient-to-r from-sky-500/25 via-emerald-500/20 to-emerald-500/25" />
+            {/* Akıcı Lazer Işık Dalgası */}
+            <motion.div
+              className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-sky-400 to-transparent opacity-80 blur-[0.5px]"
+              animate={{ left: ['-50%', '130%'] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            />
+            {/* Parlayan Canlı Veri Fotonu */}
+            <motion.div
+              className="absolute w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,1)] ring-1 ring-sky-200"
+              animate={{ left: ['-15%', '115%'] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            />
+          </div>
+        </div>
+
+        {/* Mobil Dikey Bağlantı 1 */}
+        <div className="md:hidden flex items-center justify-center py-0.5">
+          <div className="relative w-0.5 h-4 bg-zinc-800 rounded-full overflow-hidden">
+            <motion.div
+              className="absolute inset-x-0 w-full h-2 bg-gradient-to-b from-sky-400 to-emerald-400"
+              animate={{ top: ['-50%', '150%'] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+            />
+          </div>
+        </div>
 
         {/* Step 2: SSL & Proxy Core */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
           <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
@@ -122,10 +150,39 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
           </div>
         </div>
 
-        <ArrowRight className="w-4 h-4 text-zinc-600 hidden md:block shrink-0" />
+        {/* HAREKETLİ VERİ AKIŞ KANALI 2 (Traefik v3 Core ➔ akson-bridge) */}
+        <div className="hidden md:flex flex-1 max-w-[160px] items-center justify-center px-2 relative">
+          <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
+            {/* Taban Kılavuz Çizgisi */}
+            <div className="w-full h-[2px] bg-gradient-to-r from-emerald-500/25 via-violet-500/20 to-violet-500/25" />
+            {/* Akıcı Lazer Işık Dalgası (Senkronize gecikme ile) */}
+            <motion.div
+              className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80 blur-[0.5px]"
+              animate={{ left: ['-50%', '130%'] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
+            />
+            {/* Parlayan Canlı Veri Fotonu */}
+            <motion.div
+              className="absolute w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
+              animate={{ left: ['-15%', '115%'] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
+            />
+          </div>
+        </div>
+
+        {/* Mobil Dikey Bağlantı 2 */}
+        <div className="md:hidden flex items-center justify-center py-0.5">
+          <div className="relative w-0.5 h-4 bg-zinc-800 rounded-full overflow-hidden">
+            <motion.div
+              className="absolute inset-x-0 w-full h-2 bg-gradient-to-b from-emerald-400 to-violet-400"
+              animate={{ top: ['-50%', '150%'] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear', delay: 0.75 }}
+            />
+          </div>
+        </div>
 
         {/* Step 3: Isolated Network */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
           <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0">
             <Server className="w-4 h-4 text-violet-400" />
           </div>
@@ -220,6 +277,26 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
             </h2>
           </div>
           <span className="text-zinc-500 font-mono text-xs">Ağ Geçidi: 172.20.0.1</span>
+        </div>
+
+        {/* Canlı Alt Ağ Dağıtım Hattı & Ağ Geçidi Akışı */}
+        <div className="relative my-2 select-none">
+          <div className="relative h-[2px] bg-gradient-to-r from-transparent via-zinc-800 to-transparent overflow-hidden">
+            <motion.div
+              className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-violet-400/80 to-transparent"
+              animate={{ left: ['-25%', '125%'] }}
+              transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+            />
+          </div>
+          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-violet-500" />
+            </span>
+            <span>
+              dhcp/arp: <strong className="text-violet-300 font-semibold">{containers.length} IP tahsisli</strong>
+            </span>
+          </div>
         </div>
 
         {/* Visual node grid */}
