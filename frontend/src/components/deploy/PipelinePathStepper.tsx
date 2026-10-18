@@ -169,14 +169,14 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
       {/* Interactive Path Canvas */}
       <div className="relative py-2 select-none">
-        {/* SVG Connecting Track Line */}
-        <div className="absolute top-[38px] left-[6%] right-[6%] h-[3px] bg-zinc-900 -translate-y-1/2 rounded-full z-0 overflow-hidden">
-          {/* Base Inactive Track */}
-          <div className="w-full h-full bg-zinc-800" />
+        {/* Cyber Connecting Track Line (Pipeline Conduit) */}
+        <div className="absolute top-[28px] sm:top-[30px] left-[10%] right-[10%] h-2 bg-zinc-900 border border-zinc-800/90 -translate-y-1/2 rounded-full z-0 overflow-hidden shadow-inner flex items-center">
+          {/* Base Inactive Track Guide Line */}
+          <div className="w-full h-[2px] bg-zinc-800/80" />
 
-          {/* Active Progress Track with subtle semantic gradient */}
+          {/* Active Progress Track with semantic gradient */}
           <motion.div
-            className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-sky-400 via-emerald-400 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.4)]"
+            className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-sky-400 via-amber-400 via-emerald-400 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]"
             initial={{ width: '0%' }}
             animate={{
               width: `${((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100}%`,
@@ -184,12 +184,30 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           />
 
-          {/* Laser Energy Pulse (Active when deploying) */}
+          {/* Akıcı Lazer Işık Dalgası (Continuous Flowing Laser Beam) */}
+          <motion.div
+            className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-85 blur-[0.5px]"
+            animate={{
+              left: ['-20%', `${Math.max(25, ((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100)}%`],
+            }}
+            transition={{ repeat: Infinity, duration: isDeploying ? 1.0 : 2.2, ease: 'easeInOut' }}
+          />
+
+          {/* Parlayan Canlı Veri Fotonu / Enerji Paketi */}
+          <motion.div
+            className="absolute w-2.5 h-2.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
+            animate={{
+              left: ['-5%', `${Math.max(20, ((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100)}%`],
+            }}
+            transition={{ repeat: Infinity, duration: isDeploying ? 1.0 : 2.2, ease: 'easeInOut' }}
+          />
+
+          {/* Yüksek Enerji Lazer Darbesi (Deploy Anında Tüm Tüneli Kat Eden Hızlı Işık) */}
           {isDeploying && (
             <motion.div
-              className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-90 blur-[1px]"
-              animate={{ left: ['-10%', '110%'] }}
-              transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+              className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-white to-transparent opacity-95 blur-[1px]"
+              animate={{ left: ['-20%', '120%'] }}
+              transition={{ repeat: Infinity, duration: 0.85, ease: 'linear' }}
             />
           )}
         </div>
@@ -210,41 +228,59 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                 onMouseEnter={() => setHoveredStep(step.id)}
                 onMouseLeave={() => setHoveredStep(null)}
               >
-                {/* Node Circle */}
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.96 }}
-                  transition={snappySpring}
-                  className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center relative transition-all duration-200 ${
-                    isCompleted
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
-                      : isCurrent
-                      ? `bg-white text-black ${stepStyles.activeRing}`
-                      : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-700 group-hover:text-zinc-300'
-                  }`}
-                >
-                  {/* Icon or Status */}
-                  {isCompleted ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3] text-emerald-400" />
-                  ) : isCurrent && isDeploying ? (
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-black" />
-                  ) : (
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                {/* Node Circle with Ambient Halo */}
+                <div className="relative">
+                  {/* Active Ambient Breathing Halo */}
+                  {isCurrent && (
+                    <motion.div
+                      className="absolute -inset-1 rounded-2xl blur-md -z-10"
+                      style={{
+                        backgroundColor:
+                          step.id === 1 ? '#38bdf8' :
+                          step.id === 2 ? '#fbbf24' :
+                          step.id === 3 ? '#34d399' :
+                          step.id === 4 ? '#a78bfa' : '#fb7185'
+                      }}
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.35, 0.7, 0.35] }}
+                      transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+                    />
                   )}
 
-                  {/* Step Number Badge */}
-                  <span
-                    className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={snappySpring}
+                    className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center relative transition-all duration-200 ${
                       isCompleted
-                        ? 'bg-zinc-900 text-emerald-400 border-emerald-500/40'
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
                         : isCurrent
-                        ? 'bg-white text-black border-white'
-                        : 'bg-zinc-900 text-zinc-500 border-zinc-800'
+                        ? `bg-white text-black ${stepStyles.activeRing}`
+                        : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-700 group-hover:text-zinc-300'
                     }`}
                   >
-                    {step.id}
-                  </span>
-                </motion.div>
+                    {/* Icon or Status */}
+                    {isCompleted ? (
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3] text-emerald-400" />
+                    ) : isCurrent && isDeploying ? (
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-black" />
+                    ) : (
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+
+                    {/* Step Number Badge */}
+                    <span
+                      className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full text-[9px] font-mono font-bold flex items-center justify-center border ${
+                        isCompleted
+                          ? 'bg-zinc-900 text-emerald-400 border-emerald-500/40'
+                          : isCurrent
+                          ? 'bg-white text-black border-white'
+                          : 'bg-zinc-900 text-zinc-500 border-zinc-800'
+                      }`}
+                    >
+                      {step.id}
+                    </span>
+                  </motion.div>
+                </div>
 
                 {/* Node Label */}
                 <div className="mt-3 text-center px-1">
