@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
+import type { ContainerItem } from '../../types/container';
 
 export interface PipelineItem {
   id: string;
@@ -17,50 +18,23 @@ export interface PipelineItem {
   duration: string;
 }
 
-const MOCK_PIPELINES: PipelineItem[] = [
-  {
-    id: 'deploy-run-482',
-    name: 'deploy-run#482',
-    type: 'CI/CD',
-    description: 'api-gateway:latest (İmaj derleme)',
-    status: 'success',
-    branchOrTarget: 'main (7b4f91c)',
-    duration: '42 saniye',
-  },
-  {
-    id: 'db-migration-104',
-    name: 'db-migration#104',
-    type: 'MIGRATE',
-    description: 'schema-sync (Kullanıcı tabloları)',
-    status: 'success',
-    branchOrTarget: 'v2.4.0-patch',
-    duration: '8 saniye',
-  },
-  {
-    id: 'scheduled-backup-89',
-    name: 'scheduled-backup#89',
-    type: 'BACKUP',
-    description: 'postgres_data -> NVMe snapshot',
-    status: 'success',
-    branchOrTarget: 'RAID-1 disk alanı',
-    duration: '1 dk 12 sn',
-  },
-  {
-    id: 'cache-warmup-21',
-    name: 'cache-warmup#21',
-    type: 'TASK',
-    description: 'redis-cache önbellek ısıtma',
-    status: 'running',
-    branchOrTarget: '10,000 anahtar',
-    duration: 'Devam ediyor...',
-  },
-];
-
 interface PipelineColumnProps {
+  containers?: ContainerItem[];
   onSelectPipeline?: (item: PipelineItem) => void;
 }
 
-export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline }) => {
+export const PipelineColumn: React.FC<PipelineColumnProps> = ({ containers = [], onSelectPipeline }) => {
+  const dynamicPipelines: PipelineItem[] = React.useMemo(() => {
+    return containers.map((c, idx) => ({
+      id: `pipeline-${c.id || idx}`,
+      name: `${c.name}#live`,
+      type: (c.category === 'core' ? 'CI/CD' : c.category === 'database' ? 'MIGRATE' : 'TASK') as PipelineItem['type'],
+      description: `${c.image}:${c.tag} (${c.status === 'running' ? 'Çalışıyor' : 'Durduruldu'})`,
+      status: (c.status === 'running' ? 'success' : 'pending') as PipelineItem['status'],
+      branchOrTarget: c.uptime || 'İzole akson-bridge',
+      duration: c.status === 'running' ? 'Aktif' : '0s',
+    }));
+  }, [containers]);
   return (
     <section className="space-y-4 bg-[#1a1b21] p-4 rounded-2xl border border-[#26282e] transition-all">
       {/* Header */}
@@ -71,7 +45,7 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline
             Dağıtım & Görev Akışı
           </h2>
           <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#121318] text-[#c4c7c8] border border-[#26282e]">
-            {MOCK_PIPELINES.length} Görev
+            {dynamicPipelines.length} Görev
           </span>
         </div>
       </div>
@@ -91,7 +65,7 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline
         animate="visible"
         className="space-y-3"
       >
-        {MOCK_PIPELINES.map((item) => (
+        {dynamicPipelines.map((item) => (
           <motion.article
             key={item.id}
             variants={{
@@ -145,6 +119,11 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ onSelectPipeline
             </div>
           </motion.article>
         ))}
+        {dynamicPipelines.length === 0 && (
+          <div className="p-6 text-center text-xs font-mono text-[#8e9192] bg-[#121318] rounded-xl border border-[#26282e]">
+            Kayıtlı işlem veya olay geçmişi bulunmuyor.
+          </div>
+        )}
       </motion.div>
     </section>
   );

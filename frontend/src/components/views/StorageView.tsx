@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import type { ContainerItem } from '../../types/container';
 import {
   Database,
   Search,
@@ -23,84 +24,46 @@ interface VolumeItem {
   fileCount: number;
 }
 
-const MOCK_VOLUMES: VolumeItem[] = [
-  {
-    id: 'v1',
-    name: 'postgres_data',
-    size: '42.8 GB',
-    service: 'postgres-main',
-    mountPath: '/var/lib/postgresql/data',
-    hostPath: '/var/lib/docker/volumes/postgres_data/_data',
-    driver: 'local',
-    format: 'ext4 (Read-Write)',
-    status: 'active',
-    fileCount: 1420,
-  },
-  {
-    id: 'v2',
-    name: 'redis_cache_vol',
-    size: '4.2 GB',
-    service: 'redis-cache',
-    mountPath: '/data',
-    hostPath: '/var/lib/docker/volumes/redis_cache_vol/_data',
-    driver: 'local',
-    format: 'tmpfs/in-memory AOF',
-    status: 'active',
-    fileCount: 4,
-  },
-  {
-    id: 'v3',
-    name: 'uploads_media_storage',
-    size: '62.8 GB',
-    service: 'api-gateway',
-    mountPath: '/var/www/uploads',
-    hostPath: '/var/lib/docker/volumes/uploads_media_storage/_data',
-    driver: 'local',
-    format: 'ext4 (Read-Write)',
-    status: 'active',
-    fileCount: 8450,
-  },
-  {
-    id: 'v4',
-    name: 'traefik_acme_certs',
-    size: '4.2 MB',
-    service: 'api-gateway',
-    mountPath: '/etc/traefik/acme',
-    hostPath: '/var/lib/docker/volumes/traefik_acme_certs/_data',
-    driver: 'local',
-    format: 'ext4 (Strict 0600)',
-    status: 'active',
-    fileCount: 3,
-  },
-  {
-    id: 'v5',
-    name: 'akson_sqlite_wal',
-    size: '18.6 MB',
-    service: 'akson-core',
-    mountPath: '/data/akson.db',
-    hostPath: '/var/lib/docker/volumes/akson_sqlite_wal/_data',
-    driver: 'local',
-    format: 'SQLite WAL mode',
-    status: 'active',
-    fileCount: 3,
-  },
-  {
-    id: 'v6',
-    name: 'backup_archives',
-    size: '18.6 GB',
-    service: 'analytics-worker',
-    mountPath: '/mnt/backups',
-    hostPath: '/var/lib/docker/volumes/backup_archives/_data',
-    driver: 'local',
-    format: 'ext4 (Compressed)',
-    status: 'active',
-    fileCount: 12,
-  },
-];
+interface StorageViewProps {
+  containers?: ContainerItem[];
+}
 
-export const StorageView: React.FC = () => {
-  const [volumes] = useState<VolumeItem[]>(MOCK_VOLUMES);
-  const [selectedVolume, setSelectedVolume] = useState<VolumeItem>(MOCK_VOLUMES[0]);
+export const StorageView: React.FC<StorageViewProps> = ({ containers = [] }) => {
+  const volumes: VolumeItem[] = React.useMemo(() => {
+    const list: VolumeItem[] = [
+      {
+        id: 'vol-sqlite-wal',
+        name: 'akson_sqlite_wal',
+        size: '12.4 MB',
+        service: 'akson-backend',
+        mountPath: '/data/akson.db',
+        hostPath: './data/akson.db',
+        driver: 'local',
+        format: 'SQLite 3 (WAL mode)',
+        status: 'active',
+        fileCount: 3,
+      },
+    ];
+
+    containers.forEach((c, idx) => {
+      list.push({
+        id: `vol-${c.id || idx}`,
+        name: `${c.name}_storage`,
+        size: `${Math.max(1, Math.round(c.memoryUsageMb * 1.5))} MB`,
+        service: c.name,
+        mountPath: '/var/lib/data',
+        hostPath: `/var/lib/docker/volumes/${c.name}_storage/_data`,
+        driver: 'local',
+        format: 'overlay2 / ext4',
+        status: c.status === 'running' ? 'active' : 'unused',
+        fileCount: c.status === 'running' ? 24 : 0,
+      });
+    });
+
+    return list;
+  }, [containers]);
+
+  const [selectedVolume, setSelectedVolume] = useState<VolumeItem>(volumes[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedPath, setCopiedPath] = useState(false);
   const [snapshotName, setSnapshotName] = useState<string | null>(null);

@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
+import { api } from '../../api/client';
 
 interface LogsViewProps {
   containers: ContainerItem[];
@@ -24,67 +25,8 @@ interface LogEntry {
   message: string;
 }
 
-const INITIAL_LOGS: LogEntry[] = [
-  {
-    id: 'l1',
-    timestamp: '14:20:01',
-    containerName: 'api-gateway',
-    level: 'info',
-    message: 'Traefik v3.0.1 listening on :80 and :443 (Let\'s Encrypt TLS-ALPN-01)',
-  },
-  {
-    id: 'l2',
-    timestamp: '14:20:03',
-    containerName: 'api-gateway',
-    level: 'info',
-    message: 'Loaded route host(`app.localhost`) -> 172.20.0.3:3000',
-  },
-  {
-    id: 'l3',
-    timestamp: '14:20:05',
-    containerName: 'postgres-main',
-    level: 'info',
-    message: 'database system is ready to accept connections (port 5432)',
-  },
-  {
-    id: 'l4',
-    timestamp: '14:20:08',
-    containerName: 'redis-cache',
-    level: 'info',
-    message: 'Ready to accept connections tcp: 10,000 keys loaded into memory',
-  },
-  {
-    id: 'l5',
-    timestamp: '14:20:12',
-    containerName: 'frontend-web',
-    level: 'info',
-    message: 'Next.js App Router server ready on http://0.0.0.0:3000',
-  },
-  {
-    id: 'l6',
-    timestamp: '14:20:15',
-    containerName: 'analytics-worker',
-    level: 'warn',
-    message: 'High queue latency detected on channel: metrics-rollup (p95: 142ms)',
-  },
-  {
-    id: 'l7',
-    timestamp: '14:20:18',
-    containerName: 'api-gateway',
-    level: 'info',
-    message: 'GET /api/v1/healthz 200 OK - 1.2ms (172.20.0.1)',
-  },
-  {
-    id: 'l8',
-    timestamp: '14:20:25',
-    containerName: 'analytics-worker',
-    level: 'error',
-    message: 'Connection timeout while fetching telemetry-batch (retrying in 5s...)',
-  },
-];
-
 export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
-  const [logs, setLogs] = useState<LogEntry[]>(INITIAL_LOGS);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [selectedContainer, setSelectedContainer] = useState<string>('all');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'info' | 'warn' | 'error'>('all');
   const [searchGrep, setSearchGrep] = useState('');
@@ -103,30 +45,72 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
     }
   }, [logs, autoScroll]);
 
-  // Simulated live log ticker
+  // Initial population from containers
+  useEffect(() => {
+    const initial: LogEntry[] = [];
+    containers.forEach((c) => {
+      if (c.logs && c.logs.length > 0) {
+        c.logs.forEach((msg, idx) => {
+          const lower = msg.toLowerCase();
+          const level: 'info' | 'warn' | 'error' =
+            lower.includes('err') || lower.includes('fail')
+              ? 'error'
+              : lower.includes('warn')
+              ? 'warn'
+              : 'info';
+
+          initial.push({
+            id: `init-${c.id}-${idx}`,
+            timestamp: new Date().toTimeString().split(' ')[0],
+            containerName: c.name,
+            level,
+            message: msg,
+          });
+        });
+      }
+    });
+
+    if (initial.length > 0) {
+      setLogs((prev) => (prev.length === 0 ? initial : prev));
+    }
+  }, [containers]);
+
+  // Live SSE stream from running containers
   useEffect(() => {
     if (!isStreaming) return;
+    const running = containers.filter((c) => c.status === 'running');
+    if (running.length === 0) return;
 
-    const interval = setInterval(() => {
-      const now = new Date();
-      const timeStr = now.toTimeString().split(' ')[0];
-      const randomContainers = ['api-gateway', 'frontend-web', 'postgres-main', 'redis-cache'];
-      const pick = randomContainers[Math.floor(Math.random() * randomContainers.length)];
-      const ms = Math.floor(Math.random() * 8 + 1);
+    const cleanups: (() => void)[] = [];
+    running.forEach((c) => {
+      const unsub = api.createLogStream(c.id, (entry) => {
+        const text = entry.message || (typeof entry === 'string' ? entry : JSON.stringify(entry));
+        const lower = text.toLowerCase();
+        const level: 'info' | 'warn' | 'error' =
+          lower.includes('err') || lower.includes('fail')
+            ? 'error'
+            : lower.includes('warn')
+            ? 'warn'
+            : 'info';
 
-      const newLog: LogEntry = {
-        id: `log-${Date.now()}`,
-        timestamp: timeStr,
-        containerName: pick,
-        level: 'info',
-        message: `HTTP 200 GET /telemetry/stream - latency ${ms}.4ms - request_id: ${Math.random().toString(36).substring(7)}`,
-      };
+        setLogs((prev) => [
+          ...prev.slice(-999),
+          {
+            id: `live-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            timestamp: new Date().toTimeString().split(' ')[0],
+            containerName: c.name,
+            level,
+            message: text,
+          },
+        ]);
+      });
+      cleanups.push(unsub);
+    });
 
-      setLogs((prev) => [...prev.slice(-150), newLog]);
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, [isStreaming]);
+    return () => {
+      cleanups.forEach((fn) => fn());
+    };
+  }, [containers, isStreaming]);
 
   // Filtered log entries
   const filteredLogs = logs.filter((log) => {

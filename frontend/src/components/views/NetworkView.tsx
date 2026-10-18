@@ -22,49 +22,6 @@ interface RouteRule {
   status: 'healthy' | 'degraded';
 }
 
-const MOCK_ROUTES: RouteRule[] = [
-  {
-    id: 'r1',
-    name: 'api-gateway@docker',
-    rule: 'Host(`api.localhost`) || Host(`api.akson.internal`)',
-    entryPoint: 'websecure (:443)',
-    targetService: 'api-gateway:8080',
-    targetIp: '172.20.0.2:8080',
-    tls: true,
-    status: 'healthy',
-  },
-  {
-    id: 'r2',
-    name: 'frontend-web@docker',
-    rule: 'Host(`app.localhost`) || Host(`app.akson.internal`)',
-    entryPoint: 'websecure (:443)',
-    targetService: 'frontend-web:80',
-    targetIp: '172.20.0.3:3000',
-    tls: true,
-    status: 'healthy',
-  },
-  {
-    id: 'r3',
-    name: 'postgres-internal@docker',
-    rule: 'HostSNI(`db.internal`)',
-    entryPoint: 'postgres (:5432)',
-    targetService: 'postgres-main:5432',
-    targetIp: '172.20.0.4:5432',
-    tls: true,
-    status: 'healthy',
-  },
-  {
-    id: 'r4',
-    name: 'redis-internal@docker',
-    rule: 'HostSNI(`cache.internal`)',
-    entryPoint: 'redis (:6379)',
-    targetService: 'redis-cache:6379',
-    targetIp: '172.20.0.5:6379',
-    tls: false,
-    status: 'healthy',
-  },
-];
-
 interface NetworkViewProps {
   containers: ContainerItem[];
 }
@@ -72,6 +29,24 @@ interface NetworkViewProps {
 export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshSuccess, setRefreshSuccess] = useState(false);
+
+  const dynamicRoutes: RouteRule[] = React.useMemo(() => {
+    return containers.map((c, index) => {
+      const portInfo = c.ports && c.ports.length > 0 ? c.ports[0] : null;
+      const hostPort = portInfo?.hostPort || 80;
+      const containerPort = portInfo?.containerPort || 80;
+      return {
+        id: `r-${c.id || index}`,
+        name: `${c.name}@docker`,
+        rule: c.traefikRoute ? `Host(\`${c.traefikRoute}\`)` : `Host(\`${c.name}.localhost\`)`,
+        entryPoint: portInfo ? `web (${hostPort}:${containerPort})` : 'akson-bridge dahili',
+        targetService: `${c.name}:${containerPort}`,
+        targetIp: `${c.ipAddress || '172.20.0.' + (index + 2)}:${containerPort}`,
+        tls: true,
+        status: (c.status === 'running' ? 'healthy' : 'degraded') as 'healthy' | 'degraded',
+      };
+    });
+  }, [containers]);
 
   const handleRefreshCerts = () => {
     setIsRefreshing(true);
@@ -167,7 +142,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
             </h2>
           </div>
           <span className="text-[11px] font-mono text-[#8e9192] bg-[#16171d] px-2 py-0.5 rounded border border-[#26282e]">
-            {MOCK_ROUTES.length} Rota Tanımlı
+            {dynamicRoutes.length} Rota Tanımlı
           </span>
         </div>
 
@@ -184,7 +159,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1e1f25]">
-              {MOCK_ROUTES.map((route) => (
+              {dynamicRoutes.map((route) => (
                 <tr key={route.id} className="hover:bg-white/5 transition-colors">
                   <td className="p-3.5 font-semibold text-white">{route.name}</td>
                   <td className="p-3.5 text-blue-300 font-medium">{route.rule}</td>
@@ -200,13 +175,24 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
                     )}
                   </td>
                   <td className="p-3.5 text-right">
-                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-medium border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Aktif
+                    <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded font-medium border ${
+                      route.status === 'healthy'
+                        ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+                        : 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${route.status === 'healthy' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                      {route.status === 'healthy' ? 'Aktif' : 'Beklemede'}
                     </span>
                   </td>
                 </tr>
               ))}
+              {dynamicRoutes.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-[#8e9192]">
+                    Aktif Docker konteyneri bulunamadı. Konteyner başlatıldığında ağ rotaları otomatik olarak burada listelenecektir.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

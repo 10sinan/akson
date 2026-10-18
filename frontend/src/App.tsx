@@ -534,6 +534,7 @@ export function App() {
                             className="lg:col-span-1"
                           >
                             <PipelineColumn
+                              containers={containers}
                               onSelectPipeline={(pipeline) => {
                                 const matched = containers.find(
                                   (c) =>
@@ -617,7 +618,7 @@ export function App() {
                 transition={wiseGentle}
                 className="flex flex-col flex-1"
               >
-                <StorageView />
+                <StorageView containers={containers} />
               </motion.div>
             )}
 
