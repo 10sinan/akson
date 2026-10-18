@@ -238,12 +238,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
                   <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-blue-400" />
+                    <Layers className="w-4 h-4 text-emerald-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                       1. Adım: Docker İmajı & Şablon Seçimi
                     </h2>
                   </div>
-                  <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                  <span className="text-[10px] text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
                     Docker Registry
                   </span>
                 </div>
@@ -255,13 +255,13 @@ export const DeployView: React.FC<DeployViewProps> = ({
                       onClick={() => handleSelectTemplate(tpl)}
                       className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                         selectedTemplate === tpl.id
-                          ? 'bg-[#1a1b24] border-blue-500 text-white shadow-md'
+                          ? 'bg-[#1a1c24] border-white/60 text-white shadow-md ring-1 ring-white/20'
                           : 'bg-[#0d0e13] border-[#26282e] text-[#8e9192] hover:border-white/20 hover:text-white'
                       }`}
                     >
                       <div className="flex items-center justify-between font-bold">
                         <span className="text-white">{tpl.name}</span>
-                        <span className="text-[10px] text-blue-400 font-mono">:{tpl.tag}</span>
+                        <span className="text-[10px] text-emerald-400 font-mono">:{tpl.tag}</span>
                       </div>
                       <p className="text-[11px] text-[#8e9192] mt-1 line-clamp-1 font-sans">
                         {tpl.desc}
@@ -277,7 +277,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     value={customImage}
                     onChange={(e) => setCustomImage(e.target.value)}
                     placeholder="örn: nginx:alpine, redis:7, python:3.11"
-                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                   />
                 </div>
 
@@ -288,7 +288,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     value={serviceName}
                     onChange={(e) => setServiceName(e.target.value)}
                     placeholder="örn: my-web-app"
-                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                   />
                 </div>
               </motion.div>
@@ -304,12 +304,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-purple-400" />
+                    <Sliders className="w-4 h-4 text-emerald-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider">
                       2. Adım: Port & Ortam Değişkenleri (ENV)
                     </h2>
                   </div>
-                  <span className="text-[10px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                  <span className="text-[10px] text-slate-300 bg-white/5 px-2 py-0.5 rounded border border-white/10">
                     Network & Config
                   </span>
                 </div>
@@ -321,7 +321,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                       type="number"
                       value={hostPort}
                       onChange={(e) => setHostPort(Number(e.target.value))}
-                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -330,7 +330,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                       type="number"
                       value={containerPort}
                       onChange={(e) => setContainerPort(Number(e.target.value))}
-                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                     />
                   </div>
                 </div>
@@ -360,7 +360,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                           updated[idx].key = e.target.value;
                           setEnvVars(updated);
                         }}
-                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                       />
                       <input
                         type={env.secret && !showSecrets ? 'password' : 'text'}
@@ -371,7 +371,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                           updated[idx].value = e.target.value;
                           setEnvVars(updated);
                         }}
-                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                       />
                       <button
                         type="button"
@@ -386,7 +386,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   <button
                     type="button"
                     onClick={handleAddEnv}
-                    className="inline-flex items-center gap-1 text-[11px] text-purple-400 hover:text-purple-300 font-semibold pt-1"
+                    className="inline-flex items-center gap-1 text-[11px] text-slate-300 hover:text-white font-semibold pt-1"
                   >
                     <Plus className="w-3 h-3" /> Değişken Ekle
                   </button>
@@ -421,7 +421,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     value={customDomain}
                     onChange={(e) => setCustomDomain(e.target.value)}
                     placeholder="örn: api.localhost veya app.internal"
-                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                   />
                   <p className="text-[10px] text-[#8e9192]">Host(`{customDomain}`) kuralı otomatik Traefik HTTP/HTTPS dinleyicisine eklenecektir.</p>
                 </div>
@@ -431,7 +431,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   <select
                     value={selectedNetwork}
                     onChange={(e) => setSelectedNetwork(e.target.value)}
-                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/60 focus:ring-1 focus:ring-white/20"
                   >
                     <option value="akson-bridge">akson-bridge (İzole Dahili Ağ)</option>
                     <option value="bridge">bridge (Varsayılan Docker Köprüsü)</option>
@@ -575,7 +575,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     soundManager.playClick();
                     setCurrentStep((prev) => Math.min(5, prev + 1));
                   }}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-medium transition cursor-pointer shadow-md"
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 text-xs font-mono font-bold transition cursor-pointer shadow-md active:scale-95"
                 >
                   <span>Sonraki Adım</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -595,7 +595,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
           <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-400" /> Dağıtım Emri
+                <Sparkles className="w-4 h-4 text-emerald-400" /> Dağıtım Emri
               </span>
               <span className="text-[10px] text-emerald-400 font-mono">Docker Engine SDK</span>
             </div>
@@ -607,10 +607,10 @@ export const DeployView: React.FC<DeployViewProps> = ({
               onClick={handleStartDeploy}
               className={`w-full py-4 px-6 rounded-2xl font-bold font-mono text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-3 cursor-pointer ${
                 isDeployed
-                  ? 'bg-emerald-500 text-slate-950 cursor-default'
+                  ? 'bg-emerald-500 text-slate-950 cursor-default font-extrabold'
                   : isDeploying
-                  ? 'bg-indigo-700 text-white cursor-wait'
-                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white ring-2 ring-white/20'
+                  ? 'bg-[#1c1e27] text-slate-200 border border-white/20 cursor-wait'
+                  : 'bg-white hover:bg-slate-100 text-slate-950 ring-2 ring-white/80 font-extrabold shadow-2xl active:scale-[0.98]'
               }`}
             >
               {isDeployed ? (
@@ -620,7 +620,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </>
               ) : isDeploying ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
                   <span>Dağıtılıyor (Adım {currentStep}/5)...</span>
                 </>
               ) : (
