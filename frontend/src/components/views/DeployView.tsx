@@ -1,617 +1,691 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { wiseBouncy } from '../../utils/motion';
+import { wiseSpring } from '../../utils/motion';
+import { soundManager } from '../../utils/sound';
 import {
   Rocket,
-  FolderGit2,
   Globe,
-  CheckCircle2,
   Terminal,
-  Clock,
-  Search,
   Plus,
   Trash2,
   Eye,
   EyeOff,
   Loader2,
-  Server,
+  ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  Sliders,
+  Cpu,
+  Layers,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
-
-interface RepoOption {
-  id: string;
-  name: string;
-  isPrivate: boolean;
-  updatedAt: string;
-  runtime: string;
-  branch: string;
-  port: number;
-}
-
-const MOCK_REPOS: RepoOption[] = [
-  {
-    id: 'r1',
-    name: 'my-nextjs-app',
-    isPrivate: false,
-    updatedAt: '12 dakika önce',
-    runtime: 'Next.js 14 (App Router)',
-    branch: 'main',
-    port: 3000,
-  },
-  {
-    id: 'r2',
-    name: 'portfolio-website',
-    isPrivate: true,
-    updatedAt: '2 saat önce',
-    runtime: 'Astro 4.0 + Tailwind v4',
-    branch: 'production',
-    port: 4321,
-  },
-  {
-    id: 'r3',
-    name: 'golang-microservice',
-    isPrivate: false,
-    updatedAt: '1 gün önce',
-    runtime: 'Go 1.22 + Alpine Dockerfile',
-    branch: 'main',
-    port: 8080,
-  },
-  {
-    id: 'r4',
-    name: 'fastapi-ml-worker',
-    isPrivate: true,
-    updatedAt: '3 gün önce',
-    runtime: 'Python 3.11 + Celery',
-    branch: 'main',
-    port: 8000,
-  },
-];
+import { PipelinePathStepper } from '../deploy/PipelinePathStepper';
 
 interface DeployViewProps {
   onDeploySuccess: (container: ContainerItem) => void;
   onNavigateDashboard: () => void;
 }
 
+interface TemplateImage {
+  id: string;
+  name: string;
+  image: string;
+  tag: string;
+  defaultPort: number;
+  category: 'service' | 'database' | 'core' | 'worker';
+  desc: string;
+}
+
+const TEMPLATE_IMAGES: TemplateImage[] = [
+  {
+    id: 'nginx',
+    name: 'web-frontend',
+    image: 'nginx',
+    tag: 'alpine',
+    defaultPort: 80,
+    category: 'service',
+    desc: 'Hafif ve yüksek performanslı Nginx web sunucusu',
+  },
+  {
+    id: 'redis',
+    name: 'cache-redis',
+    image: 'redis',
+    tag: '7-alpine',
+    defaultPort: 6379,
+    category: 'database',
+    desc: 'Ultra hızlı bellek içi anahtar-değer önbelleği',
+  },
+  {
+    id: 'postgres',
+    name: 'db-postgres',
+    image: 'postgres',
+    tag: '16-alpine',
+    defaultPort: 5432,
+    category: 'database',
+    desc: 'Güçlü ve güvenilir ilişkisel SQL veritabanı',
+  },
+  {
+    id: 'node',
+    name: 'api-service',
+    image: 'node',
+    tag: '20-alpine',
+    defaultPort: 3000,
+    category: 'core',
+    desc: 'Modern JavaScript/TypeScript REST mikroservisi',
+  },
+];
+
 export const DeployView: React.FC<DeployViewProps> = ({
   onDeploySuccess,
   onNavigateDashboard,
 }) => {
-  const [sourceType, setSourceType] = useState<'github' | 'giturl'>('github');
-  const [searchRepo, setSearchRepo] = useState('');
-  const [selectedRepo, setSelectedRepo] = useState<RepoOption>(MOCK_REPOS[0]);
-  const [customGitUrl, setCustomGitUrl] = useState('');
-  const [selectedBranch, setSelectedBranch] = useState('main');
-  const [serviceName, setServiceName] = useState('my-nextjs-app');
-  const [servicePort, setServicePort] = useState(3000);
-  const [customDomain, setCustomDomain] = useState('app.localhost');
-  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string; secret: boolean }>>([
-    { key: 'NODE_ENV', value: 'production', secret: false },
-    { key: 'PORT', value: '3000', secret: false },
-  ]);
-
-  // Deployment simulation state
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [deployStep, setDeployStep] = useState<number>(0);
+  // Stepper state
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isDeploying, setIsDeploying] = useState<boolean>(false);
   const [deployLogs, setDeployLogs] = useState<string[]>([]);
-  const [isDeployed, setIsDeployed] = useState(false);
+  const [isDeployed, setIsDeployed] = useState<boolean>(false);
 
-  const filteredRepos = MOCK_REPOS.filter((r) =>
-    r.name.toLowerCase().includes(searchRepo.toLowerCase())
-  );
+  // Form Configurations
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('nginx');
+  const [customImage, setCustomImage] = useState<string>('nginx:alpine');
+  const [serviceName, setServiceName] = useState<string>('web-frontend');
+  const [hostPort, setHostPort] = useState<number>(8080);
+  const [containerPort, setContainerPort] = useState<number>(80);
+  const [customDomain, setCustomDomain] = useState<string>('web-frontend.localhost');
+  const [selectedNetwork, setSelectedNetwork] = useState<string>('akson-bridge');
+  const [ramLimitMb, setRamLimitMb] = useState<number>(256);
+  const [cpuLimitCore, setCpuLimitCore] = useState<number>(0.5);
+  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string; secret: boolean }>>([
+    { key: 'ENV', value: 'production', secret: false },
+    { key: 'PORT', value: '80', secret: false },
+  ]);
+  const [showSecrets, setShowSecrets] = useState<boolean>(false);
 
-  const handleSelectRepo = (repo: RepoOption) => {
-    setSelectedRepo(repo);
-    setServiceName(repo.name);
-    setServicePort(repo.port);
-    setSelectedBranch(repo.branch);
-    setCustomDomain(`${repo.name}.localhost`);
+  const handleSelectTemplate = (tpl: TemplateImage) => {
+    soundManager.playClick();
+    setSelectedTemplate(tpl.id);
+    setCustomImage(`${tpl.image}:${tpl.tag}`);
+    setServiceName(tpl.name);
+    setContainerPort(tpl.defaultPort);
+    setHostPort(tpl.defaultPort === 80 ? 8080 : tpl.defaultPort + 1000);
+    setCustomDomain(`${tpl.name}.localhost`);
   };
 
   const handleAddEnv = () => {
+    soundManager.playClick();
     setEnvVars((prev) => [...prev, { key: '', value: '', secret: false }]);
   };
 
   const handleRemoveEnv = (index: number) => {
+    soundManager.playPop();
     setEnvVars((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Live Animated Deployment Flow
   const handleStartDeploy = () => {
+    soundManager.playSuccess();
     setIsDeploying(true);
-    setDeployStep(1);
+    setCurrentStep(1);
     setDeployLogs([
-      `[akson-build] Başlatılıyor: ${serviceName}`,
-      `[git] Depo çekiliyor: ${sourceType === 'github' ? selectedRepo.name : customGitUrl || 'custom-git'} (${selectedBranch})...`,
+      `[akson-engine] Dağıtım işlemi başlatıldı: ${serviceName}`,
+      `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
     ]);
 
+    // Step 2: Port & ENV
     setTimeout(() => {
-      setDeployStep(2);
+      soundManager.playClick();
+      setCurrentStep(2);
       setDeployLogs((prev) => [
         ...prev,
-        `[git] HEAD commit: 7b4f91c - Merge pull request #14`,
-        `[docker] Runtime algılandı: ${selectedRepo.runtime}`,
-        `[docker] Multi-stage build başlatıldı (BuildKit engine v0.13)...`,
-        `[docker] [1/4] FROM node:20-alpine AS builder`,
-        `[docker] [2/4] COPY package.json package-lock.json ./`,
-        `[docker] [3/4] RUN npm ci --omit=dev`,
-        `[docker] [4/4] EXPOSE ${servicePort}`,
+        `[1/5: image] İmaj katmanları yerel önbellekte doğrulandı (sha256:d25907...).`,
+        `[2/5: config] Port eşlemesi yapılandırılıyor: ${hostPort} -> ${containerPort}/tcp`,
+        `[2/5: config] ${envVars.filter((e) => e.key).length} ortam değişkeni güvenle enjekte edildi.`,
       ]);
     }, 1200);
 
+    // Step 3: Network & Traefik
     setTimeout(() => {
-      setDeployStep(3);
+      soundManager.playClick();
+      setCurrentStep(3);
       setDeployLogs((prev) => [
         ...prev,
-        `[docker] İmaj başarıyla derlendi: akson/${serviceName}:latest (sha256:4a8c91...)`,
-        `[traefik] Ters vekil rotası bağlanıyor: Host(\`${customDomain}\`) -> :${servicePort}`,
-        `[traefik] Let's Encrypt TLS-ALPN-01 sertifikası doğrulandı.`,
-        `[network] 172.20.0.12 (akson-bridge) sanal IP'si atandı.`,
+        `[3/5: network] '${selectedNetwork}' izole köprü ağına bağlanılıyor...`,
+        `[3/5: network] Traefik ters vekil yönlendiricisi oluşturuldu: Host(\`${customDomain}\`)`,
+        `[3/5: network] Otomatik TLS 1.3 sertifikası ve dahili DNS kaydı bağlandı.`,
       ]);
     }, 2400);
 
+    // Step 4: Resources
     setTimeout(() => {
-      setDeployStep(4);
+      soundManager.playClick();
+      setCurrentStep(4);
       setDeployLogs((prev) => [
         ...prev,
-        `[akson] Servis başarıyla ayağa kaldırıldı ve sağlık kontrolünden geçti (200 OK)!`,
+        `[4/5: resources] cgroupv2 sınırları kilitlendi: RAM max ${ramLimitMb} MB, CPU ${cpuLimitCore} vCPU`,
+        `[4/5: resources] Güvenlik profili ve OOM killer ayarları tamamlandı.`,
+      ]);
+    }, 3600);
+
+    // Step 5: Live & Verify
+    setTimeout(() => {
+      soundManager.playSuccess();
+      setCurrentStep(5);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[5/5: deploy] Konteyner başlatıldı (ID: c-${Date.now().toString(36)})`,
+        `[5/5: deploy] Sağlık kontrolü (Healthcheck): HTTP 200 OK (1.4ms)`,
+        `🎉 [akson-engine] Servis başarıyla canlıya alındı!`,
       ]);
       setIsDeploying(false);
       setIsDeployed(true);
 
+      const [imageName, imageTag = 'latest'] = customImage.split(':');
       const newContainer: ContainerItem = {
-        id: `c-new-${Date.now().toString(36)}`,
+        id: `c-${Date.now().toString(36)}`,
         name: serviceName,
-        image: `akson/${serviceName}`,
-        tag: 'latest',
+        image: imageName,
+        tag: imageTag,
         status: 'running',
         statusText: 'Çevrimiçi',
-        subtitle: `${selectedRepo.runtime} • Yeni Dağıtım`,
-        category: 'service',
+        subtitle: `${customImage} • Yeni Dağıtım`,
+        category: (TEMPLATE_IMAGES.find((t) => t.id === selectedTemplate)?.category || 'service'),
         uptime: 'Az önce başlatıldı',
-        cpuPercent: 1.1,
-        memoryUsageMb: 42,
-        memoryLimitMb: 512,
-        ports: [{ hostPort: servicePort, containerPort: servicePort, protocol: 'tcp' }],
+        cpuPercent: 0.8,
+        memoryUsageMb: Math.round(ramLimitMb * 0.15),
+        memoryLimitMb: ramLimitMb,
+        ports: [{ hostPort, containerPort, protocol: 'tcp' }],
         traefikRoute: customDomain,
-        network: 'akson-bridge',
-        ipAddress: '172.20.0.12',
+        network: selectedNetwork,
+        ipAddress: '172.20.0.15',
         restartCount: 0,
         logs: [
-          `[${serviceName}] Servis başlatıldı: http://${customDomain}`,
-          `[${serviceName}] Traefik ters proxy aktif`,
+          `[${serviceName}] Servis başarıyla ayağa kaldırıldı: http://${customDomain}`,
+          `[${serviceName}] Traefik v3 ters vekil aktif (port: ${hostPort})`,
+          `[${serviceName}] Canlı cgroup izlemesi devrede`,
         ],
         env: envVars.filter((e) => e.key.trim() !== ''),
       };
 
-      onDeploySuccess(newContainer);
-    }, 3600);
+      setTimeout(() => {
+        onDeploySuccess(newContainer);
+      }, 1400);
+    }, 4800);
   };
 
   return (
     <div className="flex flex-col flex-1 space-y-6">
-      {/* Header Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#1e1f25]">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Yeni Dağıtım Başlat</h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Canlı Ortam
-            </span>
-          </div>
-          <p className="text-xs text-[#8e9192] mt-1">
-            GitHub deponuzu veya harici Git URL'nizi bağlayarak saniyeler içinde yayına alın.
-          </p>
-        </div>
+      {/* 1. ÜST GÖRSEL DAĞITIM TÜNELİ (PIPELINE PATH STEPPER) */}
+      <PipelinePathStepper
+        currentStep={currentStep}
+        isDeploying={isDeploying}
+        onSelectStep={(step) => {
+          if (!isDeploying) setCurrentStep(step);
+        }}
+      />
 
-        {/* Daemon Telemetry */}
-        <div className="flex items-center gap-3 bg-[#121318] border border-[#26282e] p-1.5 rounded-xl font-mono text-xs">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#16171d] border border-[#26282e]">
-            <Server className="w-3.5 h-3.5 text-emerald-400" />
-            <div>
-              <span className="text-[10px] text-[#8e9192] block leading-none">DÜĞÜM</span>
-              <span className="text-white font-medium">local-core-01</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5">
-            <Clock className="w-3.5 h-3.5 text-[#8e9192]" />
-            <div>
-              <span className="text-[10px] text-[#8e9192] block leading-none">ORTALAMA DERLEME</span>
-              <span className="text-white font-medium">24s</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Settings vs Build logs */}
+      {/* 2. ADIM KONFİGÜRASYON FORMU & CANLI ETKİLEŞİM */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (8 cols): Source, Config, Env */}
+        {/* Left Column (7 cols): Step Configuration Panel */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Section 1: Kaynak Depo */}
-          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-5 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
-              <div className="flex items-center gap-2">
-                <FolderGit2 className="w-4 h-4 text-blue-400" />
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  1. Kaynak Havuzu
-                </h2>
-              </div>
+          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 space-y-6 shadow-sm">
+            {/* Step 1: Image & Source */}
+            {currentStep === 1 && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={wiseSpring}
+                className="space-y-4 font-mono text-xs"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-blue-400" />
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                      1. Adım: Docker İmajı & Şablon Seçimi
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                    Docker Registry
+                  </span>
+                </div>
 
-              {/* Source Switcher with Wise Sliding Pill */}
-              <div className="flex items-center gap-1 bg-[#090a0f] p-1 rounded-xl border border-[#26282e] text-xs font-mono">
-                <button
-                  onClick={() => setSourceType('github')}
-                  className={`relative px-3 py-1 rounded-lg transition-colors cursor-pointer select-none ${
-                    sourceType === 'github'
-                      ? 'text-white font-medium'
-                      : 'text-[#8e9192] hover:text-white'
-                  }`}
-                >
-                  {sourceType === 'github' && (
-                    <motion.div
-                      layoutId="deploySourcePill"
-                      className="absolute inset-0 bg-[#16171d] rounded-lg border border-white/10 shadow-sm"
-                      transition={wiseBouncy}
-                    />
-                  )}
-                  <span className="relative z-10">GitHub</span>
-                </button>
-                <button
-                  onClick={() => setSourceType('giturl')}
-                  className={`relative px-3 py-1 rounded-lg transition-colors cursor-pointer select-none ${
-                    sourceType === 'giturl'
-                      ? 'text-white font-medium'
-                      : 'text-[#8e9192] hover:text-white'
-                  }`}
-                >
-                  {sourceType === 'giturl' && (
-                    <motion.div
-                      layoutId="deploySourcePill"
-                      className="absolute inset-0 bg-[#16171d] rounded-lg border border-white/10 shadow-sm"
-                      transition={wiseBouncy}
-                    />
-                  )}
-                  <span className="relative z-10">Git URL</span>
-                </button>
-              </div>
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {TEMPLATE_IMAGES.map((tpl) => (
+                    <div
+                      key={tpl.id}
+                      onClick={() => handleSelectTemplate(tpl)}
+                      className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                        selectedTemplate === tpl.id
+                          ? 'bg-[#1a1b24] border-blue-500 text-white shadow-md'
+                          : 'bg-[#0d0e13] border-[#26282e] text-[#8e9192] hover:border-white/20 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between font-bold">
+                        <span className="text-white">{tpl.name}</span>
+                        <span className="text-[10px] text-blue-400 font-mono">:{tpl.tag}</span>
+                      </div>
+                      <p className="text-[11px] text-[#8e9192] mt-1 line-clamp-1 font-sans">
+                        {tpl.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
 
-            {sourceType === 'github' ? (
-              <div className="space-y-3">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-[#8e9192] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-[11px] text-[#8e9192]">Özel Docker İmajı ve Sürüm Etiketi:</label>
                   <input
                     type="text"
-                    value={searchRepo}
-                    onChange={(e) => setSearchRepo(e.target.value)}
-                    placeholder="Depolarınızda arayın..."
-                    className="w-full bg-[#16171d] border border-[#26282e] text-xs text-white rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-blue-500 transition-colors placeholder:text-[#8e9192]"
+                    value={customImage}
+                    onChange={(e) => setCustomImage(e.target.value)}
+                    placeholder="örn: nginx:alpine, redis:7, python:3.11"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
-                {/* Repo List */}
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: {
-                        staggerChildren: 0.04,
-                      },
-                    },
-                  }}
-                  initial="hidden"
-                  animate="visible"
-                  className="space-y-2 max-h-56 overflow-y-auto pr-1"
-                >
-                  {filteredRepos.map((repo) => {
-                    const isSelected = selectedRepo.id === repo.id;
-                    return (
-                      <motion.div
-                        key={repo.id}
-                        variants={{
-                          hidden: { opacity: 0, y: 8 },
-                          visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-                        }}
-                        whileHover={{ y: -2 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                        onClick={() => handleSelectRepo(repo)}
-                        className={`p-3 rounded-xl border transition-colors cursor-pointer flex items-center justify-between ${
-                          isSelected
-                            ? 'bg-[#1a1b21] border-blue-500/50 shadow-sm'
-                            : 'bg-[#16171d]/60 border-[#26282e] hover:bg-[#16171d] hover:border-white/20'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[#121318] border border-[#26282e] flex items-center justify-center text-slate-300">
-                            <FolderGit2 className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-semibold text-white font-mono">
-                                {repo.name}
-                              </span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#121318] text-[#8e9192] border border-[#26282e]">
-                                {repo.isPrivate ? 'Özel' : 'Açık'}
-                              </span>
-                            </div>
-                            <div className="text-[11px] text-[#8e9192] font-mono mt-0.5">
-                              {repo.updatedAt} •{' '}
-                              <span className="text-emerald-400 font-medium">{repo.runtime}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          className={`px-3 py-1 rounded-lg text-xs font-mono transition ${
-                            isSelected
-                              ? 'bg-blue-600 text-white font-semibold'
-                              : 'bg-[#121318] text-[#8e9192] hover:text-white border border-[#26282e]'
-                          }`}
-                        >
-                          {isSelected ? 'Seçildi' : 'Bağla'}
-                        </button>
-                      </motion.div>
-                    );
-                  })}
-                </motion.div>
-              </div>
-            ) : (
-              <div className="space-y-3 font-mono text-xs">
-                <label className="text-[10px] text-[#8e9192] uppercase block">
-                  Git Depo Adresi (.git)
-                </label>
-                <div className="flex gap-2">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] text-[#8e9192]">Konteyner Servis Adı:</label>
                   <input
                     type="text"
-                    value={customGitUrl}
-                    onChange={(e) => setCustomGitUrl(e.target.value)}
-                    placeholder="https://github.com/kullanici/proje.git"
-                    className="flex-1 px-3 py-2 rounded-xl bg-[#16171d] border border-[#26282e] text-white focus:outline-none focus:border-blue-500"
+                    value={serviceName}
+                    onChange={(e) => setServiceName(e.target.value)}
+                    placeholder="örn: my-web-app"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500"
                   />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Port & ENV */}
+            {currentStep === 2 && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={wiseSpring}
+                className="space-y-4 font-mono text-xs"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-purple-400" />
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                      2. Adım: Port & Ortam Değişkenleri (ENV)
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                    Network & Config
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] text-[#8e9192]">Dış Port (Host Port):</label>
+                    <input
+                      type="number"
+                      value={hostPort}
+                      onChange={(e) => setHostPort(Number(e.target.value))}
+                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] text-[#8e9192]">İç Port (Container Port):</label>
+                    <input
+                      type="number"
+                      value={containerPort}
+                      onChange={(e) => setContainerPort(Number(e.target.value))}
+                      className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Env Vars List */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-[#8e9192]">Ortam Değişkenleri ({envVars.length}):</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowSecrets(!showSecrets)}
+                      className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
+                    >
+                      {showSecrets ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                      <span>{showSecrets ? 'Gizle' : 'Göster'}</span>
+                    </button>
+                  </div>
+
+                  {envVars.map((env, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="ANAHTAR"
+                        value={env.key}
+                        onChange={(e) => {
+                          const updated = [...envVars];
+                          updated[idx].key = e.target.value;
+                          setEnvVars(updated);
+                        }}
+                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                      />
+                      <input
+                        type={env.secret && !showSecrets ? 'password' : 'text'}
+                        placeholder="DEĞER"
+                        value={env.value}
+                        onChange={(e) => {
+                          const updated = [...envVars];
+                          updated[idx].value = e.target.value;
+                          setEnvVars(updated);
+                        }}
+                        className="flex-1 bg-[#0d0e13] border border-[#26282e] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-purple-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEnv(idx)}
+                        className="p-1.5 text-zinc-500 hover:text-rose-400 transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
                   <button
-                    onClick={() => alert('Depo erişimi doğrulandı (HTTPS 200 OK)!')}
-                    className="px-4 py-2 bg-[#16171d] hover:bg-[#232736] text-white border border-[#26282e] rounded-xl transition cursor-pointer"
+                    type="button"
+                    onClick={handleAddEnv}
+                    className="inline-flex items-center gap-1 text-[11px] text-purple-400 hover:text-purple-300 font-semibold pt-1"
                   >
-                    Erişimi Kontrol Et
+                    <Plus className="w-3 h-3" /> Değişken Ekle
                   </button>
                 </div>
-              </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Network & Traefik */}
+            {currentStep === 3 && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={wiseSpring}
+                className="space-y-4 font-mono text-xs"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-emerald-400" />
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                      3. Adım: Ağ Köprüsü & Traefik SSL Rotalama
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Traefik v3 SSL
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] text-[#8e9192]">Traefik Web Router Domaini:</label>
+                  <input
+                    type="text"
+                    value={customDomain}
+                    onChange={(e) => setCustomDomain(e.target.value)}
+                    placeholder="örn: api.localhost veya app.internal"
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-[10px] text-[#8e9192]">Host(`{customDomain}`) kuralı otomatik Traefik HTTP/HTTPS dinleyicisine eklenecektir.</p>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <label className="text-[11px] text-[#8e9192]">Docker Ağı:</label>
+                  <select
+                    value={selectedNetwork}
+                    onChange={(e) => setSelectedNetwork(e.target.value)}
+                    className="w-full bg-[#0d0e13] border border-[#26282e] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="akson-bridge">akson-bridge (İzole Dahili Ağ)</option>
+                    <option value="bridge">bridge (Varsayılan Docker Köprüsü)</option>
+                    <option value="host">host (Doğrudan Host Ağı)</option>
+                  </select>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Resources */}
+            {currentStep === 4 && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={wiseSpring}
+                className="space-y-4 font-mono text-xs"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-amber-400" />
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                      4. Adım: Donanım Sınırları & Cgroup
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    Cgroupv2
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-[11px] text-[#8e9192]">Bellek Limiti (Hard RAM):</span>
+                    <span className="text-white font-bold">{ramLimitMb} MB</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[128, 256, 512, 1024].map((mb) => (
+                      <button
+                        key={mb}
+                        type="button"
+                        onClick={() => setRamLimitMb(mb)}
+                        className={`py-2 rounded-lg border text-center transition ${
+                          ramLimitMb === mb
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
+                            : 'bg-[#0d0e13] border-[#26282e] text-[#8e9192] hover:text-white'
+                        }`}
+                      >
+                        {mb} MB
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <div className="flex justify-between">
+                    <span className="text-[11px] text-[#8e9192]">İşlemci Limiti (vCPU):</span>
+                    <span className="text-white font-bold">{cpuLimitCore} Çekirdek</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0.25, 0.5, 1.0, 2.0].map((core) => (
+                      <button
+                        key={core}
+                        type="button"
+                        onClick={() => setCpuLimitCore(core)}
+                        className={`py-2 rounded-lg border text-center transition ${
+                          cpuLimitCore === core
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
+                            : 'bg-[#0d0e13] border-[#26282e] text-[#8e9192] hover:text-white'
+                        }`}
+                      >
+                        {core} CPU
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 5: Summary */}
+            {currentStep === 5 && (
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={wiseSpring}
+                className="space-y-4 font-mono text-xs"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
+                  <div className="flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-emerald-400" />
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+                      5. Adım: Dağıtım Özeti & Canlı Onay
+                    </h2>
+                  </div>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Ready to Deploy
+                  </span>
+                </div>
+
+                <div className="bg-[#0d0e13] p-3.5 rounded-xl border border-[#26282e] space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-[#8e9192]">Servis Adı:</span>
+                    <span className="text-white font-bold">{serviceName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8e9192]">Docker İmajı:</span>
+                    <span className="text-blue-400">{customImage}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8e9192]">Portlar:</span>
+                    <span className="text-purple-300">{hostPort} ➔ {containerPort}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8e9192]">Traefik Rota:</span>
+                    <span className="text-emerald-400">{customDomain}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8e9192]">Kaynak Sınırı:</span>
+                    <span className="text-amber-300">{ramLimitMb} MB RAM, {cpuLimitCore} vCPU</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step Navigation Controls */}
+            <div className="flex items-center justify-between pt-4 border-t border-[#1e1f25]">
+              <button
+                type="button"
+                disabled={currentStep === 1 || isDeploying}
+                onClick={() => {
+                  soundManager.playClick();
+                  setCurrentStep((prev) => Math.max(1, prev - 1));
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-[#16171d] hover:bg-[#1f2027] text-white text-xs font-mono transition disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Geri
+              </button>
+
+              {currentStep < 5 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundManager.playClick();
+                    setCurrentStep((prev) => Math.min(5, prev + 1));
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-medium transition cursor-pointer shadow-md"
+                >
+                  <span>Sonraki Adım</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Tüm Adımlar Hazır
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (5 cols): The Big Action Button and Live Terminal Stream */}
+        <div className="lg:col-span-5 flex flex-col gap-6">
+          {/* THE BIG DEPLOY BUTTON */}
+          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 shadow-xl relative overflow-hidden space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-blue-400" /> Dağıtım Emri
+              </span>
+              <span className="text-[10px] text-emerald-400 font-mono">Docker Engine SDK</span>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: isDeploying ? 1 : 1.02 }}
+              whileTap={{ scale: isDeploying ? 1 : 0.97 }}
+              disabled={isDeploying || isDeployed}
+              onClick={handleStartDeploy}
+              className={`w-full py-4 px-6 rounded-2xl font-bold font-mono text-sm tracking-wide transition-all shadow-xl flex items-center justify-center gap-3 cursor-pointer ${
+                isDeployed
+                  ? 'bg-emerald-500 text-slate-950 cursor-default'
+                  : isDeploying
+                  ? 'bg-indigo-700 text-white cursor-wait'
+                  : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white ring-2 ring-white/20'
+              }`}
+            >
+              {isDeployed ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                  <span>Başarıyla Canlıya Alındı!</span>
+                </>
+              ) : isDeploying ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Dağıtılıyor (Adım {currentStep}/5)...</span>
+                </>
+              ) : (
+                <>
+                  <Rocket className="w-5 h-5" />
+                  <span>🚀 Canlıya Dağıt (Deploy to Production)</span>
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-[11px] text-[#8e9192] text-center font-mono">
+              Butona tıkladığınızda soldan sağa lazer akışı ile 5 adım canlı olarak işletilir.
+            </p>
+
+            {isDeployed && (
+              <button
+                type="button"
+                onClick={onNavigateDashboard}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1a1b24] hover:bg-[#232736] text-blue-400 hover:text-white text-xs font-mono transition flex items-center justify-center gap-2 border border-blue-500/30 cursor-pointer shadow-md"
+              >
+                <span>Kontrol Paneline Git (Dashboard)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
 
-          {/* Section 2: Temel Ayarlar */}
-          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-5 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-emerald-400" />
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  2. Servis & Yönlendirme Ayarları
-                </h2>
+          {/* LIVE TERMINAL LOG STREAM */}
+          <div className="bg-[#090a0f] border border-[#26282e] rounded-2xl p-4 space-y-2.5 font-mono text-xs shadow-inner">
+            <div className="flex items-center justify-between pb-2 border-b border-[#1e1f25]">
+              <div className="flex items-center gap-2 text-[#8e9192]">
+                <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+                  Canlı Dağıtım Konsolu
+                </span>
               </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                Otomatik Algılandı
+              <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
+                {isDeploying ? 'Akış Aktif' : 'Beklemede'}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-[#8e9192] uppercase">Servis Adı</label>
-                <input
-                  type="text"
-                  value={serviceName}
-                  onChange={(e) => setServiceName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#16171d] border border-[#26282e] text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-[#8e9192] uppercase">Dal (Branch)</label>
-                <select
-                  value={selectedBranch}
-                  onChange={(e) => setSelectedBranch(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#16171d] border border-[#26282e] text-white focus:outline-none focus:border-blue-500"
-                >
-                  <option value="main">main (Önerilen)</option>
-                  <option value="production">production</option>
-                  <option value="staging">staging</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-[#8e9192] uppercase">İç Port</label>
-                <input
-                  type="number"
-                  value={servicePort}
-                  onChange={(e) => setServicePort(Number(e.target.value))}
-                  className="w-full px-3 py-2 rounded-xl bg-[#16171d] border border-[#26282e] text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] text-[#8e9192] uppercase">Traefik Host Kuralı</label>
-                <input
-                  type="text"
-                  value={customDomain}
-                  onChange={(e) => setCustomDomain(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#16171d] border border-[#26282e] text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Ortam Değişkenleri (.env) */}
-          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-5 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e1f25]">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-amber-400" />
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  3. Çevre Değişkenleri (.env)
-                </h2>
-              </div>
-              <button
-                onClick={handleAddEnv}
-                className="flex items-center gap-1 text-[11px] font-mono text-blue-400 hover:text-blue-300 transition cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Değişken Ekle
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {envVars.map((env, i) => (
-                <div key={i} className="flex items-center gap-2 font-mono text-xs">
-                  <input
-                    type="text"
-                    value={env.key}
-                    placeholder="KEY"
-                    onChange={(e) => {
-                      const next = [...envVars];
-                      next[i].key = e.target.value;
-                      setEnvVars(next);
-                    }}
-                    className="flex-1 px-3 py-1.5 bg-[#16171d] border border-[#26282e] rounded-lg text-white focus:outline-none"
-                  />
-                  <input
-                    type={env.secret ? 'password' : 'text'}
-                    value={env.value}
-                    placeholder="VALUE"
-                    onChange={(e) => {
-                      const next = [...envVars];
-                      next[i].value = e.target.value;
-                      setEnvVars(next);
-                    }}
-                    className="flex-1 px-3 py-1.5 bg-[#16171d] border border-[#26282e] rounded-lg text-white focus:outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      const next = [...envVars];
-                      next[i].secret = !next[i].secret;
-                      setEnvVars(next);
-                    }}
-                    title={env.secret ? 'Gizliliği Kaldır' : 'Gizle'}
-                    className="p-1.5 text-[#8e9192] hover:text-white"
-                  >
-                    {env.secret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                  <button
-                    onClick={() => handleRemoveEnv(i)}
-                    className="p-1.5 text-[#8e9192] hover:text-rose-400"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+            <div className="h-[240px] overflow-y-auto space-y-1.5 text-[11px] text-slate-300 pr-1">
+              {deployLogs.length === 0 ? (
+                <div className="text-zinc-600 italic pt-16 text-center text-xs">
+                  "Canlıya Dağıt" butonuna basıldığında adım adım Docker logları burada akacaktır.
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (5 cols): Deployment Terminal & Execution Card */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          <div className="bg-[#121318] border border-[#26282e] rounded-2xl p-6 space-y-5 shadow-2xl">
-            <div>
-              <h2 className="text-sm font-bold text-white font-mono">Dağıtım Özeti</h2>
-              <p className="text-xs text-[#8e9192] mt-0.5">
-                Konfigürasyonu onaylayın ve konteyneri tek tıkla çalıştırın.
-              </p>
-            </div>
-
-            <div className="bg-[#0d0e13] p-4 rounded-xl border border-[#1e1f25] space-y-2 text-xs font-mono text-[#8e9192]">
-              <div className="flex justify-between">
-                <span>Servis:</span>
-                <span className="text-white font-medium">{serviceName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Runtime:</span>
-                <span className="text-emerald-400 font-medium">{selectedRepo.runtime}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Alan Adı:</span>
-                <span className="text-blue-400 font-medium">{customDomain}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Ağ Alt Yapısı:</span>
-                <span className="text-slate-300">akson-bridge (Traefik v3)</span>
-              </div>
-              <div className="flex justify-between">
-                <span>SSL Durumu:</span>
-                <span className="text-emerald-400 font-medium">Let's Encrypt (Otomatik)</span>
-              </div>
-            </div>
-
-            {/* Launch Button */}
-            {!isDeployed ? (
-              <button
-                disabled={isDeploying}
-                onClick={handleStartDeploy}
-                className={`w-full py-3 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 ${
-                  isDeploying
-                    ? 'bg-blue-600/50 text-blue-200 cursor-not-allowed'
-                    : 'bg-white hover:bg-slate-200 text-black'
-                }`}
-              >
-                {isDeploying ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Dağıtılıyor ({deployStep}/4 Adım)...</span>
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="w-4 h-4 stroke-[2.5]" />
-                    <span>Tek Tıkla Yayına Al</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-mono flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  <span>Servis başarıyla yayına alındı!</span>
-                </div>
-                <button
-                  onClick={onNavigateDashboard}
-                  className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer"
-                >
-                  Kontrol Paneline Dön ve İncele
-                </button>
-              </div>
-            )}
-
-            {/* Live Terminal Build Output */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-[11px] font-mono">
-                <span className="text-[#8e9192] flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-blue-400" />
-                  Canlı Derleme Çıktısı (Build Output)
-                </span>
-                {isDeploying && (
-                  <span className="text-emerald-400 animate-pulse">stdout: Dinleniyor</span>
-                )}
-              </div>
-
-              <div className="bg-[#08090d] rounded-xl p-3 border border-[#1f2129] font-mono text-[11px] leading-relaxed text-[#c4c7c8] space-y-1 h-52 overflow-y-auto select-text shadow-inner">
-                {deployLogs.length === 0 ? (
-                  <div className="text-[#8e9192] italic pt-4 text-center">
-                    Dağıtımı başlattığınızda derleme logları burada canlı akacaktır.
-                  </div>
-                ) : (
-                  deployLogs.map((log, index) => (
-                    <div
-                      key={index}
-                      className={
-                        log.includes('başarıyla')
-                          ? 'text-emerald-400 font-semibold'
-                          : log.includes('FROM') || log.includes('RUN')
-                          ? 'text-blue-300'
-                          : 'text-slate-300'
-                      }
-                    >
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
+              ) : (
+                deployLogs.map((log, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`leading-relaxed ${
+                      log.includes('🎉')
+                        ? 'text-emerald-400 font-bold'
+                        : log.includes('ERR')
+                        ? 'text-rose-400'
+                        : 'text-slate-300'
+                    }`}
+                  >
+                    {log}
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </div>
