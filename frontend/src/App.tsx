@@ -368,15 +368,15 @@ export function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, transition: { duration: 0.08 } }}
                 transition={snappyEase}
-                className="flex flex-col flex-1 space-y-5"
+                className="flex flex-col flex-1 space-y-6"
               >
                 {/* SubHeader Bar */}
-                <div className="pb-4 mb-1 flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
                   <div>
                     <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3 font-sans">
                       Akson Kontrol Paneli
                     </h1>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-sans">
+                    <p className="text-xs text-zinc-400 mt-1 font-sans">
                       İnteraktif servis topolojisi, Traefik ters vekil ve anlık donanım telemetrisi
                     </p>
                   </div>

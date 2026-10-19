@@ -155,9 +155,9 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1 space-y-5">
+    <div className="flex flex-col flex-1 space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 mb-1 border-b border-[#262626]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
