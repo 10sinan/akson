@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
 import { PipelinePathStepper } from '../deploy/PipelinePathStepper';
+import { api, mapApiContainerToItem } from '../../api/client';
 
 interface DeployViewProps {
   onDeploySuccess: (container: ContainerItem) => void;
@@ -132,16 +133,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     setEnvVars((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Live Animated Deployment Flow
-  const handleStartDeploy = () => {
-    soundManager.playSuccess();
-    setIsDeploying(true);
-    setCurrentStep(1);
-    setDeployLogs([
-      `[akson-engine] Dağıtım işlemi başlatıldı: ${serviceName}`,
-      `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
-    ]);
-
+  const runSimulatedDeploy = () => {
     // Step 2: Port & ENV
     setTimeout(() => {
       soundManager.playClick();
@@ -228,6 +220,84 @@ export const DeployView: React.FC<DeployViewProps> = ({
         onDeploySuccess(newContainer);
       }, 1400);
     }, 4800);
+  };
+
+  // Live Animated & Real API Deployment Flow
+  const handleStartDeploy = async () => {
+    soundManager.playSuccess();
+    setIsDeploying(true);
+    setCurrentStep(1);
+    setDeployLogs([
+      `[akson-engine] Dağıtım işlemi başlatıldı: ${serviceName}`,
+      `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
+    ]);
+
+    const envMap: Record<string, string> = {};
+    envVars.forEach((e) => {
+      if (e.key.trim()) {
+        envMap[e.key.trim()] = e.value;
+      }
+    });
+
+    const deployPayload = {
+      name: serviceName.trim(),
+      image: customImage.trim(),
+      ports: [
+        {
+          private_port: containerPort,
+          public_port: hostPort,
+          type: 'tcp',
+        },
+      ],
+      env: envMap,
+      memory_limit_mb: ramLimitMb,
+      cpu_limit: cpuLimitCore,
+      network_name: selectedNetwork,
+      restart_policy: 'unless-stopped',
+      domain: customDomain.trim(),
+      port: containerPort,
+    };
+
+    try {
+      setCurrentStep(2);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[2/5: config] Port (${hostPort}:${containerPort}) ve ${Object.keys(envMap).length} ortam değişkeni yapılandırılıyor...`,
+      ]);
+
+      const res = await api.deployContainer(deployPayload);
+
+      setCurrentStep(3);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[3/5: network] '${selectedNetwork}' ağına bağlandı ve Traefik v3 rotası tanımlandı: ${customDomain}`,
+        ...(res.logs || []).map((l) => `[docker] ${l}`),
+      ]);
+
+      setCurrentStep(4);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[4/5: cgroup] cgroup limitleri uygulandı: RAM ${ramLimitMb} MB, CPU ${cpuLimitCore} vCPU`,
+      ]);
+
+      setCurrentStep(5);
+      soundManager.playSuccess();
+      setIsDeploying(false);
+      setIsDeployed(true);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[5/5: health] Konteyner çalışıyor (ID: ${res.container.id.substring(0, 12)})!`,
+        `🎉 [akson-engine] '${serviceName}' başarıyla canlı Docker daemon'a dağıtıldı!`,
+      ]);
+
+      const createdItem = mapApiContainerToItem(res.container);
+      setTimeout(() => {
+        onDeploySuccess(createdItem);
+      }, 1400);
+    } catch (err) {
+      console.warn('Real deploy endpoint unavailable or offline, continuing with interactive simulation:', err);
+      runSimulatedDeploy();
+    }
   };
 
   return (

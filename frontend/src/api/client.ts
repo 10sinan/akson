@@ -53,6 +53,29 @@ export interface ApiNetworkDetails {
   containers: Record<string, string>;
 }
 
+export interface DeployContainerRequest {
+  name: string;
+  image: string;
+  ports?: ApiPortMapping[];
+  env?: Record<string, string>;
+  labels?: Record<string, string>;
+  memory_limit_mb?: number;
+  cpu_limit?: number;
+  network_name?: string;
+  restart_policy?: string;
+  domain?: string;
+  port?: number;
+  path_prefix?: string;
+  enable_tls?: boolean;
+  branch?: string;
+  commit_hash?: string;
+}
+
+export interface DeployContainerResult {
+  container: ApiContainer;
+  logs: string[];
+}
+
 const API_BASE = '';
 
 /**
@@ -255,6 +278,23 @@ export const api = {
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error(`Fetch network failed: HTTP ${res.status}`);
+    return res.json();
+  },
+
+  /**
+   * Deploys a new container from scratch via Docker daemon (pull, configure, network, start).
+   */
+  async deployContainer(req: DeployContainerRequest): Promise<DeployContainerResult> {
+    const res = await fetch(`${API_BASE}/api/v1/containers/deploy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+      signal: AbortSignal.timeout(120000), // image pull might take time
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Deploy failed with HTTP ${res.status}`);
+    }
     return res.json();
   },
 };

@@ -35,6 +35,7 @@ func (s *Server) NewRouter() http.Handler {
 		// Containers
 		r.Route("/containers", func(r chi.Router) {
 			r.Get("/", s.handleListContainers)
+			r.Post("/deploy", s.handleDeployContainer)
 			r.Get("/{id}", s.handleGetContainer)
 			r.Post("/{id}/actions/{action}", s.handleContainerAction)
 			r.Get("/{id}/stats", s.handleContainerStats)
@@ -52,7 +53,10 @@ func (s *Server) NewRouter() http.Handler {
 		})
 
 		// Deployments
-		r.Get("/deployments", s.handleListDeployments)
+		r.Route("/deployments", func(r chi.Router) {
+			r.Get("/", s.handleListDeployments)
+			r.Post("/", s.handleDeployContainer)
+		})
 
 		// Network & Proxy
 		r.Get("/network", s.handleGetNetwork)

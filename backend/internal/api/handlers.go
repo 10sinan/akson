@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"akson/internal/db"
@@ -43,6 +44,135 @@ func (s *Server) handleListContainers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, containers)
+}
+
+// DeployContainerRequest defines the HTTP payload for deploying a container from scratch.
+type DeployContainerRequest struct {
+	docker.DeployConfig
+	Domain     string `json:"domain,omitempty"`
+	Port       int    `json:"port,omitempty"`
+	PathPrefix string `json:"path_prefix,omitempty"`
+	EnableTLS  bool   `json:"enable_tls,omitempty"`
+	Branch     string `json:"branch,omitempty"`
+	CommitHash string `json:"commit_hash,omitempty"`
+}
+
+// handleDeployContainer pulls an image, creates, networks, and runs a container from scratch.
+func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
+	var req DeployContainerRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid JSON payload: "+err.Error())
+		return
+	}
+
+	if strings.TrimSpace(req.Name) == "" {
+		errorResponse(w, http.StatusBadRequest, "Container name is required")
+		return
+	}
+	if strings.TrimSpace(req.Image) == "" {
+		errorResponse(w, http.StatusBadRequest, "Image name is required")
+		return
+	}
+
+	// 1. Prepare default isolated network
+	if req.NetworkName == "" {
+		req.NetworkName = proxy.DefaultNetworkName
+	}
+	if s.networkMgr != nil {
+		_, _ = s.networkMgr.EnsureNetwork(r.Context())
+	}
+
+	// 2. Prepare Traefik labels if domain/prefix specified
+	if req.Labels == nil {
+		req.Labels = make(map[string]string)
+	}
+	if req.Domain != "" {
+		port := req.Port
+		if port == 0 && len(req.Ports) > 0 {
+			port = int(req.Ports[0].PrivatePort)
+		}
+		if port == 0 {
+			port = 80
+		}
+		labels := proxy.GenerateLabels(proxy.RouteConfig{
+			ServiceName: req.Name,
+			Domain:      req.Domain,
+			Port:        port,
+			EnableTLS:   req.EnableTLS,
+			PathPrefix:  req.PathPrefix,
+		})
+		for k, v := range labels {
+			if _, exists := req.Labels[k]; !exists {
+				req.Labels[k] = v
+			}
+		}
+	}
+
+	depID := fmt.Sprintf("dep-%d", time.Now().UnixMilli())
+	branch := req.Branch
+	if branch == "" {
+		branch = "main"
+	}
+	commit := req.CommitHash
+	if commit == "" {
+		commit = "latest"
+	}
+	now := time.Now().UTC()
+
+	// 3. Deploy container via Docker SDK (pull -> create -> network -> start)
+	result, err := s.docker.DeployContainer(r.Context(), req.DeployConfig)
+	if err != nil {
+		if s.db != nil {
+			_ = s.db.CreateDeployment(&db.Deployment{
+				ID:          depID,
+				ServiceID:   req.Name,
+				CommitHash:  commit,
+				Branch:      branch,
+				Status:      "failed",
+				LogExcerpt:  err.Error(),
+				TriggeredAt: now,
+				CompletedAt: &now,
+			})
+		}
+		errorResponse(w, http.StatusInternalServerError, "Container deploy failed: "+err.Error())
+		return
+	}
+
+	// 4. Save service state and deployment log in DB
+	if s.db != nil {
+		portsJSON, _ := json.Marshal(req.Ports)
+		envJSON, _ := json.Marshal(req.Env)
+		var traefikRule string
+		if req.Labels != nil {
+			traefikRule = req.Labels["traefik.http.routers."+proxy.SanitizeName(req.Name)+".rule"]
+		}
+
+		_ = s.db.UpsertService(&db.Service{
+			ID:          req.Name,
+			Name:        req.Name,
+			Image:       req.Image,
+			Status:      "running",
+			Ports:       string(portsJSON),
+			Env:         string(envJSON),
+			TraefikRule: traefikRule,
+			CreatedAt:   now,
+			UpdatedAt:   now,
+		})
+
+		logExcerpt := strings.Join(result.Logs, "\n")
+		_ = s.db.CreateDeployment(&db.Deployment{
+			ID:          depID,
+			ServiceID:   req.Name,
+			CommitHash:  commit,
+			Branch:      branch,
+			Status:      "success",
+			LogExcerpt:  logExcerpt,
+			TriggeredAt: now,
+			CompletedAt: &now,
+		})
+	}
+
+	respond(w, http.StatusCreated, result)
 }
 
 // handleGetContainer returns details of a single container.
