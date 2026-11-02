@@ -28,6 +28,11 @@ func TestHandleDeployContainer_Validation(t *testing.T) {
 			wantStatus: http.StatusBadRequest,
 		},
 		{
+			name:       "Git URL clone failure",
+			payload:    map[string]interface{}{"git_url": "https://invalid.example.com/nonexistent-repo-12345.git"},
+			wantStatus: http.StatusBadRequest,
+		},
+		{
 			name:       "Invalid JSON",
 			payload:    nil,
 			wantStatus: http.StatusBadRequest,

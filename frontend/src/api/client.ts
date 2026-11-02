@@ -55,7 +55,7 @@ export interface ApiNetworkDetails {
 
 export interface DeployContainerRequest {
   name: string;
-  image: string;
+  image?: string;
   ports?: ApiPortMapping[];
   env?: Record<string, string>;
   labels?: Record<string, string>;
@@ -69,6 +69,9 @@ export interface DeployContainerRequest {
   enable_tls?: boolean;
   branch?: string;
   commit_hash?: string;
+  git_url?: string;
+  git_branch?: string;
+  dockerfile?: string;
 }
 
 export interface DeployContainerResult {

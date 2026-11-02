@@ -14,6 +14,9 @@ import {
   Sliders,
   Cpu,
   Layers,
+  GitBranch,
+  GitFork,
+  Code2,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
 import { PipelinePathStepper } from '../deploy/PipelinePathStepper';
@@ -98,6 +101,11 @@ export const DeployView: React.FC<DeployViewProps> = ({
   const [isDeployed, setIsDeployed] = useState<boolean>(false);
 
   // Form Configurations
+  const [deploySource, setDeploySource] = useState<'template' | 'git'>('template');
+  const [gitUrl, setGitUrl] = useState<string>('');
+  const [gitBranch, setGitBranch] = useState<string>('main');
+  const [dockerfilePath, setDockerfilePath] = useState<string>('Dockerfile');
+
   const [selectedTemplate, setSelectedTemplate] = useState<string>('nginx');
   const [customImage, setCustomImage] = useState<string>('nginx:alpine');
   const [serviceName, setServiceName] = useState<string>('web-frontend');
@@ -112,6 +120,18 @@ export const DeployView: React.FC<DeployViewProps> = ({
     { key: 'PORT', value: '80', secret: false },
   ]);
   const [showSecrets, setShowSecrets] = useState<boolean>(false);
+
+  const handleGitUrlChange = (url: string) => {
+    setGitUrl(url);
+    const cleaned = url.trim().replace(/\.git$/, '');
+    const parts = cleaned.split('/');
+    const repoName = parts[parts.length - 1];
+    if (repoName) {
+      const sanitized = repoName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      setServiceName(sanitized);
+      setCustomDomain(`${sanitized}.localhost`);
+    }
+  };
 
   const handleSelectTemplate = (tpl: TemplateImage) => {
     soundManager.playClick();
@@ -140,7 +160,9 @@ export const DeployView: React.FC<DeployViewProps> = ({
       setCurrentStep(2);
       setDeployLogs((prev) => [
         ...prev,
-        `[1/5: image] İmaj katmanları yerel önbellekte doğrulandı (sha256:d25907...).`,
+        deploySource === 'git'
+          ? `[1/5: git] Git reposu başarıyla klonlandı ve Dockerfile imajı oluşturuldu.`
+          : `[1/5: image] İmaj katmanları yerel önbellekte doğrulandı (sha256:d25907...).`,
         `[2/5: config] Portlar bağlanıyor (${hostPort}:${containerPort}) ve ${envVars.length} ortam değişkeni enjekte ediliyor...`,
       ]);
     }, 1100);
@@ -189,7 +211,10 @@ export const DeployView: React.FC<DeployViewProps> = ({
         `🎉 [akson-engine] '${serviceName}' başarıyla canlıya alındı!`,
       ]);
 
-      const [imgName, tagPart] = customImage.split(':');
+      const [imgName, tagPart] = deploySource === 'git'
+        ? [`akson/${serviceName}`, 'latest']
+        : customImage.split(':');
+
       const newContainer: ContainerItem = {
         id: `c-new-${Date.now().toString().slice(-6)}`,
         name: serviceName,
@@ -210,6 +235,9 @@ export const DeployView: React.FC<DeployViewProps> = ({
         restartCount: 0,
         logs: [
           `[${serviceName}] Servis başarıyla ayağa kaldırıldı: http://${customDomain}`,
+          deploySource === 'git'
+            ? `[${serviceName}] Git reposundan derlendi: ${gitUrl} (${gitBranch})`
+            : `[${serviceName}] İmaj kaynağından çekildi: ${customImage}`,
           `[${serviceName}] Traefik v3 ters vekil aktif (port: ${hostPort})`,
           `[${serviceName}] Canlı cgroup izlemesi devrede`,
         ],
@@ -229,7 +257,9 @@ export const DeployView: React.FC<DeployViewProps> = ({
     setCurrentStep(1);
     setDeployLogs([
       `[akson-engine] Dağıtım işlemi başlatıldı: ${serviceName}`,
-      `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
+      deploySource === 'git'
+        ? `[1/5: git & build] '${gitUrl}' (${gitBranch}) klonlanıyor ve Dockerfile derleniyor...`
+        : `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
     ]);
 
     const envMap: Record<string, string> = {};
@@ -241,7 +271,10 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
     const deployPayload = {
       name: serviceName.trim(),
-      image: customImage.trim(),
+      image: deploySource === 'git' ? undefined : customImage.trim(),
+      git_url: deploySource === 'git' ? gitUrl.trim() : undefined,
+      git_branch: deploySource === 'git' ? gitBranch.trim() : undefined,
+      dockerfile: deploySource === 'git' ? dockerfilePath.trim() : undefined,
       ports: [
         {
           private_port: containerPort,
@@ -358,48 +391,144 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   <div className="flex items-center gap-2">
                     <Layers className="w-4 h-4 text-sky-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      1. Adım: Docker İmajı & Şablon Seçimi
+                      1. Adım: Dağıtım Kaynağı & İmaj Seçimi
                     </h2>
                   </div>
                   <span className="text-[10px] text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25 font-mono">
-                    Docker Registry
+                    {deploySource === 'git' ? 'Git Engine' : 'Docker Registry'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {TEMPLATE_IMAGES.map((tpl) => (
-                    <div
-                      key={tpl.id}
-                      onClick={() => handleSelectTemplate(tpl)}
-                      className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                        selectedTemplate === tpl.id
-                          ? 'bg-[#171717] border-white text-white shadow-md ring-1 ring-white/20'
-                          : 'bg-[#121212] border-[#262626] text-zinc-400 hover:border-zinc-500 hover:text-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between font-bold">
-                        <span className="text-white font-sans">{tpl.name}</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono border ${getTemplateCategoryBadge(tpl.category)}`}>
-                          :{tpl.tag}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 font-sans">
-                        {tpl.desc}
-                      </p>
-                    </div>
-                  ))}
+                {/* Source Mode Toggle */}
+                <div className="flex items-center gap-2 p-1 bg-[#121212] border border-[#262626] rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundManager.playClick();
+                      setDeploySource('template');
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                      deploySource === 'template'
+                        ? 'bg-[#1f1f1f] text-white shadow-sm border border-white/10'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Hazır Şablon & İmaj</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundManager.playClick();
+                      setDeploySource('git');
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                      deploySource === 'git'
+                        ? 'bg-[#1f1f1f] text-white shadow-sm border border-white/10'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <GitBranch className="w-3.5 h-3.5 text-rose-400" />
+                    <span>GitHub / Git Reposu</span>
+                  </button>
                 </div>
 
-                <div className="space-y-1.5 pt-2">
-                  <label className="text-[11px] text-zinc-400 font-sans">Özel Docker İmajı ve Sürüm Etiketi:</label>
-                  <input
-                    type="text"
-                    value={customImage}
-                    onChange={(e) => setCustomImage(e.target.value)}
-                    placeholder="örn: nginx:alpine, redis:7, python:3.11"
-                    className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                  />
-                </div>
+                {deploySource === 'template' ? (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {TEMPLATE_IMAGES.map((tpl) => (
+                        <div
+                          key={tpl.id}
+                          onClick={() => handleSelectTemplate(tpl)}
+                          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
+                            selectedTemplate === tpl.id
+                              ? 'bg-[#171717] border-white text-white shadow-md ring-1 ring-white/20'
+                              : 'bg-[#121212] border-[#262626] text-zinc-400 hover:border-zinc-500 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-bold">
+                            <span className="text-white font-sans">{tpl.name}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono border ${getTemplateCategoryBadge(tpl.category)}`}>
+                              :{tpl.tag}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 font-sans">
+                            {tpl.desc}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-1.5 pt-2">
+                      <label className="text-[11px] text-zinc-400 font-sans">Özel Docker İmajı ve Sürüm Etiketi:</label>
+                      <input
+                        type="text"
+                        value={customImage}
+                        onChange={(e) => setCustomImage(e.target.value)}
+                        placeholder="örn: nginx:alpine, redis:7, python:3.11"
+                        className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="space-y-3 pt-1">
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] text-zinc-400 font-sans flex items-center justify-between">
+                        <span>Git Repository URL:</span>
+                        <span className="text-[10px] text-zinc-500">HTTPS veya Git URL</span>
+                      </label>
+                      <div className="relative">
+                        <GitFork className="w-4 h-4 text-zinc-500 absolute left-3.5 top-2.5" />
+                        <input
+                          type="text"
+                          value={gitUrl}
+                          onChange={(e) => handleGitUrlChange(e.target.value)}
+                          placeholder="https://github.com/kullanici/proje-adi.git"
+                          className="w-full bg-[#121212] border border-[#262626] rounded-xl pl-10 pr-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-rose-500/50"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
+                          <GitBranch className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Branch (Dal):</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={gitBranch}
+                          onChange={(e) => setGitBranch(e.target.value)}
+                          placeholder="main"
+                          className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
+                          <Code2 className="w-3.5 h-3.5 text-sky-400" />
+                          <span>Dockerfile Konumu:</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={dockerfilePath}
+                          onChange={(e) => setDockerfilePath(e.target.value)}
+                          placeholder="Dockerfile"
+                          className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20 text-[11px] text-zinc-300 space-y-1">
+                      <div className="font-semibold text-rose-400 flex items-center gap-1.5">
+                        <span>⚡ Otomatik Git Derleme Döngüsü:</span>
+                      </div>
+                      <p className="text-zinc-400 leading-relaxed">
+                        Akson bu repoyu saniyeler içinde klonlar, projenizdeki <span className="text-white font-mono">{dockerfilePath}</span> dosyasını Docker Engine üzerinde derler ve izole köprü ağına alarak yayına başlatır.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="text-[11px] text-zinc-400 font-sans">Konteyner Servis Adı:</label>
@@ -654,10 +783,27 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     <span className="text-zinc-400 font-sans">Servis Adı</span>
                     <span className="text-white font-semibold font-mono">{serviceName}</span>
                   </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-zinc-400 font-sans">Docker İmajı</span>
-                    <span className="text-white font-mono">{customImage}</span>
-                  </div>
+                  {deploySource === 'git' ? (
+                    <>
+                      <div className="flex justify-between py-2">
+                        <span className="text-zinc-400 font-sans">Git Deposu</span>
+                        <span className="text-rose-400 font-mono truncate max-w-[260px]">{gitUrl || 'Belirtilmedi'}</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-zinc-400 font-sans">Dal / Dockerfile</span>
+                        <span className="text-zinc-300 font-mono">{gitBranch} • {dockerfilePath}</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-zinc-400 font-sans">Hedef İmaj</span>
+                        <span className="text-white font-mono">akson/{serviceName}:latest</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between py-2">
+                      <span className="text-zinc-400 font-sans">Docker İmajı</span>
+                      <span className="text-white font-mono">{customImage}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between py-2">
                     <span className="text-zinc-400 font-sans">Port Yönlendirmesi</span>
                     <span className="text-zinc-300 font-mono">{hostPort} ➔ {containerPort}</span>

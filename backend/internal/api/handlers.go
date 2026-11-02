@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"akson/internal/db"
 	"akson/internal/docker"
+	"akson/internal/git"
 	"akson/internal/proxy"
 
 	"github.com/go-chi/chi/v5"
@@ -55,14 +58,98 @@ type DeployContainerRequest struct {
 	EnableTLS  bool   `json:"enable_tls,omitempty"`
 	Branch     string `json:"branch,omitempty"`
 	CommitHash string `json:"commit_hash,omitempty"`
+	GitURL     string `json:"git_url,omitempty"`
+	GitBranch  string `json:"git_branch,omitempty"`
+	Dockerfile string `json:"dockerfile,omitempty"`
 }
 
-// handleDeployContainer pulls an image, creates, networks, and runs a container from scratch.
+// handleDeployContainer pulls/builds an image, creates, networks, and runs a container from scratch.
 func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 	var req DeployContainerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON payload: "+err.Error())
 		return
+	}
+
+	depID := fmt.Sprintf("dep-%d", time.Now().UnixMilli())
+	now := time.Now().UTC()
+	var allLogs []string
+
+	// Check if this is a Git-based build & deploy
+	if strings.TrimSpace(req.GitURL) != "" {
+		if strings.TrimSpace(req.Name) == "" {
+			// Auto derive name from git url
+			base := filepath.Base(strings.TrimSuffix(strings.TrimSpace(req.GitURL), ".git"))
+			req.Name = proxy.SanitizeName(base)
+		}
+
+		tempDir, err := os.MkdirTemp("", "akson-git-*")
+		if err != nil {
+			errorResponse(w, http.StatusInternalServerError, "Failed to create temp build directory: "+err.Error())
+			return
+		}
+		defer os.RemoveAll(tempDir)
+
+		gitBranch := req.GitBranch
+		if gitBranch == "" {
+			gitBranch = req.Branch
+		}
+		if gitBranch == "" {
+			gitBranch = "main"
+		}
+
+		// 1. Clone repository
+		gitInfo, cloneLogs, err := git.CloneRepo(r.Context(), req.GitURL, gitBranch, tempDir)
+		allLogs = append(allLogs, cloneLogs...)
+		if err != nil {
+			if s.db != nil {
+				_ = s.db.CreateDeployment(&db.Deployment{
+					ID:          depID,
+					ServiceID:   req.Name,
+					CommitHash:  "unknown",
+					Branch:      gitBranch,
+					Status:      "failed",
+					LogExcerpt:  err.Error(),
+					TriggeredAt: now,
+					CompletedAt: &now,
+				})
+			}
+			errorResponse(w, http.StatusBadRequest, "Git clone failed: "+err.Error())
+			return
+		}
+
+		req.Branch = gitInfo.Branch
+		req.CommitHash = gitInfo.CommitHash
+
+		// 2. Build Docker Image
+		builtTag := fmt.Sprintf("akson/%s:latest", proxy.SanitizeName(req.Name))
+		allLogs = append(allLogs, fmt.Sprintf("Building Docker image %s from source...", builtTag))
+
+		buildRes, err := s.docker.BuildImage(r.Context(), docker.BuildOptions{
+			ContextDir: tempDir,
+			Dockerfile: req.Dockerfile,
+			Tag:        builtTag,
+		})
+		if err != nil {
+			if s.db != nil {
+				_ = s.db.CreateDeployment(&db.Deployment{
+					ID:          depID,
+					ServiceID:   req.Name,
+					CommitHash:  req.CommitHash,
+					Branch:      req.Branch,
+					Status:      "failed",
+					LogExcerpt:  err.Error(),
+					TriggeredAt: now,
+					CompletedAt: &now,
+				})
+			}
+			errorResponse(w, http.StatusInternalServerError, "Docker build failed: "+err.Error())
+			return
+		}
+
+		allLogs = append(allLogs, buildRes.Logs...)
+		allLogs = append(allLogs, fmt.Sprintf("Successfully built image %s", builtTag))
+		req.Image = builtTag
 	}
 
 	if strings.TrimSpace(req.Name) == "" {
@@ -108,7 +195,6 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	depID := fmt.Sprintf("dep-%d", time.Now().UnixMilli())
 	branch := req.Branch
 	if branch == "" {
 		branch = "main"
@@ -117,7 +203,6 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 	if commit == "" {
 		commit = "latest"
 	}
-	now := time.Now().UTC()
 
 	// 3. Deploy container via Docker SDK (pull -> create -> network -> start)
 	result, err := s.docker.DeployContainer(r.Context(), req.DeployConfig)
@@ -136,6 +221,11 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 		}
 		errorResponse(w, http.StatusInternalServerError, "Container deploy failed: "+err.Error())
 		return
+	}
+
+	// Combine build logs and deploy logs
+	if len(allLogs) > 0 {
+		result.Logs = append(allLogs, result.Logs...)
 	}
 
 	// 4. Save service state and deployment log in DB
