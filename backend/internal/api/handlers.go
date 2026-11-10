@@ -307,7 +307,21 @@ func (s *Server) handleContainerAction(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, http.StatusInternalServerError, fmt.Sprintf("Action %s failed: %s", action, err.Error()))
 		return
 	}
-	okResponse(w, fmt.Sprintf("Container %s action '%s' completed", id[:12], action))
+	okResponse(w, fmt.Sprintf("Container %s action '%s' completed", docker.ShortID(id), action))
+}
+
+// handleRemoveContainer force-removes a container (stopping it first if it runs).
+func (s *Server) handleRemoveContainer(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	defer cancel()
+
+	if err := s.docker.RemoveContainer(ctx, id, true); err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Remove failed: "+err.Error())
+		return
+	}
+	okResponse(w, fmt.Sprintf("Container %s removed", docker.ShortID(id)))
 }
 
 // handleContainerStats returns a single snapshot of container resource usage.

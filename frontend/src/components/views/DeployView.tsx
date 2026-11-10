@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { snappySpring } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
@@ -17,6 +17,7 @@ import {
   GitBranch,
   GitFork,
   Code2,
+  RotateCcw,
 } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
 import { PipelinePathStepper } from '../deploy/PipelinePathStepper';
@@ -123,6 +124,26 @@ export const DeployView: React.FC<DeployViewProps> = ({
   ]);
   const [showSecrets, setShowSecrets] = useState<boolean>(false);
 
+  // Timers of the demo-mode simulation; cleared when the view unmounts or a new deploy starts.
+  const simTimersRef = useRef<number[]>([]);
+  const clearSimTimers = () => {
+    simTimersRef.current.forEach((t) => window.clearTimeout(t));
+    simTimersRef.current = [];
+  };
+  const schedule = (fn: () => void, ms: number) => {
+    simTimersRef.current.push(window.setTimeout(fn, ms));
+  };
+  useEffect(() => clearSimTimers, []);
+
+  // After a finished deploy, go back to step 1 with the same form values so it can be deployed again.
+  const handleResetDeploy = () => {
+    soundManager.playClick();
+    clearSimTimers();
+    setIsDeployed(false);
+    setCurrentStep(1);
+    setDeployLogs([]);
+  };
+
   const handleGitUrlChange = (url: string) => {
     setGitUrl(url);
     const cleaned = url.trim().replace(/\.git$/, '');
@@ -157,7 +178,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
   const runSimulatedDeploy = () => {
     // Step 2: Port & ENV
-    setTimeout(() => {
+    schedule(() => {
       soundManager.playClick();
       setCurrentStep(2);
       setDeployLogs((prev) => [
@@ -170,7 +191,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     }, 1100);
 
     // Step 3: Network & Proxy
-    setTimeout(() => {
+    schedule(() => {
       soundManager.playClick();
       setCurrentStep(3);
       setDeployLogs((prev) => [
@@ -181,7 +202,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     }, 2200);
 
     // Step 4: Cgroup Limits
-    setTimeout(() => {
+    schedule(() => {
       soundManager.playClick();
       setCurrentStep(4);
       setDeployLogs((prev) => [
@@ -192,7 +213,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     }, 3300);
 
     // Step 5: Start & Verify
-    setTimeout(() => {
+    schedule(() => {
       soundManager.playClick();
       setCurrentStep(5);
       setDeployLogs((prev) => [
@@ -203,7 +224,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     }, 4100);
 
     // Complete
-    setTimeout(() => {
+    schedule(() => {
       soundManager.playSuccess();
       setIsDeploying(false);
       setIsDeployed(true);
@@ -246,14 +267,19 @@ export const DeployView: React.FC<DeployViewProps> = ({
         env: envVars.filter((e) => e.key.trim() !== ''),
       };
 
-      setTimeout(() => {
-        onDeploySuccess(newContainer);
-      }, 1400);
+      onDeploySuccess(newContainer);
     }, 4800);
   };
 
   // Live Animated & Real API Deployment Flow
   const handleStartDeploy = async () => {
+    // Guard against double clicks: both deploy buttons call this.
+    if (isDeploying) return;
+    if (isDeployed) {
+      handleResetDeploy();
+      return;
+    }
+    clearSimTimers();
     soundManager.playSuccess();
     setIsDeploying(true);
     setCurrentStep(1);
@@ -325,10 +351,8 @@ export const DeployView: React.FC<DeployViewProps> = ({
         `🎉 [akson-engine] '${serviceName}' başarıyla canlı Docker daemon'a dağıtıldı!`,
       ]);
 
-      const createdItem = mapApiContainerToItem(res.container);
-      setTimeout(() => {
-        onDeploySuccess(createdItem);
-      }, 1400);
+      // Report right away: the container really exists now, even if the user leaves this tab.
+      onDeploySuccess(mapApiContainerToItem(res.container));
     } catch (err) {
       if (!isLiveBackend) {
         // Demo mode: no backend reachable, so play the interactive simulation instead.
@@ -384,6 +408,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
           if (!isDeploying) setCurrentStep(step);
         }}
         onDeploy={handleStartDeploy}
+        onReset={handleResetDeploy}
         onNavigateDashboard={onNavigateDashboard}
       />
 
@@ -862,12 +887,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               ) : (
                 <button
                   type="button"
-                  disabled={isDeploying || isDeployed}
-                  onClick={handleStartDeploy}
+                  disabled={isDeploying}
+                  onClick={isDeployed ? handleResetDeploy : handleStartDeploy}
                   className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition cursor-pointer shadow-md active:scale-95 disabled:opacity-50"
                 >
-                  <Rocket className="w-3.5 h-3.5" />
-                  <span>Dağıtımı Başlat</span>
+                  {isDeployed ? <RotateCcw className="w-3.5 h-3.5" /> : <Rocket className="w-3.5 h-3.5" />}
+                  <span>{isDeployed ? 'Yeni Dağıtım' : 'Dağıtımı Başlat'}</span>
                 </button>
               )}
             </div>

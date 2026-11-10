@@ -124,3 +124,15 @@ func (c *Client) RemoveContainer(ctx context.Context, containerID string, force 
 	return nil
 }
 
+
+// ShortID returns the first 12 characters of a container ID, or the whole string if it is shorter.
+func ShortID(id string) string {
+	return shortID(id)
+}
+
+func shortID(id string) string {
+	if len(id) > 12 {
+		return id[:12]
+	}
+	return id
+}

@@ -117,6 +117,7 @@ interface PipelinePathStepperProps {
   isDeployed?: boolean;
   onSelectStep?: (stepId: number) => void;
   onDeploy?: () => void;
+  onReset?: () => void;
   onNavigateDashboard?: () => void;
 }
 
@@ -126,6 +127,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
   isDeployed = false,
   onSelectStep,
   onDeploy,
+  onReset,
   onNavigateDashboard,
 }) => {
   const [hoveredStep, setHoveredStep] = useState<number | null>(null);
@@ -422,14 +424,18 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
             <motion.button
               whileHover={{ scale: isDeploying ? 1 : 1.02 }}
               whileTap={{ scale: isDeploying ? 1 : 0.98 }}
-              disabled={isDeploying || isDeployed}
+              disabled={isDeploying || (isDeployed && !onReset)}
               onClick={() => {
+                if (isDeployed) {
+                  onReset?.();
+                  return;
+                }
                 soundManager.playClick();
                 onDeploy();
               }}
               className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold font-sans text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2.5 cursor-pointer ${
                 isDeployed
-                  ? 'bg-zinc-800 text-white border border-zinc-700 cursor-default font-semibold'
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 font-semibold'
                 : isDeploying
                   ? 'bg-zinc-900 text-zinc-400 border border-zinc-700 cursor-wait'
                   : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold shadow-[0_0_24px_rgba(255,255,255,0.22)] hover:shadow-[0_0_32px_rgba(255,255,255,0.32)] active:scale-[0.98]'
@@ -438,7 +444,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               {isDeployed ? (
                 <>
                   <Check className="w-4 h-4 stroke-[3]" />
-                  <span>Başarıyla Canlıya Alındı!</span>
+                  <span>{onReset ? 'Canlıya Alındı • Tekrar Dağıt' : 'Başarıyla Canlıya Alındı!'}</span>
                 </>
               ) : isDeploying ? (
                 <>

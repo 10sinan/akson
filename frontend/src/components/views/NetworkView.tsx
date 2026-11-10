@@ -335,7 +335,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
                   }`}
                 />
               </div>
-              <div className="text-[11px] text-zinc-300 font-mono">{c.ipAddress}</div>
+              <div className="text-[11px] text-zinc-300 font-mono">{c.ipAddress || '—'}</div>
               <div className="text-[10px] text-zinc-500 font-mono truncate">{c.image}</div>
             </motion.div>
           ))}

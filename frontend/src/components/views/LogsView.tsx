@@ -36,12 +36,14 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const terminalEndRef = useRef<HTMLDivElement>(null);
+  const terminalBoxRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll effect
   useEffect(() => {
-    if (autoScroll && terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    // Scroll only the log box; scrollIntoView would also scroll the whole page on every new line.
+    const box = terminalBoxRef.current;
+    if (autoScroll && box) {
+      box.scrollTop = box.scrollHeight;
     }
   }, [logs, autoScroll]);
 
@@ -394,7 +396,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
           </div>
 
           {/* Terminal Console */}
-          <div className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
+          <div ref={terminalBoxRef} className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
             {filteredLogs.length === 0 ? (
               <div className="text-zinc-500 italic pt-8 text-center font-sans">
                 Arama kriterlerine uygun log bulunamadı.
@@ -424,7 +426,6 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 );
               })
             )}
-            <div ref={terminalEndRef} />
           </div>
         </div>
       </div>

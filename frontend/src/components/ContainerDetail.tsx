@@ -446,7 +446,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                     </div>
                     <div className="flex justify-between py-2">
                       <span className="text-zinc-400 font-sans">Dahili IP Adresi</span>
-                      <span className="text-white font-mono">{container.ipAddress}</span>
+                      <span className="text-white font-mono">{container.ipAddress || '—'}</span>
                     </div>
                     {container.traefikRoute && (
                       <div className="flex justify-between py-2 items-center">

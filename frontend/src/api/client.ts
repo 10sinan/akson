@@ -144,7 +144,7 @@ export function mapApiContainerToItem(apiC: ApiContainer): ContainerItem {
     })),
     traefikRoute,
     network: 'akson-bridge',
-    ipAddress: '172.20.0.' + (Math.floor(Math.random() * 20) + 2),
+    ipAddress: '',
     restartCount: 0,
     logs: [`[akson] Canlı Docker konteyneri: ${apiC.name} (${cleanImage})`],
     env: Object.entries(apiC.labels || {})
@@ -185,11 +185,16 @@ export const api = {
     id: string,
     action: 'start' | 'stop' | 'restart' | 'delete'
   ): Promise<{ status: string; message: string }> {
-    const apiAction = action === 'delete' ? 'stop' : action;
-    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/actions/${apiAction}`, {
-      method: 'POST',
-      signal: AbortSignal.timeout(15000),
-    });
+    const res =
+      action === 'delete'
+        ? await fetch(`${API_BASE}/api/v1/containers/${id}`, {
+            method: 'DELETE',
+            signal: AbortSignal.timeout(30000),
+          })
+        : await fetch(`${API_BASE}/api/v1/containers/${id}/actions/${action}`, {
+            method: 'POST',
+            signal: AbortSignal.timeout(15000),
+          });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Container action '${action}' failed: HTTP ${res.status}`);

@@ -29,8 +29,31 @@ import {
 } from 'lucide-react';
 import { wiseBouncy, wiseSpring, wiseGentle, snappyEase, snappySpring, staggerContainerVariants } from './utils/motion';
 
+const NAV_TABS: ActiveNavTab[] = ['dashboard', 'deploy', 'storage', 'logs', 'network'];
+
+// The active tab lives in the URL hash (#deploy, #logs, ...) so a page refresh keeps it.
+const readTabFromHash = (): ActiveNavTab => {
+  const hash = window.location.hash.replace('#', '') as ActiveNavTab;
+  return NAV_TABS.includes(hash) ? hash : 'dashboard';
+};
+
 export function App() {
-  const [activeTab, setActiveTab] = useState<ActiveNavTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<ActiveNavTab>(readTabFromHash);
+
+  useEffect(() => {
+    const target = activeTab === 'dashboard' ? '' : `#${activeTab}`;
+    if (window.location.hash !== target) {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${target}`);
+    }
+    // A new tab opens from the top instead of keeping the previous tab's scroll position.
+    window.scrollTo({ top: 0 });
+  }, [activeTab]);
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(readTabFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const [containers, setContainers] = useState<ContainerItem[]>([]);
   const [selectedId, setSelectedId] = useState<string>('');
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -278,7 +301,11 @@ export function App() {
 
   const handleDeployNew = (newContainer: ContainerItem) => {
     soundManager.playSuccess();
-    setContainers((prev) => [newContainer, ...prev]);
+    // A redeploy replaces the old container with the same name, so drop its stale card.
+    setContainers((prev) => [
+      newContainer,
+      ...prev.filter((c) => c.id !== newContainer.id && c.name !== newContainer.name),
+    ]);
     setSelectedId(newContainer.id);
     setIsDetailOpen(true);
     addToast({
@@ -358,8 +385,8 @@ export function App() {
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
-          {/* Sayfalar Arası Akıcı Geçiş (AnimatePresence mode="popLayout" - No Blank Flash) */}
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* Sayfalar arası geçiş: "wait" eski sekme çıkmadan yenisini koymaz, böylece sayfa yüksekliği zıplamaz */}
+          <AnimatePresence mode="wait" initial={false}>
             {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
             {activeTab === 'dashboard' && (
               <motion.div

@@ -458,7 +458,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                 )}
               </div>
               <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
-                Dahili IP: <span className="text-white">{selectedContainer.ipAddress}</span> • Çalışma Süresi: <span className="text-emerald-400">{selectedContainer.uptime}</span>
+                Dahili IP: <span className="text-white">{selectedContainer.ipAddress || '—'}</span> • Çalışma Süresi: <span className="text-emerald-400">{selectedContainer.uptime}</span>
               </div>
             </div>
           </div>

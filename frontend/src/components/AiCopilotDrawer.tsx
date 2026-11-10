@@ -30,11 +30,13 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesBoxRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to latest message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll only the message list, never the page behind the drawer.
+    const box = messagesBoxRef.current;
+    if (box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
   }, [messages, isTyping]);
 
   const handleSend = (e?: React.FormEvent) => {
@@ -157,7 +159,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             </div>
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs">
+            <div ref={messagesBoxRef} className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs">
               {messages.map((m, idx) => (
                 <div
                   key={idx}
@@ -196,7 +198,6 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                   <span>Gemini analiz ediyor...</span>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar */}

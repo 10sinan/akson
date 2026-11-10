@@ -142,15 +142,27 @@ func (c *Client) DeployContainer(ctx context.Context, cfg DeployConfig) (*Deploy
 		deployLogs = append(deployLogs, fmt.Sprintf("Assigned to network %s", cfg.NetworkName))
 	}
 
-	// 8. Create Container
+	// 8. Replace an existing container with the same name (redeploy).
+	// Only containers Akson created (akson.managed=true) are replaced; anything else is left alone.
+	if existing, err := c.cli.ContainerInspect(ctx, cfg.Name); err == nil {
+		if existing.Config == nil || existing.Config.Labels["akson.managed"] != "true" {
+			return nil, fmt.Errorf("container name %q is already used by a container not managed by Akson", cfg.Name)
+		}
+		deployLogs = append(deployLogs, fmt.Sprintf("Removing previous container %s (%s) for redeploy...", cfg.Name, shortID(existing.ID)))
+		if err := c.cli.ContainerRemove(ctx, existing.ID, container.RemoveOptions{Force: true}); err != nil {
+			return nil, fmt.Errorf("failed to remove previous container %s: %w", cfg.Name, err)
+		}
+	}
+
+	// 9. Create Container
 	deployLogs = append(deployLogs, fmt.Sprintf("Creating container %s...", cfg.Name))
 	createResp, err := c.cli.ContainerCreate(ctx, containerConfig, hostConfig, netConfig, nil, cfg.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create container %s: %w", cfg.Name, err)
 	}
-	deployLogs = append(deployLogs, fmt.Sprintf("Container created with ID %s", createResp.ID[:12]))
+	deployLogs = append(deployLogs, fmt.Sprintf("Container created with ID %s", shortID(createResp.ID)))
 
-	// 9. Start Container
+	// 10. Start Container
 	deployLogs = append(deployLogs, fmt.Sprintf("Starting container %s...", cfg.Name))
 	if err := c.cli.ContainerStart(ctx, createResp.ID, container.StartOptions{}); err != nil {
 		// Remove the created-but-never-started container so a retry with the same name works.
@@ -164,7 +176,7 @@ func (c *Client) DeployContainer(ctx context.Context, cfg DeployConfig) (*Deploy
 	}
 	deployLogs = append(deployLogs, fmt.Sprintf("Container %s is running", cfg.Name))
 
-	// 10. Inspect final container state
+	// 11. Inspect final container state
 	inspect, err := c.InspectContainer(ctx, createResp.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to inspect deployed container: %w", err)
