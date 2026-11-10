@@ -292,7 +292,8 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
-      signal: AbortSignal.timeout(120000), // image pull might take time
+      // Image pull might take time; a git clone + Dockerfile build can take much longer.
+      signal: AbortSignal.timeout(req.git_url ? 600000 : 120000),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

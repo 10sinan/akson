@@ -25,6 +25,7 @@ import { api, mapApiContainerToItem } from '../../api/client';
 interface DeployViewProps {
   onDeploySuccess: (container: ContainerItem) => void;
   onNavigateDashboard: () => void;
+  isLiveBackend: boolean;
 }
 
 interface TemplateImage {
@@ -93,6 +94,7 @@ const getTemplateCategoryBadge = (category: string) => {
 export const DeployView: React.FC<DeployViewProps> = ({
   onDeploySuccess,
   onNavigateDashboard,
+  isLiveBackend,
 }) => {
   // Stepper state
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -328,8 +330,19 @@ export const DeployView: React.FC<DeployViewProps> = ({
         onDeploySuccess(createdItem);
       }, 1400);
     } catch (err) {
-      console.warn('Real deploy endpoint unavailable or offline, continuing with interactive simulation:', err);
-      runSimulatedDeploy();
+      if (!isLiveBackend) {
+        // Demo mode: no backend reachable, so play the interactive simulation instead.
+        runSimulatedDeploy();
+        return;
+      }
+      // Live backend returned an error (clone/build/pull/port failure, timeout): surface it, never fake success.
+      const message = err instanceof Error ? err.message : String(err);
+      setIsDeploying(false);
+      setIsDeployed(false);
+      setDeployLogs((prev) => [
+        ...prev,
+        `[ERR] Dağıtım başarısız (deploy failed): ${message}`,
+      ]);
     }
   };
 

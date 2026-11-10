@@ -686,6 +686,7 @@ export function App() {
                 <DeployView
                   onDeploySuccess={handleDeployNew}
                   onNavigateDashboard={() => setActiveTab('dashboard')}
+                  isLiveBackend={isLiveBackend}
                 />
               </motion.div>
             )}
