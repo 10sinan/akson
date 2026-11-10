@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -102,18 +103,7 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 		gitInfo, cloneLogs, err := git.CloneRepo(r.Context(), req.GitURL, gitBranch, tempDir)
 		allLogs = append(allLogs, cloneLogs...)
 		if err != nil {
-			if s.db != nil {
-				_ = s.db.CreateDeployment(&db.Deployment{
-					ID:          depID,
-					ServiceID:   req.Name,
-					CommitHash:  "unknown",
-					Branch:      gitBranch,
-					Status:      "failed",
-					LogExcerpt:  err.Error(),
-					TriggeredAt: now,
-					CompletedAt: &now,
-				})
-			}
+			s.recordFailedDeployment(depID, req.Name, req.GitURL, "unknown", gitBranch, allLogs, err, now)
 			errorResponse(w, http.StatusBadRequest, "Git clone failed: "+err.Error())
 			return
 		}
@@ -131,18 +121,7 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 			Tag:        builtTag,
 		})
 		if err != nil {
-			if s.db != nil {
-				_ = s.db.CreateDeployment(&db.Deployment{
-					ID:          depID,
-					ServiceID:   req.Name,
-					CommitHash:  req.CommitHash,
-					Branch:      req.Branch,
-					Status:      "failed",
-					LogExcerpt:  err.Error(),
-					TriggeredAt: now,
-					CompletedAt: &now,
-				})
-			}
+			s.recordFailedDeployment(depID, req.Name, builtTag, req.CommitHash, req.Branch, allLogs, err, now)
 			errorResponse(w, http.StatusInternalServerError, "Docker build failed: "+err.Error())
 			return
 		}
@@ -207,18 +186,7 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 	// 3. Deploy container via Docker SDK (pull -> create -> network -> start)
 	result, err := s.docker.DeployContainer(r.Context(), req.DeployConfig)
 	if err != nil {
-		if s.db != nil {
-			_ = s.db.CreateDeployment(&db.Deployment{
-				ID:          depID,
-				ServiceID:   req.Name,
-				CommitHash:  commit,
-				Branch:      branch,
-				Status:      "failed",
-				LogExcerpt:  err.Error(),
-				TriggeredAt: now,
-				CompletedAt: &now,
-			})
-		}
+		s.recordFailedDeployment(depID, req.Name, req.Image, commit, branch, allLogs, err, now)
 		errorResponse(w, http.StatusInternalServerError, "Container deploy failed: "+err.Error())
 		return
 	}
@@ -263,6 +231,41 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, http.StatusCreated, result)
+}
+
+// recordFailedDeployment stores a failed deployment in the history.
+// deployments.service_id is a foreign key to services, so when this name has never been
+// deployed before, a service row with status "failed" is created first; otherwise the
+// insert is rejected. An existing service row is left untouched (its container may still run).
+func (s *Server) recordFailedDeployment(depID, name, image, commit, branch string, stepLogs []string, deployErr error, triggeredAt time.Time) {
+	if s.db == nil {
+		return
+	}
+	existing, err := s.db.GetService(name)
+	if err != nil {
+		log.Printf("⚠️  could not record failed deployment %s: %v", depID, err)
+		return
+	}
+	if existing == nil {
+		if err := s.db.UpsertService(&db.Service{ID: name, Name: name, Image: image, Status: "failed"}); err != nil {
+			log.Printf("⚠️  could not record failed deployment %s: %v", depID, err)
+			return
+		}
+	}
+	completedAt := time.Now().UTC()
+	excerpt := strings.Join(append(append([]string{}, stepLogs...), deployErr.Error()), "\n")
+	if err := s.db.CreateDeployment(&db.Deployment{
+		ID:          depID,
+		ServiceID:   name,
+		CommitHash:  commit,
+		Branch:      branch,
+		Status:      "failed",
+		LogExcerpt:  excerpt,
+		TriggeredAt: triggeredAt,
+		CompletedAt: &completedAt,
+	}); err != nil {
+		log.Printf("⚠️  could not record failed deployment %s: %v", depID, err)
+	}
 }
 
 // handleGetContainer returns details of a single container.

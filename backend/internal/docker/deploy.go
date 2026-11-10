@@ -153,6 +153,13 @@ func (c *Client) DeployContainer(ctx context.Context, cfg DeployConfig) (*Deploy
 	// 9. Start Container
 	deployLogs = append(deployLogs, fmt.Sprintf("Starting container %s...", cfg.Name))
 	if err := c.cli.ContainerStart(ctx, createResp.ID, container.StartOptions{}); err != nil {
+		// Remove the created-but-never-started container so a retry with the same name works.
+		// Use a fresh context: the request context may already be cancelled.
+		rmCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		if rmErr := c.cli.ContainerRemove(rmCtx, createResp.ID, container.RemoveOptions{Force: true}); rmErr != nil {
+			return nil, fmt.Errorf("failed to start container %s: %w (cleanup also failed: %v)", cfg.Name, err, rmErr)
+		}
 		return nil, fmt.Errorf("failed to start container %s: %w", cfg.Name, err)
 	}
 	deployLogs = append(deployLogs, fmt.Sprintf("Container %s is running", cfg.Name))

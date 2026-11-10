@@ -6,6 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Akson is a local Docker + service control panel (container list, live logs/stats, Git→Dockerfile build & deploy, Traefik routing). Go backend in `backend/`, React/Vite frontend in `frontend/`. The README and user-facing strings are in Turkish.
 
+## Change log (GELISIM.md)
+
+After every change, add an entry at the **top** of `GELISIM.md`. Write it in short, simple Turkish, with no jargon, using this format:
+
+```
+## YYYY-MM-DD — <kısa başlık>
+
+- **Ne yapacaktık:** <the goal>
+- **Ne yaptık:** <what was actually done, including anything left unfinished>
+- **Sonraki adım:** <the recommended next step>
+```
+
+Commit the entry together with the change it describes.
+
 ## Commands
 
 From the repo root:
