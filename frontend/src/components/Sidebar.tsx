@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Logo - Clickable to Dashboard */}
         <button
           onClick={() => onSelectTab('dashboard')}
-          className="relative group w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(52,211,153,0.25)] flex items-center justify-center text-white transition-all duration-200 cursor-pointer"
+          className="relative group w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-emerald-500/50 flex items-center justify-center text-white transition-all duration-200 cursor-pointer"
         >
           <Layers className="w-5 h-5 text-white group-hover:text-emerald-400 transition-colors" />
 
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <motion.div
                     layoutId="sidebarActiveIndicator"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className="absolute -left-2 top-2 bottom-2 w-1 rounded-r-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                    className="absolute -left-2 top-2 bottom-2 w-1 rounded-r-full bg-emerald-400"
                   />
                 )}
 
@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Live Activity Dot on Logs */}
                 {showLiveDot && !isActive && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)] animate-pulse" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400" />
                 )}
 
                 {/* Instant Cyber Tooltip */}
@@ -130,7 +130,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="w-6 h-[1px] bg-zinc-800 my-1" />
 
-          {/* AI Copilot Button with Instant Tooltip */}
+          {/* Assistant button with tooltip */}
           <div className="relative group">
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -138,22 +138,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={onOpenAiModal}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 isAiOpen
-                  ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40 shadow-sm ring-1 ring-violet-500/30'
-                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-violet-300 hover:border-violet-500/30 hover:bg-zinc-800'
+                  ? 'bg-zinc-800 text-white border border-zinc-600'
+                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:bg-zinc-800'
               }`}
             >
-              <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-violet-300' : 'text-zinc-400 group-hover:text-violet-400'}`} />
+              <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-white' : 'text-zinc-400 group-hover:text-white'}`} />
             </motion.button>
 
             {/* Instant Tooltip */}
-            <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-violet-500/30 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
+            <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700 rounded-xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
               <div className="flex flex-col text-left">
-                <span className="font-semibold text-violet-300 font-sans">Gemini AI Copilot</span>
-                <span className="text-[10px] text-zinc-400 font-sans">Canlı DevOps ve log analizi</span>
+                <span className="font-semibold text-white font-sans">Asistan</span>
+                <span className="text-[10px] text-zinc-400 font-sans">Konteyner ve log özeti</span>
               </div>
-              <span className="text-[9px] text-violet-300 bg-violet-500/10 px-1.5 py-0.5 rounded border border-violet-500/30 font-mono">
-                AI
-              </span>
             </div>
           </div>
         </nav>
@@ -187,7 +184,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="relative group cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300 relative shadow-sm hover:border-zinc-500 transition-colors">
             AK
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c0d10] shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c0d10]" />
           </div>
 
           {/* Instant Tooltip */}

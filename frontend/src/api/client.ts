@@ -134,8 +134,8 @@ export function mapApiContainerToItem(apiC: ApiContainer): ContainerItem {
     subtitle: `${cleanImage}:${tag}`,
     category,
     uptime: apiC.status,
-    cpuPercent: isRunning ? 1.2 : 0,
-    memoryUsageMb: isRunning ? 64 : 0,
+    cpuPercent: 0,
+    memoryUsageMb: 0,
     memoryLimitMb: 512,
     ports: (apiC.ports || []).map((p) => ({
       hostPort: p.public_port || 0,
@@ -175,7 +175,23 @@ export const api = {
     });
     if (!res.ok) throw new Error(`Fetch containers failed: HTTP ${res.status}`);
     const rawList: ApiContainer[] = await res.json();
-    return rawList.map(mapApiContainerToItem);
+    const items = rawList.map(mapApiContainerToItem);
+
+    // Real CPU/RAM for running containers; a container whose stats can't be read keeps 0.
+    await Promise.all(
+      items.map(async (item) => {
+        if (item.status !== 'running') return;
+        try {
+          const st = await api.fetchContainerStats(item.id);
+          item.cpuPercent = +st.cpu_percent.toFixed(1);
+          item.memoryUsageMb = Math.round(st.memory_usage / (1024 * 1024));
+          if (st.memory_limit > 0) item.memoryLimitMb = Math.round(st.memory_limit / (1024 * 1024));
+        } catch {
+          // keep the zero defaults
+        }
+      })
+    );
+    return items;
   },
 
   /**

@@ -4,7 +4,6 @@ import { Sidebar, type ActiveNavTab } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ContainerCard } from './components/ContainerCard';
 import { ContainerDetail } from './components/ContainerDetail';
-import { DeployModal } from './components/DeployModal';
 import { AiCopilotDrawer } from './components/AiCopilotDrawer';
 import { CommandPalette } from './components/CommandPalette';
 import { ToastContainer, type ToastItem } from './components/Toast';
@@ -59,7 +58,6 @@ export function App() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'stopped'>('all');
-  const [isDeployOpen, setIsDeployOpen] = useState(false);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -170,6 +168,10 @@ export function App() {
     const target = containers.find((c) => c.id === id);
     const targetName = target?.name || 'Konteyner';
 
+    if (action === 'delete' && !window.confirm(`${targetName} silinsin mi? Bu işlem geri alınamaz.`)) {
+      return;
+    }
+
     // If live Docker daemon is active, call Go backend REST API
     if (isLiveBackend && dockerStatus === 'online') {
       try {
@@ -275,25 +277,17 @@ export function App() {
       } catch {
         // Silently continue with local list on network glitch
       }
-    } else {
-      setContainers((prev) =>
-        prev.map((c) => {
-          if (c.status !== 'running') return c;
-          const delta = (Math.random() - 0.5) * 0.8;
-          return {
-            ...c,
-            cpuPercent: Math.max(0.2, +(c.cpuPercent + delta).toFixed(1)),
-          };
-        })
-      );
     }
 
     setTimeout(() => {
       setIsRefreshing(false);
       addToast({
         type: 'info',
-        title: 'Metrikler Güncellendi',
-        description: isLiveBackend ? 'Docker motoru ve konteynerler tazelendi.' : 'Tüm konteyner durumları ve telemetri tazelendi.',
+        title: isLiveBackend && dockerStatus === 'online' ? 'Liste Güncellendi' : 'Demo Modu',
+        description:
+          isLiveBackend && dockerStatus === 'online'
+            ? 'Konteyner listesi Docker\'dan yeniden okundu.'
+            : 'Docker bağlı değil, yenilenecek gerçek veri yok.',
         duration: 2500,
       });
     }, 450);
@@ -385,6 +379,12 @@ export function App() {
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
+          {dockerStatus === 'demo' && (
+            <div className="mb-6 px-4 py-2.5 rounded-xl border border-[#262626] bg-[#0a0a0a] text-xs text-zinc-400 font-sans">
+              Demo modu: {isLiveBackend ? 'Docker çalışmıyor.' : 'backend bağlı değil.'} İşlemler gerçek Docker&apos;a uygulanmaz.
+            </div>
+          )}
+
           {/* Sayfalar arası geçiş: "wait" eski sekme çıkmadan yenisini koymaz, böylece sayfa yüksekliği zıplamaz */}
           <AnimatePresence mode="wait" initial={false}>
             {/* TAB 1: KONTROL PANELİ & MASTER-DETAIL (1/3 + 2/3) */}
@@ -452,7 +452,7 @@ export function App() {
 
                     <button
                       onClick={() => setActiveTab('deploy')}
-                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(255,255,255,0.28)] transition active:scale-95 cursor-pointer font-sans"
+                      className="flex items-center space-x-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl transition active:scale-95 cursor-pointer font-sans"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Yeni Servis Dağıt</span>
@@ -670,6 +670,8 @@ export function App() {
                             <MetricsColumn
                               totalCpu={totalCpu}
                               totalMemoryMb={totalMemory}
+                              runningCount={runningCount}
+                              totalCount={containers.length}
                               isRefreshing={isRefreshing}
                             />
                           </motion.section>
@@ -728,7 +730,7 @@ export function App() {
                 transition={snappyEase}
                 className="flex flex-col flex-1"
               >
-                <StorageView containers={containers} />
+                <StorageView />
               </motion.div>
             )}
 
@@ -756,7 +758,7 @@ export function App() {
                 transition={snappyEase}
                 className="flex flex-col flex-1"
               >
-                <NetworkView containers={containers} />
+                <NetworkView containers={containers} isLiveBackend={isLiveBackend} />
               </motion.div>
             )}
           </AnimatePresence>
@@ -764,12 +766,6 @@ export function App() {
       </div>
 
       {/* Global Modals */}
-      <DeployModal
-        isOpen={isDeployOpen}
-        onClose={() => setIsDeployOpen(false)}
-        onDeploy={handleDeployNew}
-      />
-
       <AiCopilotDrawer
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}
@@ -782,7 +778,7 @@ export function App() {
         containers={containers}
         onSelectContainer={handleSelectContainer}
         onSelectTab={setActiveTab}
-        onOpenDeploy={() => setIsDeployOpen(true)}
+        onOpenDeploy={() => setActiveTab('deploy')}
         onOpenAi={() => setIsAiOpen(true)}
         onRefresh={handleRefresh}
       />

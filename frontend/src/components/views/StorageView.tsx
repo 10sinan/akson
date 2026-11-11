@@ -1,312 +1,85 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import type { ContainerItem } from '../../types/container';
-import {
-  Database,
-  Search,
-  Copy,
-  Check,
-  Plus,
-  Camera,
-  HardDrive,
-  TrendingUp,
-} from 'lucide-react';
+import { Database, Copy, Check, HardDrive } from 'lucide-react';
 
-interface VolumeItem {
+interface StorageItem {
   id: string;
   name: string;
-  size: string;
-  service: string;
-  mountPath: string;
-  hostPath: string;
-  driver: string;
+  description: string;
+  path: string;
   format: string;
-  status: 'active' | 'unused';
-  fileCount: number;
 }
 
-interface StorageViewProps {
-  containers?: ContainerItem[];
-}
+// Only storage the backend really owns is listed here. Container volumes are not exposed by the API yet,
+// so they are not invented.
+const STORAGE_ITEMS: StorageItem[] = [
+  {
+    id: 'akson-db',
+    name: 'akson.db',
+    description: 'Servis ve dağıtım geçmişi',
+    path: './data/akson.db',
+    format: 'SQLite (WAL modu)',
+  },
+];
 
-export const StorageView: React.FC<StorageViewProps> = ({ containers = [] }) => {
-  const volumes: VolumeItem[] = React.useMemo(() => {
-    const list: VolumeItem[] = [
-      {
-        id: 'vol-sqlite-wal',
-        name: 'akson_sqlite_wal',
-        size: '12.4 MB',
-        service: 'akson-backend',
-        mountPath: '/data/akson.db',
-        hostPath: './data/akson.db',
-        driver: 'local',
-        format: 'SQLite 3 (WAL mode)',
-        status: 'active',
-        fileCount: 3,
-      },
-    ];
+export const StorageView: React.FC = () => {
+  const [copiedPath, setCopiedPath] = useState<string | null>(null);
 
-    containers.forEach((c, idx) => {
-      list.push({
-        id: `vol-${c.id || idx}`,
-        name: `${c.name}_storage`,
-        size: `${Math.max(1, Math.round(c.memoryUsageMb * 1.5))} MB`,
-        service: c.name,
-        mountPath: '/var/lib/data',
-        hostPath: `/var/lib/docker/volumes/${c.name}_storage/_data`,
-        driver: 'local',
-        format: 'overlay2 / ext4',
-        status: c.status === 'running' ? 'active' : 'unused',
-        fileCount: c.status === 'running' ? 24 : 0,
-      });
-    });
-
-    return list;
-  }, [containers]);
-
-  const [selectedVolume, setSelectedVolume] = useState<VolumeItem>(volumes[0]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [copiedPath, setCopiedPath] = useState(false);
-  const [snapshotName, setSnapshotName] = useState<string | null>(null);
-
-  const filteredVolumes = volumes.filter(
-    (v) =>
-      v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      v.service.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleCopyPath = () => {
-    navigator.clipboard.writeText(selectedVolume.hostPath);
-    setCopiedPath(true);
-    setTimeout(() => setCopiedPath(false), 2000);
-  };
-
-  const handleCreateSnapshot = () => {
-    const name = `snapshot_${selectedVolume.name}_${Date.now().toString().slice(-4)}`;
-    setSnapshotName(name);
-    setTimeout(() => setSnapshotName(null), 3000);
+  const handleCopyPath = (item: StorageItem) => {
+    navigator.clipboard.writeText(item.path);
+    setCopiedPath(item.id);
+    setTimeout(() => setCopiedPath(null), 2000);
   };
 
   return (
     <div className="flex flex-col flex-1 space-y-6">
-      {/* Header Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
-              Kalıcı Depolama & Birim Yönetimi
-            </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 font-sans text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse" />
-              {volumes.length} Birim Aktif
-            </span>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1 font-sans">
-            Docker hacimleri, kalıcı bağlama noktaları ve NVMe disk telemetrisi.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5 text-xs text-zinc-400 bg-[#121212] border border-[#262626] px-3.5 py-2 rounded-xl font-sans">
-            <HardDrive className="w-4 h-4 text-violet-400" />
-            <span className="text-white font-mono">128.4 / 500 GB (%25.6)</span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-zinc-300 font-medium">NVMe RAID-1</span>
-          </div>
-
-          <button
-            onClick={() => alert('Yeni Docker Volume sihirbazı başlatıldı.')}
-            className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black font-semibold text-xs rounded-xl shadow transition cursor-pointer active:scale-95 font-sans"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Yeni Birim Oluştur</span>
-          </button>
-        </div>
+      <div className="pb-6 border-b border-[#262626]">
+        <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Depolama</h1>
+        <p className="text-xs text-zinc-400 mt-1 font-sans">
+          Akson&apos;un kendi verilerini sakladığı dosyalar.
+        </p>
       </div>
 
-      {/* Breathable 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column (5 cols): Volume List with Search */}
-        <div className="lg:col-span-5 bg-[#0a0a0a] border border-[#262626] rounded-2xl overflow-hidden shadow-sm flex flex-col">
-          <div className="p-4 border-b border-[#262626] space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Database className="w-4 h-4 text-amber-400" />
-                <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                  Aktif Hacimler
-                </h2>
-              </div>
-              <span className="text-[11px] font-sans text-zinc-400">
-                {filteredVolumes.length} Birim
-              </span>
-            </div>
-
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Birim adı veya servis ara..."
-                className="w-full bg-[#121212] border border-[#262626] text-xs text-white rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:border-white transition-colors font-sans placeholder:text-zinc-500"
-              />
-            </div>
-          </div>
-
-          <motion.div
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.04,
-                },
-              },
-            }}
-            initial="hidden"
-            animate="visible"
-            className="p-2 space-y-1.5 max-h-[calc(100vh-320px)] overflow-y-auto"
+      <div className="space-y-3 max-w-2xl">
+        {STORAGE_ITEMS.map((item) => (
+          <div
+            key={item.id}
+            className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-4"
           >
-            {filteredVolumes.map((vol) => {
-              const isSelected = selectedVolume.id === vol.id;
-              return (
-                <motion.div
-                  key={vol.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 8 },
-                    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-                  }}
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.985 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  onClick={() => setSelectedVolume(vol)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col gap-1.5 ${
-                    isSelected
-                      ? 'bg-[#171717] border-white shadow-md ring-1 ring-white/20'
-                      : 'bg-[#121212] border-[#262626] hover:border-zinc-500 hover:bg-[#171717]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white font-mono">
-                      {vol.name}
-                    </span>
-                    <span className="text-xs font-mono font-medium text-zinc-200">
-                      {vol.size}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-mono text-zinc-400 truncate">
-                    <span className="text-white font-sans">{vol.service}</span> • {vol.mountPath}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-
-        {/* Right Column (7 cols): Selected Volume Details & Telemetry */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-5 shadow-sm">
-            <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                <Database className="w-4 h-4 text-zinc-300" />
+              </div>
               <div>
-                <h2 className="text-base font-bold text-white font-mono">
-                  {selectedVolume.name}
-                </h2>
-                <p className="text-xs text-zinc-400 mt-0.5 font-sans">
-                  {selectedVolume.format} • Direct IO
+                <h2 className="text-sm font-bold text-white font-mono">{item.name}</h2>
+                <p className="text-xs text-zinc-400 font-sans">
+                  {item.description} • {item.format}
                 </p>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-sans text-[11px] font-medium">
-                BAĞLI & AKTİF
-              </span>
             </div>
 
-            {/* Mount specs */}
-            <div className="space-y-3 font-mono text-xs">
-              <div className="space-y-1.5">
-                <span className="text-[11px] text-zinc-400 font-sans">Konteyner Bağlantı Yolu (Mount)</span>
-                <div className="bg-[#121212] p-2.5 rounded-xl border border-[#262626] text-white flex items-center justify-between">
-                  <span>{selectedVolume.mountPath}</span>
-                  <span className="text-[11px] text-zinc-400 font-sans">{selectedVolume.service}</span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <span className="text-[11px] text-zinc-400 font-sans">Host Mutlak Dosya Yolu</span>
-                <div className="bg-[#121212] p-2.5 rounded-xl border border-[#262626] text-white flex items-center justify-between">
-                  <span className="truncate pr-2 text-zinc-300">{selectedVolume.hostPath}</span>
-                  <button
-                    onClick={handleCopyPath}
-                    className="text-zinc-400 hover:text-white transition cursor-pointer p-1"
-                    title="Dosya Yolunu Kopyala"
-                  >
-                    {copiedPath ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="bg-[#121212] p-3 rounded-xl border border-[#262626]">
-                  <span className="text-[11px] text-zinc-400 block font-sans">Birim Boyutu</span>
-                  <span className="text-sm font-bold text-white mt-1 block">
-                    {selectedVolume.size}
-                  </span>
-                </div>
-                <div className="bg-[#121212] p-3 rounded-xl border border-[#262626]">
-                  <span className="text-[11px] text-zinc-400 block font-sans">Dosya Sayısı</span>
-                  <span className="text-sm font-bold text-white mt-1 block">
-                    {selectedVolume.fileCount} dosya
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* NVMe Hardware Telemetry Integrated Bar */}
-            <div className="pt-2 border-t border-[#262626] space-y-2">
-              <div className="flex justify-between items-center text-xs font-sans">
-                <span className="text-zinc-400 flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-violet-400" />
-                  NVMe RAID-1 Disk Doluluğu
-                </span>
-                <span className="text-white font-mono font-medium">
-                  128.4 / 500 GB (%25.6)
-                </span>
-              </div>
-              <div className="w-full h-1.5 rounded-full bg-[#171717] overflow-hidden">
-                <div className="h-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.4)] rounded-full" style={{ width: '25.6%' }} />
-              </div>
-              <div className="flex justify-between text-[11px] text-zinc-400 font-mono pt-0.5">
-                <span>Okuma: 142.8 MB/s</span>
-                <span>Yazma: 86.2 MB/s</span>
-                <span>Gecikme: 0.4 ms</span>
-              </div>
-            </div>
-
-            {/* Snapshot Action */}
-            <div className="pt-3 border-t border-[#262626] flex items-center justify-between">
-              <div>
-                <span className="text-xs font-semibold text-white block font-sans">Kalıcı Snapshot Al</span>
-                <span className="text-[11px] text-zinc-400 font-sans">Anlık veri yedeği oluşturun.</span>
-              </div>
+            <div className="bg-[#121212] p-2.5 rounded-xl border border-[#262626] flex items-center justify-between font-mono text-xs">
+              <span className="truncate pr-2 text-zinc-300">{item.path}</span>
               <button
-                onClick={handleCreateSnapshot}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#121212] hover:bg-zinc-800 text-white border border-[#262626] rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 shadow-sm"
+                onClick={() => handleCopyPath(item)}
+                className="text-zinc-400 hover:text-white transition cursor-pointer p-1"
+                title="Yolu kopyala"
               >
-                <Camera className="w-3.5 h-3.5 text-white" />
-                <span>Yedek Al</span>
+                {copiedPath === item.id ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5" />
+                )}
               </button>
             </div>
-
-            {snapshotName && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-mono flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span>Snapshot başarıyla oluşturuldu: {snapshotName}</span>
-              </div>
-            )}
           </div>
+        ))}
+
+        <div className="flex items-start gap-3 p-4 rounded-2xl border border-dashed border-[#262626] text-xs text-zinc-400 font-sans">
+          <HardDrive className="w-4 h-4 mt-0.5 shrink-0 text-zinc-500" />
+          <p>
+            Konteyner birimleri (Docker volume) henüz buradan okunmuyor. Bunları görmek için
+            terminalde <span className="font-mono text-zinc-300">docker volume ls</span> kullanabilirsiniz.
+          </p>
         </div>
       </div>
     </div>

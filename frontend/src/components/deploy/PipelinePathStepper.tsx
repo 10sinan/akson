@@ -8,7 +8,6 @@ import {
   Rocket,
   Check,
   Loader2,
-  Info,
   ShieldCheck,
   Sparkles,
   CheckCircle2,
@@ -23,7 +22,6 @@ export interface StepInfo {
   title: string;
   shortDesc: string;
   icon: React.ElementType;
-  doneDetails: string;
   todoDetails: string;
 }
 
@@ -34,8 +32,7 @@ export const PIPELINE_STEPS: StepInfo[] = [
     title: '1. Kaynak & İmaj',
     shortDesc: 'Docker Hub İmaj Seçimi',
     icon: Package,
-    doneDetails: 'İmaj çekildi ve katman bütünlüğü (SHA256) doğrulandı.',
-    todoDetails: 'Docker Hub veya özel registry üzerinden imaj adı ve sürüm etiketi belirlenecek.',
+    todoDetails: 'Bir hazır şablon, imaj adı ya da Git deposu seçin.',
   },
   {
     id: 2,
@@ -43,8 +40,7 @@ export const PIPELINE_STEPS: StepInfo[] = [
     title: '2. Port & Ortam (ENV)',
     shortDesc: 'Port ve Değişkenler',
     icon: Key,
-    doneDetails: 'Dahili ve harici port eşlemeleri ile güvenli ortam değişkenleri tanımlandı.',
-    todoDetails: 'Hedef konteyner portu (örn: 80, 3000) ve ENV konfigürasyonları girilecek.',
+    todoDetails: 'Dış ve iç portu belirleyin, gerekiyorsa ortam değişkenlerini girin.',
   },
   {
     id: 3,
@@ -52,8 +48,7 @@ export const PIPELINE_STEPS: StepInfo[] = [
     title: '3. Ağ & SSL (Traefik)',
     shortDesc: 'akson-bridge & Router',
     icon: Globe,
-    doneDetails: 'İzole akson-bridge ağına bağlandı ve Traefik v3 ters vekil rotası enjekte edildi.',
-    todoDetails: 'Dahili DNS rotası ve otomatik Let\'s Encrypt SSL yönlendirmesi bağlanacak.',
+    todoDetails: 'Servisin bağlanacağı Docker ağını ve Traefik alan adını seçin.',
   },
   {
     id: 4,
@@ -61,8 +56,7 @@ export const PIPELINE_STEPS: StepInfo[] = [
     title: '4. Kaynak Sınırları',
     shortDesc: 'CPU & RAM Cgroup',
     icon: Cpu,
-    doneDetails: 'Hard RAM sınırı ve vCPU çekirdek tahsisi cgroup seviyesinde kilitlendi.',
-    todoDetails: 'Konteynerin tüketebileceği azami bellek (MB) ve işlemci payı atanacak.',
+    todoDetails: 'Servisin kullanabileceği en fazla bellek ve işlemci payını seçin.',
   },
   {
     id: 5,
@@ -70,8 +64,7 @@ export const PIPELINE_STEPS: StepInfo[] = [
     title: '5. Canlıya Dağıtım',
     shortDesc: 'Canlı Çalıştırma & Kontrol',
     icon: Rocket,
-    doneDetails: 'Docker motorunda konteyner çalıştırıldı ve HTTP 200 sağlık onayı alındı.',
-    todoDetails: 'Konteyner ayağa kaldırılarak cgroup izlemesi ve canlı log akışı başlatılacak.',
+    todoDetails: 'Ayarları kontrol edip dağıtımı başlatın.',
   },
 ];
 
@@ -81,32 +74,32 @@ const getStepStyles = (id: number) => {
       return {
         text: 'text-sky-400',
         badge: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
-        activeRing: 'ring-2 ring-sky-400 shadow-[0_0_16px_rgba(56,189,248,0.35)]',
+        activeRing: 'ring-2 ring-sky-400',
       };
     case 2:
       return {
         text: 'text-amber-400',
         badge: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
-        activeRing: 'ring-2 ring-amber-400 shadow-[0_0_16px_rgba(251,191,36,0.35)]',
+        activeRing: 'ring-2 ring-amber-400',
       };
     case 3:
       return {
         text: 'text-emerald-400',
         badge: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
-        activeRing: 'ring-2 ring-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.35)]',
+        activeRing: 'ring-2 ring-emerald-400',
       };
     case 4:
       return {
         text: 'text-violet-400',
         badge: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
-        activeRing: 'ring-2 ring-violet-400 shadow-[0_0_16px_rgba(167,139,250,0.35)]',
+        activeRing: 'ring-2 ring-violet-400',
       };
     case 5:
     default:
       return {
         text: 'text-rose-400',
         badge: 'bg-rose-500/10 border-rose-500/25 text-rose-400',
-        activeRing: 'ring-2 ring-rose-400 shadow-[0_0_16px_rgba(251,113,133,0.35)]',
+        activeRing: 'ring-2 ring-rose-400',
       };
   }
 };
@@ -153,11 +146,11 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-              Görsel Dağıtım Tüneli (Pipeline Path)
+              Dağıtım adımları
             </h3>
           </div>
           <p className="text-[11px] text-zinc-400 mt-0.5 font-mono">
-            İstasyonlara tıklayarak detayları inceleyebilir, dağıtım sürecini soldan sağa görsel olarak takip edebilirsiniz.
+            Bir adıma tıklayarak o adımın ayarlarına geçebilirsiniz.
           </p>
         </div>
 
@@ -171,47 +164,20 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
 
       {/* Interactive Path Canvas */}
       <div className="relative py-2 select-none">
-        {/* Cyber Connecting Track Line (Pipeline Conduit) */}
+        {/* Connecting track line */}
         <div className="absolute top-[28px] sm:top-[30px] left-[10%] right-[10%] h-2 bg-zinc-900 border border-zinc-800/90 -translate-y-1/2 rounded-full z-0 overflow-hidden shadow-inner flex items-center">
           {/* Base Inactive Track Guide Line */}
           <div className="w-full h-[2px] bg-zinc-800/80" />
 
           {/* Active Progress Track with semantic gradient */}
           <motion.div
-            className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-sky-400 via-amber-400 via-emerald-400 to-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]"
+            className="absolute top-0 left-0 bottom-0 bg-emerald-400"
             initial={{ width: '0%' }}
             animate={{
               width: `${((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100}%`,
             }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           />
-
-          {/* Akıcı Lazer Işık Dalgası (Continuous Flowing Laser Beam) */}
-          <motion.div
-            className="absolute top-0 bottom-0 w-24 bg-gradient-to-r from-transparent via-emerald-300 to-transparent opacity-85 blur-[0.5px]"
-            animate={{
-              left: ['-20%', `${Math.max(25, ((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100)}%`],
-            }}
-            transition={{ repeat: Infinity, duration: isDeploying ? 1.0 : 2.2, ease: 'easeInOut' }}
-          />
-
-          {/* Parlayan Canlı Veri Fotonu / Enerji Paketi */}
-          <motion.div
-            className="absolute w-2.5 h-2.5 rounded-full bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
-            animate={{
-              left: ['-5%', `${Math.max(20, ((Math.max(1, currentStep) - 1) / (PIPELINE_STEPS.length - 1)) * 100)}%`],
-            }}
-            transition={{ repeat: Infinity, duration: isDeploying ? 1.0 : 2.2, ease: 'easeInOut' }}
-          />
-
-          {/* Yüksek Enerji Lazer Darbesi (Deploy Anında Tüm Tüneli Kat Eden Hızlı Işık) */}
-          {isDeploying && (
-            <motion.div
-              className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-white to-transparent opacity-95 blur-[1px]"
-              animate={{ left: ['-20%', '120%'] }}
-              transition={{ repeat: Infinity, duration: 0.85, ease: 'linear' }}
-            />
-          )}
         </div>
 
         {/* Station Nodes Grid */}
@@ -232,21 +198,6 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               >
                 {/* Node Circle with Ambient Halo */}
                 <div className="relative">
-                  {/* Active Ambient Breathing Halo */}
-                  {isCurrent && (
-                    <motion.div
-                      className="absolute -inset-1 rounded-2xl blur-md -z-10"
-                      style={{
-                        backgroundColor:
-                          step.id === 1 ? '#38bdf8' :
-                          step.id === 2 ? '#fbbf24' :
-                          step.id === 3 ? '#34d399' :
-                          step.id === 4 ? '#a78bfa' : '#fb7185'
-                      }}
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.35, 0.7, 0.35] }}
-                      transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
-                    />
-                  )}
 
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -254,7 +205,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                     transition={snappySpring}
                     className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center relative transition-all duration-200 ${
                       isCompleted
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(52,211,153,0.2)]'
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40'
                         : isCurrent
                         ? `bg-white text-black ${stepStyles.activeRing}`
                         : 'bg-zinc-900 text-zinc-500 border border-zinc-800 group-hover:border-zinc-700 group-hover:text-zinc-300'
@@ -344,7 +295,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   </>
                 ) : currentStepData.id === currentStep ? (
                   <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" /> Aktif İstasyon
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400" /> Geçerli adım
                   </>
                 ) : (
                   'Sırada'
@@ -353,25 +304,9 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
-            <div className="space-y-1">
-              <div className="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1">
-                <Check className="w-3 h-3 text-emerald-400" /> Yapılan / Doğrulanan
-              </div>
-              <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
-                {currentStepData.doneDetails}
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider flex items-center gap-1">
-                <Info className="w-3 h-3 text-amber-400" /> Bu Adımda Yapılması Gereken
-              </div>
-              <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-950 p-2.5 rounded-lg border border-zinc-800">
-                {currentStepData.todoDetails}
-              </p>
-            </div>
-          </div>
+          <p className="text-[11px] text-zinc-300 leading-relaxed font-sans pt-3">
+            {currentStepData.todoDetails}
+          </p>
         </motion.div>
       </AnimatePresence>
 
@@ -394,16 +329,13 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                 <span className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                   {isDeployed ? 'Canlıya Alındı' : isDeploying ? 'Dağıtım Yürütülüyor' : 'Dağıtım Emri'}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-300 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
-                  Docker Engine SDK
-                </span>
               </div>
               <p className="text-[11px] text-zinc-400 font-sans mt-0.5">
                 {isDeployed
-                  ? 'Tüm istasyonlar onaylandı, servis akson-bridge üzerinde 200 OK yanıtı veriyor.'
+                  ? 'Servis başlatıldı. Durumunu Kontrol Paneli’nden izleyebilirsiniz.'
                   : isDeploying
-                  ? `Lazer tüneli devrede — İstasyon ${currentStep}/5 işleniyor...`
-                  : 'Soldan sağa 5 istasyonu işletip servisi canlı Docker ortamına dağıtır.'}
+                  ? `Adım ${currentStep}/5 işleniyor...`
+                  : 'Ayarları gözden geçirip servisi dağıtın.'}
               </p>
             </div>
           </div>
@@ -438,7 +370,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
                   ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 font-semibold'
                 : isDeploying
                   ? 'bg-zinc-900 text-zinc-400 border border-zinc-700 cursor-wait'
-                  : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold shadow-[0_0_24px_rgba(255,255,255,0.22)] hover:shadow-[0_0_32px_rgba(255,255,255,0.32)] active:scale-[0.98]'
+                  : 'bg-white hover:bg-zinc-200 text-black ring-1 ring-white/80 font-extrabold active:scale-[0.98]'
               }`}
             >
               {isDeployed ? (
@@ -454,7 +386,7 @@ export const PipelinePathStepper: React.FC<PipelinePathStepperProps> = ({
               ) : (
                 <>
                   <Rocket className="w-4 h-4" />
-                  <span>Canlıya Dağıt (Deploy to Production)</span>
+                  <span>Dağıt</span>
                 </>
               )}
             </motion.button>

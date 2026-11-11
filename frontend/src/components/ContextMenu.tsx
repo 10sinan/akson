@@ -95,7 +95,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </span>
           <span
             className={`w-2 h-2 rounded-full ${
-              isRunning ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'
+              isRunning ? 'bg-emerald-400' : 'bg-zinc-600'
             }`}
           />
         </div>

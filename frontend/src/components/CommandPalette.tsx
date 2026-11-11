@@ -152,10 +152,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     },
     {
       id: 'act-ai',
-      title: 'Gemini AI DevOps Teşhisini Başlat',
-      subtitle: 'Hataları tara ve otomatik çözüm önerileri al',
+      title: 'Asistanı Aç',
+      subtitle: 'Seçili konteynerin durumunu ve loglarını özetle',
       category: 'Hızlı Eylemler',
-      icon: <Sparkles className="w-4 h-4 text-violet-400" />,
+      icon: <Sparkles className="w-4 h-4 text-zinc-400" />,
       action: () => {
         onOpenAi();
         onClose();
@@ -181,12 +181,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       category: 'Konteynerler',
       icon: (
         <span className="relative flex h-2 w-2">
-          {c.status === 'running' && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
-          )}
           <span
             className={`relative inline-flex rounded-full h-2 w-2 ${
-              c.status === 'running' ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'
+              c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'
             }`}
           />
         </span>

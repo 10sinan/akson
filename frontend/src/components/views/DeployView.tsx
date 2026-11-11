@@ -176,99 +176,50 @@ export const DeployView: React.FC<DeployViewProps> = ({
     setEnvVars((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Demo mode only: no backend is reachable, so nothing is really deployed. The steps below just show the flow.
   const runSimulatedDeploy = () => {
-    // Step 2: Port & ENV
-    schedule(() => {
-      soundManager.playClick();
-      setCurrentStep(2);
-      setDeployLogs((prev) => [
-        ...prev,
-        deploySource === 'git'
-          ? `[1/5: git] Git reposu başarıyla klonlandı ve Dockerfile imajı oluşturuldu.`
-          : `[1/5: image] İmaj katmanları yerel önbellekte doğrulandı (sha256:d25907...).`,
-        `[2/5: config] Portlar bağlanıyor (${hostPort}:${containerPort}) ve ${envVars.length} ortam değişkeni enjekte ediliyor...`,
-      ]);
-    }, 1100);
+    setDeployLogs((prev) => [...prev, '[demo] Backend bağlı değil, gerçek dağıtım yapılmıyor.']);
 
-    // Step 3: Network & Proxy
-    schedule(() => {
-      soundManager.playClick();
-      setCurrentStep(3);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[2/5: config] Ortam değişkenleri şifrelenip konteyner manifestine yazıldı.`,
-        `[3/5: network] '${selectedNetwork}' izole köprü ağına bağlanılıyor ve Traefik v3 HTTP/HTTPS rotası oluşturuluyor: ${customDomain}...`,
-      ]);
-    }, 2200);
+    [2, 3, 4, 5].forEach((step, i) => {
+      schedule(() => {
+        soundManager.playClick();
+        setCurrentStep(step);
+      }, 600 * (i + 1));
+    });
 
-    // Step 4: Cgroup Limits
     schedule(() => {
-      soundManager.playClick();
-      setCurrentStep(4);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[3/5: network] Traefik ACME sertifika sağlayıcısına TLS SNI kuralı tanımlandı.`,
-        `[4/5: cgroup] Linux çekirdek kısıtlamaları uygulanıyor: RAM ${ramLimitMb} MB, CPU ${cpuLimitCore} vCPU...`,
-      ]);
-    }, 3300);
-
-    // Step 5: Start & Verify
-    schedule(() => {
-      soundManager.playClick();
-      setCurrentStep(5);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[4/5: cgroup] cgroups v2 bellek ve CPU kısıtlamaları kernel tarafından onaylandı.`,
-        `[5/5: health] Konteyner başlatılıyor ve HTTP healthcheck doğrulanıyor...`,
-      ]);
-    }, 4100);
-
-    // Complete
-    schedule(() => {
-      soundManager.playSuccess();
       setIsDeploying(false);
       setIsDeployed(true);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[5/5: health] HTTP 200 OK yanıtı alındı! Servis hazır.`,
-        `🎉 [akson-engine] '${serviceName}' başarıyla canlıya alındı!`,
-      ]);
+      setDeployLogs((prev) => [...prev, `[demo] '${serviceName}' yalnızca bu ekranda oluşturuldu.`]);
 
       const [imgName, tagPart] = deploySource === 'git'
         ? [`akson/${serviceName}`, 'latest']
         : customImage.split(':');
 
       const newContainer: ContainerItem = {
-        id: `c-new-${Date.now().toString().slice(-6)}`,
+        id: `demo-${Date.now().toString().slice(-6)}`,
         name: serviceName,
-        subtitle: `${imgName}:${tagPart || 'latest'} • ${customDomain}`,
+        subtitle: `${imgName}:${tagPart || 'latest'}`,
         status: 'running',
         statusText: 'Çalışıyor',
-        uptime: 'Az önce',
-        cpuPercent: 0.8,
-        memoryUsageMb: Math.round(ramLimitMb * 0.15),
+        uptime: 'Demo',
+        cpuPercent: 0,
+        memoryUsageMb: 0,
         memoryLimitMb: ramLimitMb,
         image: imgName,
         tag: tagPart || 'latest',
         category: (selectedTemplate === 'nginx' ? 'service' : selectedTemplate === 'redis' || selectedTemplate === 'postgres' ? 'database' : 'core'),
         ports: [{ hostPort, containerPort, protocol: 'tcp' }],
         network: selectedNetwork,
-        ipAddress: `172.20.0.${Math.floor(Math.random() * 200) + 10}`,
+        ipAddress: '',
         traefikRoute: customDomain,
         restartCount: 0,
-        logs: [
-          `[${serviceName}] Servis başarıyla ayağa kaldırıldı: http://${customDomain}`,
-          deploySource === 'git'
-            ? `[${serviceName}] Git reposundan derlendi: ${gitUrl} (${gitBranch})`
-            : `[${serviceName}] İmaj kaynağından çekildi: ${customImage}`,
-          `[${serviceName}] Traefik v3 ters vekil aktif (port: ${hostPort})`,
-          `[${serviceName}] Canlı cgroup izlemesi devrede`,
-        ],
+        logs: [`[demo] ${serviceName} yalnızca arayüzde var, gerçek bir konteyner değil.`],
         env: envVars.filter((e) => e.key.trim() !== ''),
       };
 
       onDeploySuccess(newContainer);
-    }, 4800);
+    }, 3000);
   };
 
   // Live Animated & Real API Deployment Flow
@@ -348,7 +299,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
       setDeployLogs((prev) => [
         ...prev,
         `[5/5: health] Konteyner çalışıyor (ID: ${res.container.id.substring(0, 12)})!`,
-        `🎉 [akson-engine] '${serviceName}' başarıyla canlı Docker daemon'a dağıtıldı!`,
+        `'${serviceName}' başarıyla dağıtıldı.`,
       ]);
 
       // Report right away: the container really exists now, even if the user leaves this tab.
@@ -377,26 +328,14 @@ export const DeployView: React.FC<DeployViewProps> = ({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
-              Yeni Servis Dağıtımı & Orkestrasyon
+              Yeni Servis Dağıtımı
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-400 font-sans text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)] animate-pulse" />
-              Dağıtım Motoru Aktif
-            </span>
           </div>
           <p className="text-xs text-zinc-400 mt-1 font-sans">
-            5 adımlı görsel tünel üzerinden imaj seçimi, Traefik SSL ve cgroup donanım sınırlarıyla konteyner ayağa kaldırın.
+            İmajı, portları, alan adını ve kaynak sınırlarını seçip servisi başlatın.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2.5 text-xs text-zinc-400 bg-[#121212] border border-[#262626] px-3.5 py-2 rounded-xl font-sans">
-            <Rocket className="w-4 h-4 text-rose-400" />
-            <span className="text-white font-mono font-medium">5 Aşamalı Tünel</span>
-            <span className="text-zinc-600">•</span>
-            <span className="text-emerald-400 font-medium">Sıfır Kesinti (Zero-Downtime)</span>
-          </div>
-        </div>
       </div>
 
       {/* 1. ÜST GÖRSEL DAĞITIM TÜNELİ (PIPELINE PATH STEPPER) */}
@@ -559,7 +498,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
                     <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20 text-[11px] text-zinc-300 space-y-1">
                       <div className="font-semibold text-rose-400 flex items-center gap-1.5">
-                        <span>⚡ Otomatik Git Derleme Döngüsü:</span>
+                        <span>Git ile derleme:</span>
                       </div>
                       <p className="text-zinc-400 leading-relaxed">
                         Akson bu repoyu saniyeler içinde klonlar, projenizdeki <span className="text-white font-mono">{dockerfilePath}</span> dosyasını Docker Engine üzerinde derler ve izole köprü ağına alarak yayına başlatır.
@@ -844,7 +783,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   )}
                   <div className="flex justify-between py-2">
                     <span className="text-zinc-400 font-sans">Port Yönlendirmesi</span>
-                    <span className="text-zinc-300 font-mono">{hostPort} ➔ {containerPort}</span>
+                    <span className="text-zinc-300 font-mono">{hostPort} → {containerPort}</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-zinc-400 font-sans">Traefik Host Rotası</span>
@@ -911,25 +850,25 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </span>
               </div>
               <span className="text-[10px] text-zinc-300 flex items-center gap-1.5 font-sans px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626]">
-                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : 'bg-zinc-600'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
                 <span className={isDeploying ? 'text-emerald-400' : 'text-zinc-300'}>
-                  {isDeploying ? 'Akış Aktif' : 'Docker SDK Hazır'}
+                  {isDeploying ? 'Çalışıyor' : 'Hazır'}
                 </span>
               </span>
             </div>
 
             <p className="text-[11px] text-zinc-400 font-sans">
-              Yukarıdaki görsel dağıtım tünelinden işlem başlatıldığında Docker Engine SDK çıktıları bu konsola anlık olarak yansıtılır.
+              Dağıtım başlayınca adımlar ve Docker çıktıları burada görünür.
             </p>
 
             <div className="h-[340px] overflow-y-auto space-y-1.5 text-[11px] pr-1 bg-[#000000] p-3 rounded-xl border border-[#262626] font-mono">
               {deployLogs.length === 0 ? (
                 <div className="text-zinc-600 italic pt-24 text-center text-xs font-sans">
-                  "Canlıya Dağıt" butonuna basıldığında tünel istasyonlarının çıktıları burada akacaktır.
+                  Henüz çıktı yok.
                 </div>
               ) : (
                 deployLogs.map((log, idx) => {
-                  const isSuccess = log.includes('🎉') || log.includes('başarıyla');
+                  const isSuccess = log.includes('başarıyla');
                   const isErr = log.includes('ERR') || log.includes('fail');
                   const isImageStep = log.includes('[1/5: image]');
                   const isConfigStep = log.includes('[2/5: config]');

@@ -34,7 +34,6 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
   const [autoScroll, setAutoScroll] = useState(true);
   const [copied, setCopied] = useState(false);
   const [aiReport, setAiReport] = useState<string | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const terminalBoxRef = useRef<HTMLDivElement>(null);
 
@@ -141,19 +140,26 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
     setLogs([]);
   };
 
-  const handleAnalyzeWithAI = () => {
-    setIsAnalyzing(true);
-    setAiReport(null);
+  // Summarizes the log lines currently on screen. Counts and quotes come only from those lines.
+  const handleAnalyze = () => {
+    if (logs.length === 0) {
+      setAiReport('Henüz log satırı yok.');
+      return;
+    }
+    const errors = logs.filter((l) => l.level === 'error');
+    const warns = logs.filter((l) => l.level === 'warn');
+    const byContainer = new Map<string, number>();
+    errors.forEach((l) => byContainer.set(l.containerName, (byContainer.get(l.containerName) || 0) + 1));
 
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setAiReport(
-        `🤖 Gemini DevOps Teşhis Raporu:\n` +
-        `• 1 Adet Hata (analytics-worker): "Connection timeout while fetching telemetry-batch" hatası ağ gecikmesinden kaynaklandı. Veritabanı havuzu 10 bağlantıya kadar genişletildi.\n` +
-        `• Traefik v3.0 ve Let's Encrypt rotaları sağlıklı çalışıyor, HTTP 200 ortalama 1.4ms yanıt veriyor.\n` +
-        `• Öneri: analytics-worker için restartPolicy: on-failure ve max_retries: 5 parametreleri eklenebilir.`
-      );
-    }, 1500);
+    const lines = [`${logs.length} satır incelendi: ${errors.length} hata, ${warns.length} uyarı.`];
+    if (errors.length === 0) {
+      lines.push('Hata içeren satır bulunmadı.');
+    } else {
+      byContainer.forEach((count, name) => lines.push(`• ${name}: ${count} hata`));
+      lines.push('Son hata satırları:');
+      errors.slice(-3).forEach((l) => lines.push(`  [${l.containerName}] ${l.message}`));
+    }
+    setAiReport(lines.join('\n'));
   };
 
   return (
@@ -166,7 +172,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
               Servis Logları & Canlı Denetleyici
             </h1>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626] text-zinc-300 font-sans text-xs font-medium">
-              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : 'bg-zinc-600'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-emerald-400 ' : 'bg-zinc-600'}`} />
               <span className={isStreaming ? 'text-emerald-400' : 'text-zinc-400'}>
                 {isStreaming ? 'Canlı Akış' : 'Duraklatıldı'}
               </span>
@@ -180,12 +186,11 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={handleAnalyzeWithAI}
-            disabled={isAnalyzing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-300 hover:text-white hover:bg-violet-500/20 text-xs font-medium font-sans transition cursor-pointer active:scale-95 shadow-sm"
+            onClick={handleAnalyze}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] border border-[#262626] text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs font-medium font-sans transition cursor-pointer active:scale-95"
           >
-            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
-            <span>{isAnalyzing ? 'Teşhis Ediliyor...' : 'Gemini AI Teşhis'}</span>
+            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Hızlı Analiz</span>
           </button>
 
           <button
@@ -214,19 +219,19 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
         </div>
       </div>
 
-      {/* AI Report Card (if generated) */}
+      {/* Summary card (if generated) */}
       {aiReport && (
-        <div className="bg-[#121212] border border-violet-500/30 rounded-2xl p-4 shadow-xl flex flex-col gap-2 font-mono text-xs text-zinc-200">
+        <div className="bg-[#121212] border border-[#262626] rounded-2xl p-4 flex flex-col gap-2 font-mono text-xs text-zinc-200">
           <div className="flex items-center justify-between border-b border-[#262626] pb-2">
             <div className="flex items-center gap-2 font-semibold text-white font-sans">
-              <Sparkles className="w-4 h-4 text-violet-400" />
-              <span>Gemini Canlı Teşhis & Çözüm Önerisi</span>
+              <Sparkles className="w-4 h-4 text-zinc-400" />
+              <span>Log Özeti</span>
             </div>
             <button
               onClick={() => setAiReport(null)}
               className="text-zinc-400 hover:text-white font-sans text-xs cursor-pointer"
             >
-              ✕ Kapat
+              Kapat
             </button>
           </div>
           <div className="whitespace-pre-wrap leading-relaxed">{aiReport}</div>
@@ -286,7 +291,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 <span
                   className={`relative z-10 w-2 h-2 rounded-full ${
                     c.status === 'running'
-                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                      ? 'bg-emerald-400'
                       : 'bg-zinc-600'
                   }`}
                 />
@@ -399,7 +404,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
           <div ref={terminalBoxRef} className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
             {filteredLogs.length === 0 ? (
               <div className="text-zinc-500 italic pt-8 text-center font-sans">
-                Arama kriterlerine uygun log bulunamadı.
+                {containers.length === 0 ? "Henüz servis yok. Loglar servis dağıtıldığında burada görünür." : "Arama kriterlerine uygun log bulunamadı."}
               </div>
             ) : (
               filteredLogs.map((log) => {

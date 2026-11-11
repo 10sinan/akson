@@ -18,7 +18,6 @@ import {
 import type { ContainerItem } from '../../types/container';
 import { snappySpring } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
-import { MicroSparkline } from '../MicroSparkline';
 
 interface LiveTopologyGraphProps {
   containers: ContainerItem[];
@@ -92,7 +91,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-zinc-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <h2 className="text-sm sm:text-base font-bold text-white tracking-tight font-sans flex items-center gap-2">
               Canlı Altyapı & Servis Topolojisi
             </h2>
@@ -136,29 +135,15 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Genel Ağ Girişi</h3>
                 <div className="text-[10px] text-zinc-300 font-mono mt-0.5">:80 / :443 HTTPS</div>
-                <div className="text-[9px] text-sky-400 font-sans mt-0.5">● Trafik Açık</div>
               </div>
             </div>
           </div>
 
-          {/* B. HAREKETLİ VERİ AKIŞ KANALI 1 (Ingress ➔ Traefik v3 Hub) */}
+          {/* B. Connector 1 */}
           {!isDetailOpen && (
             <div className="hidden lg:flex lg:col-span-1 items-center justify-center mt-5 px-1 relative">
               <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
-                {/* Taban Kılavuz Çizgisi */}
-                <div className="w-full h-[2px] bg-gradient-to-r from-sky-500/25 via-emerald-500/20 to-emerald-500/25" />
-                {/* Akıcı Lazer Işık Dalgası */}
-                <motion.div
-                  className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-sky-400 to-transparent opacity-80 blur-[0.5px]"
-                  animate={{ left: ['-50%', '130%'] }}
-                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-                />
-                {/* Parlayan Canlı Veri Fotonu */}
-                <motion.div
-                  className="absolute w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,1)] ring-1 ring-sky-200"
-                  animate={{ left: ['-15%', '115%'] }}
-                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-                />
+                <div className="w-full h-[2px] bg-zinc-700" />
               </div>
             </div>
           )}
@@ -173,31 +158,17 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xs font-bold text-white font-sans truncate">Traefik v3 Hub</h3>
-                <div className="text-[10px] text-zinc-300 font-mono mt-0.5">TLS ACME</div>
+                <h3 className="text-xs font-bold text-white font-sans truncate">Traefik</h3>
                 <div className="text-[9px] text-emerald-400 font-mono mt-0.5">akson-bridge</div>
               </div>
             </div>
           </div>
 
-          {/* D. HAREKETLİ VERİ AKIŞ KANALI 2 (Traefik v3 Hub ➔ Docker Motoru) */}
+          {/* D. Connector 2 */}
           {!isDetailOpen && (
             <div className="hidden lg:flex lg:col-span-1 items-center justify-center mt-5 px-1 relative">
               <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
-                {/* Taban Kılavuz Çizgisi */}
-                <div className="w-full h-[2px] bg-gradient-to-r from-emerald-500/25 via-violet-500/20 to-violet-500/25" />
-                {/* Akıcı Lazer Işık Dalgası (Senkronize gecikme ile) */}
-                <motion.div
-                  className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80 blur-[0.5px]"
-                  animate={{ left: ['-50%', '130%'] }}
-                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
-                />
-                {/* Parlayan Canlı Veri Fotonu */}
-                <motion.div
-                  className="absolute w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
-                  animate={{ left: ['-15%', '115%'] }}
-                  transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
-                />
+                <div className="w-full h-[2px] bg-zinc-700" />
               </div>
             </div>
           )}
@@ -215,7 +186,6 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold text-white font-sans truncate">Docker Motoru</h3>
                   <div className="text-[10px] text-zinc-300 font-mono mt-0.5 truncate">cgroups-v2</div>
-                  <div className="text-[9px] text-violet-400 font-sans mt-0.5">● Soket Aktif</div>
                 </div>
               </div>
             </div>
@@ -225,22 +195,13 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
         {/* 4. CANLI VERİ DAĞITIM HATTI & AKSON-BRIDGE TÜNELİ */}
         <div className="relative my-4 select-none">
           {/* Akıcı Yatay Işık Hattı */}
-          <div className="relative h-[2px] bg-gradient-to-r from-transparent via-zinc-800 to-transparent overflow-hidden">
-            <motion.div
-              className="absolute top-0 bottom-0 w-36 bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent"
-              animate={{ left: ['-25%', '125%'] }}
-              transition={{ repeat: Infinity, duration: 3.2, ease: 'linear' }}
-            />
-          </div>
+          <div className="h-[2px] bg-zinc-800" />
 
           {/* Merkez Kavşak Dağıtım Rozeti */}
           <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-md">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-            </span>
+            <span className="inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
             <span>
-              akson-bridge: <strong className="text-emerald-400 font-semibold">{runningCount} aktif düğüm hattı</strong>
+              akson-bridge: <strong className="text-emerald-400 font-semibold">{runningCount} çalışan servis</strong>
             </span>
           </div>
         </div>
@@ -265,7 +226,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                     soundManager.playClick();
                     onDeployClick();
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition shadow-[0_0_20px_rgba(255,255,255,0.18)] hover:shadow-[0_0_26px_rgba(255,255,255,0.28)] active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition active:scale-95 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Yeni Servis Dağıt</span>
@@ -316,7 +277,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       : isSelected
                       ? 'bg-zinc-900 border-zinc-400 ring-1 ring-white/20'
                       : isRunning
-                      ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60 shadow-[0_0_20px_rgba(16,185,129,0.06)]'
+                      ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
                       : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/60'
                   }`}
                 >
@@ -367,7 +328,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                         <span
                           className={`inline-block rounded-full ${
                             isRunning
-                              ? 'h-2 w-2 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                              ? 'h-2 w-2 bg-emerald-400'
                               : 'h-1.5 w-1.5 border border-zinc-500'
                           }`}
                         />
@@ -381,27 +342,15 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   {/* Middle: Live Sparkline Pulse Wave */}
                   <div className="mt-2.5 relative z-10">
                     <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1">
-                      <span>Yük Dalgalanması</span>
-                      <span className="text-white font-medium">%{container.cpuPercent} CPU</span>
+                      <span>CPU</span>
+                      <span className="text-white font-medium">%{container.cpuPercent}</span>
                     </div>
-                    <MicroSparkline
-                      data={
-                        isRunning
-                          ? [
-                              Math.max(4, Math.round(container.cpuPercent * 8)),
-                              Math.max(6, Math.round(container.cpuPercent * 11)),
-                              Math.max(3, Math.round(container.cpuPercent * 7)),
-                              Math.max(9, Math.round(container.cpuPercent * 13)),
-                              Math.max(5, Math.round(container.cpuPercent * 9)),
-                              Math.max(12, Math.round(container.cpuPercent * 14)),
-                              Math.max(7, Math.round(container.cpuPercent * 10)),
-                            ]
-                          : [0, 0, 0, 0, 0, 0, 0]
-                      }
-                      color={isRunning ? catStyles.sparkColor : 'zinc'}
-                      height={18}
-                      isLive={isRunning}
-                    />
+                    <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-400 transition-all duration-500"
+                        style={{ width: `${isRunning ? Math.min(100, Math.max(2, container.cpuPercent)) : 0}%` }}
+                      />
+                    </div>
                   </div>
 
                   {/* Bottom: Port & IP Specs */}
@@ -476,7 +425,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             ) : (
               <button
                 onClick={() => onAction?.('start', selectedContainer.id)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 font-semibold shadow-[0_0_16px_rgba(52,211,153,0.3)]"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 font-semibold"
               >
                 <Play className="w-3 h-3 fill-black" />
                 <span>Başlat</span>

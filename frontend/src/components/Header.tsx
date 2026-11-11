@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenCommandPalette}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Konteyner, servis ara... (⌘K)"
-            className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 hover:shadow-[0_0_12px_rgba(255,255,255,0.04)] text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-500 cursor-pointer"
+            className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-500 cursor-pointer"
           />
           <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
             ⌘K
@@ -151,7 +151,6 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5" title={`${runningContainers} aktif / toplam ${totalContainers} servis`}>
             {runningContainers > 0 ? (
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
             ) : (
@@ -163,18 +162,18 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Gemini AI Copilot Trigger */}
+        {/* Assistant trigger */}
         {onOpenAi && (
           <button
             onClick={onOpenAi}
             className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition shadow-sm active:scale-95 cursor-pointer font-mono text-[11px] font-medium ${
               isAiOpen
-                ? 'bg-violet-500/20 text-violet-300 border-violet-500/40 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
-                : 'bg-zinc-900 border-zinc-800 hover:border-violet-500/30 text-zinc-300 hover:text-white hover:bg-zinc-800'
+                ? 'bg-zinc-800 text-white border-zinc-600'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
             }`}
           >
-            <Sparkles className={`w-3.5 h-3.5 ${isAiOpen ? 'text-violet-300' : 'text-violet-400'}`} />
-            <span>Gemini Copilot</span>
+            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Asistan</span>
           </button>
         )}
 
@@ -184,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span
               className={`inline-block rounded-full ${
                 dockerStatus === 'online'
-                  ? 'h-2 w-2 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                  ? 'h-2 w-2 bg-emerald-400'
                   : dockerStatus === 'checking'
                   ? 'h-2 w-2 bg-zinc-400 animate-pulse'
                   : 'h-1.5 w-1.5 border border-zinc-400'
@@ -218,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Volume2 className="w-3.5 h-3.5 text-zinc-200" />
           )}
           {!isMuted && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400" />
           )}
         </button>
 
@@ -234,7 +233,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Deploy New Container Button */}
         <button
           onClick={onOpenDeploy}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.12)] hover:shadow-[0_0_20px_rgba(255,255,255,0.22)] transition cursor-pointer active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded-lg transition cursor-pointer active:scale-95"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Yeni Servis</span>

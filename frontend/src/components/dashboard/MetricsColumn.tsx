@@ -9,17 +9,20 @@ import {
 } from 'lucide-react';
 import { AnimatedNumber } from '../AnimatedNumber';
 import { ShimmerScan } from '../Skeleton';
-import { MicroSparkline } from '../MicroSparkline';
 
 interface MetricsColumnProps {
   totalCpu: number;
   totalMemoryMb: number;
+  runningCount: number;
+  totalCount: number;
   isRefreshing?: boolean;
 }
 
 export const MetricsColumn: React.FC<MetricsColumnProps> = ({
   totalCpu,
   totalMemoryMb,
+  runningCount,
+  totalCount,
   isRefreshing = false,
 }) => {
   // Aggregate cluster load (0-100)
@@ -43,7 +46,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           </h2>
         </div>
         <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           Canlı
         </span>
       </div>
@@ -93,27 +96,15 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium font-sans">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Tüm Düğümler Stabil</span>
+              <span>{totalCount === 0 ? 'Henüz servis yok' : `${runningCount} / ${totalCount} servis çalışıyor`}</span>
             </div>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              Docker motoru ve sanal köprüler nominal gecikmeyle yanıt veriyor.
+              {totalCount === 0
+                ? 'Yeni Servis Dağıt ile ilk servisinizi başlatın.'
+                : totalCount === runningCount
+                ? 'Tüm servisler çalışıyor.'
+                : `${totalCount - runningCount} servis durdurulmuş.`}
             </p>
-            <div className="pt-1">
-              <MicroSparkline
-                data={[
-                  Math.max(8, totalCpu * 6 + 10),
-                  Math.max(12, totalCpu * 8 + 6),
-                  Math.max(10, totalCpu * 5 + 14),
-                  Math.max(16, totalCpu * 9 + 4),
-                  Math.max(11, totalCpu * 7 + 8),
-                  Math.max(18, totalCpu * 10 + 6),
-                  Math.max(14, totalCpu * 8 + 12),
-                ]}
-                color="emerald"
-                height={22}
-                isLive={true}
-              />
-            </div>
           </div>
         </div>
 
@@ -132,7 +123,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-emerald-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(52,211,153,0.4)]"
+                className="bg-emerald-400 h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(3, totalCpu * 5))}%` }}
               />
             </div>
@@ -152,7 +143,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-sky-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(56,189,248,0.4)]"
+                className="bg-sky-400 h-full rounded-full transition-all duration-500"
                 style={{ width: `${Math.min(100, Math.max(3, ramPercent))}%` }}
               />
             </div>
@@ -171,7 +162,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
               <div
-                className="bg-violet-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(167,139,250,0.4)]"
+                className="bg-violet-400 h-full rounded-full transition-all duration-500"
                 style={{ width: '25.6%' }}
               />
             </div>

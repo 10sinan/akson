@@ -15,6 +15,42 @@ interface Message {
   text: string;
 }
 
+const ERROR_PATTERN = /err|fail|fatal|panic|exception/i;
+
+// Builds a short answer from what the panel actually knows about the container. Nothing here is invented.
+function buildReply(question: string, c?: ContainerItem): string {
+  if (!c) {
+    return 'Önce panelden bir konteyner seçin; sonra durumunu ve loglarını özetleyebilirim.';
+  }
+  const q = question.toLowerCase();
+  const errorLines = c.logs.filter((l) => ERROR_PATTERN.test(l));
+
+  if (q.includes('log') || q.includes('hata')) {
+    if (c.logs.length === 0) return `${c.name} için henüz log satırı yok.`;
+    if (errorLines.length === 0) {
+      return `${c.name}: son ${c.logs.length} log satırında hata görünmüyor.`;
+    }
+    return `${c.name}: ${c.logs.length} log satırının ${errorLines.length} tanesi hata içeriyor. Sonuncusu:\n${errorLines[errorLines.length - 1]}`;
+  }
+  if (q.includes('ram') || q.includes('bellek') || q.includes('cpu') || q.includes('telemetri')) {
+    return c.status === 'running'
+      ? `${c.name} çalışıyor. Anlık CPU ve bellek değerleri için servis detayındaki canlı grafiklere bakın.`
+      : `${c.name} durdurulmuş, kaynak kullanmıyor.`;
+  }
+  const ports = c.ports.length
+    ? c.ports.map((p) => (p.hostPort ? `${p.hostPort}→${p.containerPort}` : `${p.containerPort}`)).join(', ')
+    : 'yok';
+  return [
+    `${c.name} (${c.image}:${c.tag})`,
+    `Durum: ${c.statusText} • ${c.uptime}`,
+    `Portlar: ${ports}`,
+    `Yeniden başlatma: ${c.restartCount}`,
+    c.traefikRoute ? `Rota: ${c.traefikRoute}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n');
+}
+
 export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
   isOpen,
   onClose,
@@ -23,13 +59,10 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      text: `Merhaba! Ben Akson Gemini DevOps Asistanı. Seçili konteyner (${
-        activeContainer?.name || 'Sistem'
-      }) için canlı log denetimi yapabilir, kaynak tüketimini analiz edebilir veya çökme nedenlerini araştırabilirim.`,
+      text: 'Seçili konteynerin durumunu, portlarını ve son log satırlarını özetleyebilirim. Bu bir yapay zeka modeli değil, panelde görünen verilerden hazır özetler üretir.',
     },
   ]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const messagesBoxRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll to latest message
@@ -37,7 +70,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
     // Scroll only the message list, never the page behind the drawer.
     const box = messagesBoxRef.current;
     if (box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
-  }, [messages, isTyping]);
+  }, [messages]);
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -46,29 +79,10 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
     const userText = input.trim();
     setMessages((prev) => [...prev, { role: 'user', text: userText }]);
     setInput('');
-    setIsTyping(true);
 
-    setTimeout(() => {
-      let reply = '';
-      const lower = userText.toLowerCase();
+    const reply = buildReply(userText, activeContainer);
+    setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
 
-      if (lower.includes('log') || lower.includes('hata')) {
-        reply = `${
-          activeContainer?.name || 'Konteyner'
-        } logları incelendi: Son 1 saat içinde fatal SIGSEGV veya bellek taşması (OOMKill) gözlenmedi. HTTP 200 durum kodları %99.8 stabil.`;
-      } else if (lower.includes('ram') || lower.includes('bellek') || lower.includes('cpu')) {
-        reply = `Donanım telemetrisi analizi: Konteyner şu anda tahsis edilen RAM limitinin %${Math.round(
-          ((activeContainer?.memoryUsageMb || 10) / (activeContainer?.memoryLimitMb || 512)) * 100
-        )}'sini kullanıyor. Kaynak darboğazı tespit edilmedi.`;
-      } else if (lower.includes('docker') || lower.includes('güvenlik')) {
-        reply = `Dockerfile Güvenlik Analizi: Root yerine non-root kullanıcı (UID 1000) kullanılıyor. Read-only rootfs ve drop-all capabilities yapılandırması önerilir.`;
-      } else {
-        reply = `DevOps analiz motoru: "${userText}" talebiniz incelendi. Docker cgroups istatistikleri ve Traefik v3.0 yönlendirme kuralları optimum seviyede çalışıyor.`;
-      }
-
-      setMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
-      setIsTyping(false);
-    }, 550);
   };
 
   const handleQuickChip = (prompt: string) => {
@@ -88,9 +102,9 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             className="fixed top-14 bottom-0 left-16 right-0 bg-black/40 backdrop-blur-xs z-30 lg:hidden"
           />
 
-          {/* Gemini-style Left Slide-in Drawer (Docked into Main Content Canvas) */}
+          {/* Left slide-in assistant drawer */}
           <motion.aside
-            key="gemini-ai-drawer"
+            key="assistant-drawer"
             initial={{ x: -420, opacity: 0.8 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -420, opacity: 0 }}
@@ -105,18 +119,14 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             {/* Header */}
             <div className="p-4 border-b border-[#262626] flex items-center justify-between bg-[#121212]">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shadow-sm">
-                  <Sparkles className="w-4 h-4 text-violet-400" />
+                <div className="w-8 h-8 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 shadow-sm">
+                  <Sparkles className="w-4 h-4 text-zinc-300" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-white font-mono tracking-tight">
-                      Gemini Copilot
+                      Asistan
                     </h3>
-                    <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-                      Canlı
-                    </span>
                   </div>
                   <p className="text-[11px] text-zinc-400 font-mono truncate max-w-[190px]">
                     {activeContainer ? activeContainer.name : 'Genel Sistem'}
@@ -136,25 +146,25 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
             {/* Quick Action Pills */}
             <div className="p-3 border-b border-[#262626] flex items-center gap-1.5 overflow-x-auto no-scrollbar font-mono text-[10px]">
               <button
-                onClick={() => handleQuickChip('Konteynerin canlı loglarını denetle ve hataları bul')}
+                onClick={() => handleQuickChip('Loglarda hata var mı?')}
                 className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
                 <Terminal className="w-3 h-3 text-sky-400" />
                 <span>Log Denetle</span>
               </button>
               <button
-                onClick={() => handleQuickChip('CPU ve Bellek kullanımını analiz et')}
+                onClick={() => handleQuickChip('CPU ve bellek durumu')}
                 className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <Cpu className="w-3 h-3 text-violet-400" />
-                <span>Telemetri</span>
+                <Cpu className="w-3 h-3 text-zinc-300" />
+                <span>Kaynak</span>
               </button>
               <button
-                onClick={() => handleQuickChip('Dockerfile güvenlik ve boyut iyileştirmesi yap')}
+                onClick={() => handleQuickChip('Konteyner özeti')}
                 className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                <span>Güvenlik</span>
+                <span>Özet</span>
               </button>
             </div>
 
@@ -168,15 +178,15 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                   }`}
                 >
                   {m.role === 'assistant' && (
-                    <div className="w-6 h-6 rounded-lg bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-violet-400" />
+                    <div className="w-6 h-6 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot className="w-3.5 h-3.5 text-zinc-300" />
                     </div>
                   )}
                   <motion.div
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={wiseGentle}
-                    className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
+                    className={`p-3 rounded-2xl max-w-[85%] leading-relaxed whitespace-pre-line ${
                       m.role === 'user'
                         ? 'bg-white text-black font-medium rounded-br-none shadow-sm'
                         : 'bg-[#121212] text-zinc-200 border border-[#262626] rounded-bl-none'
@@ -192,12 +202,6 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                 </div>
               ))}
 
-              {isTyping && (
-                <div className="flex items-center gap-2 text-xs text-violet-300 font-mono py-1 px-2">
-                  <Sparkles className="w-3.5 h-3.5 animate-spin text-violet-400" />
-                  <span>Gemini analiz ediyor...</span>
-                </div>
-              )}
             </div>
 
             {/* Input Bar */}
@@ -206,7 +210,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="DevOps asistanına danışın..."
+                placeholder="Bir soru yazın..."
                 className="flex-1 bg-[#121212] border border-[#262626] text-xs text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-white transition font-mono"
               />
               <button

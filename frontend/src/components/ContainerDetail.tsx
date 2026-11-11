@@ -19,7 +19,6 @@ import {
   Terminal,
   Activity,
   Key,
-  Network,
   ExternalLink,
   Eye,
   EyeOff,
@@ -34,7 +33,7 @@ interface ContainerDetailProps {
   onOpenAiAnalyze?: () => void;
 }
 
-type DetailTab = 'overview' | 'logs' | 'env' | 'terminal';
+type DetailTab = 'overview' | 'logs' | 'env';
 
 export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   container,
@@ -46,12 +45,6 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   const [copiedId, setCopiedId] = useState(false);
   const [copiedLogs, setCopiedLogs] = useState(false);
   const [showSecrets, setShowSecrets] = useState(false);
-  const [terminalInput, setTerminalInput] = useState('');
-  const [terminalOutput, setTerminalOutput] = useState<string[]>([
-    `Akson PTY Web Shell session established for container: ${container.name}`,
-    `Kernel: Linux 6.6.137-x86_64, Arch: x86_64`,
-    `Type 'help' or any Linux command below:`,
-  ]);
 
   // Live telemetry state wired to backend SSE streams
   const [liveCpu, setLiveCpu] = useState(container.cpuPercent);
@@ -93,31 +86,6 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
     navigator.clipboard.writeText(liveLogs.join('\n'));
     setCopiedLogs(true);
     setTimeout(() => setCopiedLogs(false), 2000);
-  };
-
-  const handleTerminalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!terminalInput.trim()) return;
-
-    const cmd = terminalInput.trim();
-    let response = '';
-
-    if (cmd === 'help') {
-      response = 'Available commands: ps, uptime, env, df, netstat, clear';
-    } else if (cmd === 'uptime') {
-      response = `up ${container.uptime}, load average: 0.12, 0.08, 0.05`;
-    } else if (cmd === 'clear') {
-      setTerminalOutput([]);
-      setTerminalInput('');
-      return;
-    } else if (cmd === 'ps') {
-      response = `PID   USER     TIME  COMMAND\n  1   root     0:02  ${container.image}\n 12   root     0:00  sh`;
-    } else {
-      response = `Executed command: ${cmd} (PID 142 completed with exit status 0)`;
-    }
-
-    setTerminalOutput((prev) => [...prev, `$ ${cmd}`, response]);
-    setTerminalInput('');
   };
 
   const getCategoryStyles = () => {
@@ -186,7 +154,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
                     isRunning
-                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                      ? 'bg-emerald-400'
                       : 'bg-zinc-600'
                   }`}
                 />
@@ -222,11 +190,11 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               whileTap={{ scale: 0.96 }}
               transition={wiseBouncy}
               onClick={onOpenAiAnalyze}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 text-violet-300 hover:text-white border border-violet-500/30 hover:border-violet-500/50 text-xs font-medium font-sans transition cursor-pointer shadow-sm hover:bg-violet-500/20"
-              title="Gemini ile Hata ve Konfigürasyon Analizi"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] text-zinc-300 hover:text-white border border-[#262626] hover:bg-zinc-800 text-xs font-medium font-sans transition cursor-pointer"
+              title="Asistanda özetle"
             >
-              <Sparkles className="w-3.5 h-3.5 text-violet-400" />
-              <span>AI Analizi</span>
+              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Özetle</span>
             </motion.button>
           )}
 
@@ -247,7 +215,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               whileTap={{ scale: 0.96 }}
               transition={wiseBouncy}
               onClick={() => onAction('start', container.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-semibold font-sans transition cursor-pointer shadow-[0_0_16px_rgba(52,211,153,0.3)]"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-semibold font-sans transition cursor-pointer"
             >
               <Play className="w-3 h-3 fill-black" />
               <span>Başlat</span>
@@ -351,25 +319,6 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             <span>Ortam Değişkenleri ({container.env.length})</span>
           </span>
         </button>
-
-        <button
-          onClick={() => setActiveTab('terminal')}
-          className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-lg ${
-            activeTab === 'terminal' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          {activeTab === 'terminal' && (
-            <motion.div
-              layoutId="detailSubTabPill"
-              className="absolute inset-0 bg-zinc-800 rounded-lg border border-zinc-700 shadow-sm"
-              transition={wiseBouncy}
-            />
-          )}
-          <span className="relative z-10 flex items-center gap-2">
-            <Network className="w-4 h-4 text-zinc-300" />
-            <span>Shell Terminali (PTY)</span>
-          </span>
-        </button>
       </div>
 
       {/* Tab Content with Fluid Spring Transitions */}
@@ -396,7 +345,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)] transition-all duration-300"
+                      className="h-full rounded-full bg-emerald-400 transition-all duration-300"
                       style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                     />
                   </div>
@@ -417,7 +366,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.4)] transition-all duration-300"
+                      className="h-full rounded-full bg-sky-400 transition-all duration-300"
                       style={{
                         width: `${Math.min(
                           (liveMemoryMb / container.memoryLimitMb) * 100,
@@ -494,7 +443,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 text-white border border-zinc-800 text-[10px] font-sans">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
                       <span>Canlı Akış</span>
                     </span>
                     <span className="text-xs text-zinc-400 font-mono">
@@ -568,33 +517,6 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       ))}
                     </tbody>
                   </table>
-                </div>
-              </div>
-            )}
-
-            {/* TERMINAL TAB */}
-            {activeTab === 'terminal' && (
-              <div className="space-y-3">
-                <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 font-mono text-xs text-zinc-300 space-y-1.5 min-h-[300px] flex flex-col justify-between">
-                  <div className="space-y-1 overflow-y-auto max-h-[260px]">
-                    {terminalOutput.map((line, idx) => (
-                      <div key={idx} className={line.startsWith('$') ? 'text-white' : 'text-zinc-400'}>
-                        {line}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Terminal Command Input */}
-                  <form onSubmit={handleTerminalSubmit} className="flex items-center gap-2 pt-2 border-t border-zinc-800">
-                    <span className="text-zinc-400 select-none">akson@{container.name}:~$</span>
-                    <input
-                      type="text"
-                      value={terminalInput}
-                      onChange={(e) => setTerminalInput(e.target.value)}
-                      placeholder="Komut girin (örn: ps, uptime)..."
-                      className="flex-1 bg-transparent text-white text-xs font-mono focus:outline-none placeholder:text-zinc-600"
-                    />
-                  </form>
                 </div>
               </div>
             )}

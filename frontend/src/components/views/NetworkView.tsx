@@ -1,264 +1,142 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Network,
-  ShieldCheck,
-  Globe,
-  Lock,
-  Server,
-  CheckCircle2,
-  RefreshCw,
-} from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Network, Server, RefreshCw } from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
-
-interface RouteRule {
-  id: string;
-  name: string;
-  rule: string;
-  entryPoint: string;
-  targetService: string;
-  targetIp: string;
-  tls: boolean;
-  status: 'healthy' | 'degraded';
-}
+import { api, type ApiNetworkDetails } from '../../api/client';
 
 interface NetworkViewProps {
   containers: ContainerItem[];
+  isLiveBackend: boolean;
 }
 
-export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshSuccess, setRefreshSuccess] = useState(false);
+export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBackend }) => {
+  const [details, setDetails] = useState<ApiNetworkDetails | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const dynamicRoutes: RouteRule[] = React.useMemo(() => {
-    return containers.map((c, index) => {
-      const portInfo = c.ports && c.ports.length > 0 ? c.ports[0] : null;
-      const hostPort = portInfo?.hostPort || 80;
-      const containerPort = portInfo?.containerPort || 80;
-      return {
-        id: `r-${c.id || index}`,
-        name: `${c.name}@docker`,
-        rule: c.traefikRoute ? `Host(\`${c.traefikRoute}\`)` : `Host(\`${c.name}.localhost\`)`,
-        entryPoint: portInfo ? `:${hostPort} ➔ :${containerPort}` : 'akson-bridge',
-        targetService: `${c.name}:${containerPort}`,
-        targetIp: `${c.ipAddress || '172.20.0.' + (index + 2)}:${containerPort}`,
-        tls: true,
-        status: (c.status === 'running' ? 'healthy' : 'degraded') as 'healthy' | 'degraded',
-      };
-    });
-  }, [containers]);
+  const fetchDetails = useCallback(
+    () =>
+      api
+        .fetchNetworkDetails()
+        .then((d) => {
+          setDetails(d);
+          setError(null);
+        })
+        .catch((err: unknown) => {
+          setError(err instanceof Error ? err.message : String(err));
+        }),
+    []
+  );
 
-  const handleRefreshCerts = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      setRefreshSuccess(true);
-      setTimeout(() => setRefreshSuccess(false), 3000);
-    }, 1000);
+  // Initial load and reload when the container count changes. State is only set after the request returns.
+  useEffect(() => {
+    if (isLiveBackend) fetchDetails();
+  }, [isLiveBackend, containers.length, fetchDetails]);
+
+  const handleRefresh = () => {
+    setIsLoading(true);
+    fetchDetails().finally(() => setIsLoading(false));
   };
+
+  // The network API keys containers by full ID; the list uses the 12 character short ID.
+  const ipOf = (c: ContainerItem): string => {
+    if (!details) return '—';
+    const key = Object.keys(details.containers || {}).find((id) => id.startsWith(c.id));
+    return key ? details.containers[key] : '—';
+  };
+
+  const routed = containers.filter((c) => c.traefikRoute);
 
   return (
     <div className="flex flex-col flex-1 space-y-6">
-      {/* Header Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
-              Ağ Topolojisi & Traefik v3 Proxy
-            </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-sans text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
-              Traefik v3.0.1 Aktif
-            </span>
-          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Ağ</h1>
           <p className="text-xs text-zinc-400 mt-1 font-sans">
-            İzole Docker köprüsü, otomatik SSL/TLS sertifikaları ve ters vekil rotaları.
+            Servislerin bağlı olduğu Docker ağı ve Traefik rotaları.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        {isLiveBackend && (
           <button
-            onClick={handleRefreshCerts}
-            disabled={isRefreshing}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#121212] hover:bg-zinc-800 text-white border border-[#262626] hover:border-zinc-500 rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 shadow-sm"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#121212] hover:bg-zinc-800 text-white border border-[#262626] rounded-xl text-xs font-sans transition cursor-pointer active:scale-95 disabled:opacity-60"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-zinc-300 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>Sertifikaları Yenile</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-zinc-300 ${isLoading ? 'animate-spin' : ''}`} />
+            <span>Yenile</span>
           </button>
-        </div>
+        )}
       </div>
 
-      {refreshSuccess && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 rounded-xl text-xs font-sans flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>Let's Encrypt TLS-ALPN-01 sertifikaları başarıyla doğrulandı ve güncellendi.</span>
+      {!isLiveBackend && (
+        <div className="p-3 rounded-xl border border-[#262626] bg-[#0a0a0a] text-xs text-zinc-400 font-sans">
+          Demo modu: backend bağlı olmadığı için ağ bilgisi okunamıyor.
+        </div>
+      )}
+      {error && (
+        <div className="p-3 rounded-xl border border-rose-500/25 bg-rose-500/10 text-xs text-rose-300 font-sans">
+          Ağ bilgisi alınamadı: {error}
         </div>
       )}
 
-      {/* Visual Traffic Flow Pipeline Strip (Animated Cyber Conduits) */}
-      <div className="p-4 rounded-2xl bg-[#0a0a0a] border border-[#262626] flex flex-col md:flex-row items-center justify-between gap-4 select-none">
-        {/* Step 1: Ingress */}
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center shrink-0">
-            <Globe className="w-4 h-4 text-sky-400" />
+      {/* Network summary: values come from the Docker daemon */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { label: 'Ağ adı', value: details?.name },
+          { label: 'Alt ağ', value: details?.subnet },
+          { label: 'Ağ geçidi', value: details?.gateway },
+        ].map((item) => (
+          <div key={item.label} className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4">
+            <span className="text-[11px] text-zinc-400 font-sans block">{item.label}</span>
+            <span className="text-sm text-white font-mono mt-1 block">{item.value || '—'}</span>
           </div>
-          <div>
-            <span className="text-xs font-semibold text-white font-sans block">Dış Giriş Noktaları</span>
-            <span className="text-[11px] text-zinc-400 font-mono">:80 (HTTP) ➔ :443 (HTTPS)</span>
-          </div>
-        </div>
-
-        {/* HAREKETLİ VERİ AKIŞ KANALI 1 (Dış Giriş ➔ Traefik v3 Core) */}
-        <div className="hidden md:flex flex-1 max-w-[160px] items-center justify-center px-2 relative">
-          <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
-            {/* Taban Kılavuz Çizgisi */}
-            <div className="w-full h-[2px] bg-gradient-to-r from-sky-500/25 via-emerald-500/20 to-emerald-500/25" />
-            {/* Akıcı Lazer Işık Dalgası */}
-            <motion.div
-              className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-sky-400 to-transparent opacity-80 blur-[0.5px]"
-              animate={{ left: ['-50%', '130%'] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-            />
-            {/* Parlayan Canlı Veri Fotonu */}
-            <motion.div
-              className="absolute w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_10px_rgba(56,189,248,1)] ring-1 ring-sky-200"
-              animate={{ left: ['-15%', '115%'] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-            />
-          </div>
-        </div>
-
-        {/* Mobil Dikey Bağlantı 1 */}
-        <div className="md:hidden flex items-center justify-center py-0.5">
-          <div className="relative w-0.5 h-4 bg-zinc-800 rounded-full overflow-hidden">
-            <motion.div
-              className="absolute inset-x-0 w-full h-2 bg-gradient-to-b from-sky-400 to-emerald-400"
-              animate={{ top: ['-50%', '150%'] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-            />
-          </div>
-        </div>
-
-        {/* Step 2: SSL & Proxy Core */}
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-white font-sans block">Traefik v3 Core</span>
-            <span className="text-[11px] text-emerald-400/90 font-mono">Let's Encrypt TLS 1.3</span>
-          </div>
-        </div>
-
-        {/* HAREKETLİ VERİ AKIŞ KANALI 2 (Traefik v3 Core ➔ akson-bridge) */}
-        <div className="hidden md:flex flex-1 max-w-[160px] items-center justify-center px-2 relative">
-          <div className="relative w-full h-1.5 bg-zinc-900 border border-zinc-800/90 rounded-full overflow-hidden flex items-center shadow-inner">
-            {/* Taban Kılavuz Çizgisi */}
-            <div className="w-full h-[2px] bg-gradient-to-r from-emerald-500/25 via-violet-500/20 to-violet-500/25" />
-            {/* Akıcı Lazer Işık Dalgası (Senkronize gecikme ile) */}
-            <motion.div
-              className="absolute top-0 bottom-0 w-12 bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-80 blur-[0.5px]"
-              animate={{ left: ['-50%', '130%'] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
-            />
-            {/* Parlayan Canlı Veri Fotonu */}
-            <motion.div
-              className="absolute w-2 h-2 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,1)] ring-1 ring-emerald-200"
-              animate={{ left: ['-15%', '115%'] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut', delay: 0.9 }}
-            />
-          </div>
-        </div>
-
-        {/* Mobil Dikey Bağlantı 2 */}
-        <div className="md:hidden flex items-center justify-center py-0.5">
-          <div className="relative w-0.5 h-4 bg-zinc-800 rounded-full overflow-hidden">
-            <motion.div
-              className="absolute inset-x-0 w-full h-2 bg-gradient-to-b from-emerald-400 to-violet-400"
-              animate={{ top: ['-50%', '150%'] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear', delay: 0.75 }}
-            />
-          </div>
-        </div>
-
-        {/* Step 3: Isolated Network */}
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center shrink-0">
-            <Server className="w-4 h-4 text-violet-400" />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-white font-sans block">İzole Köprü Ağı</span>
-            <span className="text-[11px] text-violet-300/90 font-mono">akson-bridge (172.20.0.0/16)</span>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Traefik Routing Rules Table */}
-      <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl overflow-hidden shadow-sm space-y-3">
+      {/* Traefik routes: only containers that really carry a router rule label */}
+      <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-[#262626] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Network className="w-4 h-4 text-white" />
-            <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-              Traefik v3 Rotaları & Servis Eşlemeleri
-            </h2>
+            <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">Traefik rotaları</h2>
           </div>
-          <span className="text-[11px] font-sans text-zinc-400 bg-white/[0.04] px-2.5 py-0.5 rounded-full border border-[#262626] font-medium">
-            {dynamicRoutes.length} Rota
-          </span>
+          <span className="text-[11px] font-sans text-zinc-400">{routed.length} rota</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-[#121212] text-zinc-400 border-b border-[#262626] font-sans">
               <tr>
-                <th className="p-3.5">ROUTER ADI</th>
-                <th className="p-3.5">KURAL (HOST / DOMAIN)</th>
-                <th className="p-3.5">PORT GEÇİŞİ</th>
-                <th className="p-3.5">HEDEF UPSTREAM IP</th>
-                <th className="p-3.5">ŞİFRELEME</th>
-                <th className="p-3.5 text-right">DURUM</th>
+                <th className="p-3.5 font-medium">Servis</th>
+                <th className="p-3.5 font-medium">Kural</th>
+                <th className="p-3.5 font-medium">Port</th>
+                <th className="p-3.5 font-medium">IP</th>
+                <th className="p-3.5 font-medium text-right">Durum</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#262626] font-mono">
-              {dynamicRoutes.map((route) => (
-                <tr key={route.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="p-3.5 font-medium text-white">{route.name}</td>
-                  <td className="p-3.5 text-zinc-300 font-medium">{route.rule}</td>
-                  <td className="p-3.5 text-zinc-400">{route.entryPoint}</td>
-                  <td className="p-3.5 text-zinc-300">{route.targetIp}</td>
-                  <td className="p-3.5">
-                    {route.tls ? (
-                      <span className="inline-flex items-center gap-1 text-white font-sans text-xs">
-                        <Lock className="w-3 h-3 text-emerald-400" /> TLS 1.3
+              {routed.map((c) => {
+                const port = c.ports[0];
+                return (
+                  <tr key={c.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="p-3.5 text-white">{c.name}</td>
+                    <td className="p-3.5 text-zinc-300">{c.traefikRoute}</td>
+                    <td className="p-3.5 text-zinc-400">
+                      {port ? (port.hostPort ? `${port.hostPort} → ${port.containerPort}` : port.containerPort) : '—'}
+                    </td>
+                    <td className="p-3.5 text-zinc-300">{ipOf(c)}</td>
+                    <td className="p-3.5 text-right font-sans">
+                      <span className={c.status === 'running' ? 'text-emerald-400' : 'text-zinc-500'}>
+                        {c.status === 'running' ? 'Çalışıyor' : 'Durdu'}
                       </span>
-                    ) : (
-                      <span className="text-zinc-500 font-sans text-xs">TCP</span>
-                    )}
-                  </td>
-                  <td className="p-3.5 text-right">
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-[10px] font-sans px-2.5 py-0.5 rounded-full font-medium border ${
-                        route.status === 'healthy'
-                          ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25'
-                          : 'text-amber-400 bg-amber-500/10 border-amber-500/25'
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          route.status === 'healthy'
-                            ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse'
-                            : 'bg-amber-400'
-                        }`}
-                      />
-                      {route.status === 'healthy' ? 'Aktif' : 'Beklemede'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {dynamicRoutes.length === 0 && (
+                    </td>
+                  </tr>
+                );
+              })}
+              {routed.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-zinc-500 font-sans">
-                    Aktif Docker konteyneri bulunamadı.
+                  <td colSpan={5} className="p-8 text-center text-zinc-500 font-sans">
+                    Traefik rotası olan servis yok. Dağıtım sırasında bir alan adı girerseniz burada görünür.
                   </td>
                 </tr>
               )}
@@ -267,79 +145,29 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers }) => {
         </div>
       </div>
 
-      {/* Isolated Subnet Topology Card */}
-      <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-          <div className="flex items-center gap-2">
-            <Server className="w-4 h-4 text-violet-400" />
-            <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-              İzole Alt Ağ Düğümleri: akson-bridge (172.20.0.0/16)
-            </h2>
-          </div>
-          <span className="text-zinc-500 font-mono text-xs">Ağ Geçidi: 172.20.0.1</span>
+      {/* Containers and their addresses on the network */}
+      <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-[#262626]">
+          <Server className="w-4 h-4 text-zinc-300" />
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">Ağdaki servisler</h2>
         </div>
 
-        {/* Canlı Alt Ağ Dağıtım Hattı & Ağ Geçidi Akışı */}
-        <div className="relative my-2 select-none">
-          <div className="relative h-[2px] bg-gradient-to-r from-transparent via-zinc-800 to-transparent overflow-hidden">
-            <motion.div
-              className="absolute top-0 bottom-0 w-32 bg-gradient-to-r from-transparent via-violet-400/80 to-transparent"
-              animate={{ left: ['-25%', '125%'] }}
-              transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-            />
-          </div>
-          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-violet-500" />
-            </span>
-            <span>
-              dhcp/arp: <strong className="text-violet-300 font-semibold">{containers.length} IP tahsisli</strong>
-            </span>
-          </div>
-        </div>
-
-        {/* Visual node grid */}
-        <motion.div
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.04,
-              },
-            },
-          }}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pt-1"
-        >
-          {containers.map((c) => (
-            <motion.div
-              key={c.id}
-              variants={{
-                hidden: { opacity: 0, y: 8 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
-              }}
-              whileHover={{ y: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="bg-[#121212] p-3 rounded-xl border border-[#262626] space-y-1 hover:border-zinc-500 transition-colors cursor-default"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-white text-xs font-sans truncate">{c.name}</span>
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    c.status === 'running'
-                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse'
-                      : 'bg-zinc-600'
-                  }`}
-                />
+        {containers.length === 0 ? (
+          <p className="text-xs text-zinc-500 font-sans">Henüz servis yok.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {containers.map((c) => (
+              <div key={c.id} className="bg-[#121212] p-3 rounded-xl border border-[#262626] space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-white text-xs font-sans truncate">{c.name}</span>
+                  <span className={`w-2 h-2 rounded-full ${c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                </div>
+                <div className="text-[11px] text-zinc-300 font-mono">{ipOf(c)}</div>
+                <div className="text-[10px] text-zinc-500 font-mono truncate">{c.image}</div>
               </div>
-              <div className="text-[11px] text-zinc-300 font-mono">{c.ipAddress || '—'}</div>
-              <div className="text-[10px] text-zinc-500 font-mono truncate">{c.image}</div>
-            </motion.div>
-          ))}
-        </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
