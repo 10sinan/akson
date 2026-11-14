@@ -81,6 +81,45 @@ export interface DeployContainerResult {
 
 const API_BASE = '';
 
+const TOKEN_KEY = 'akson_token';
+
+/** Reads the API token: localStorage first, then the VITE_AKSON_TOKEN build/dev env var. */
+export function getAuthToken(): string {
+  try {
+    const stored = localStorage.getItem(TOKEN_KEY);
+    if (stored) return stored;
+  } catch {
+    // localStorage may be unavailable; fall through to the env var
+  }
+  return (import.meta.env.VITE_AKSON_TOKEN as string | undefined) ?? '';
+}
+
+/** Saves (or clears, when empty) the API token in localStorage. */
+export function setAuthToken(token: string): void {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // ignore storage errors
+  }
+}
+
+/** fetch() that adds the Authorization header when a token is configured. */
+function authFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const token = getAuthToken();
+  if (!token) return fetch(url, init);
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  return fetch(url, { ...init, headers });
+}
+
+/** EventSource cannot set headers, so the token goes in the query string. */
+function withToken(url: string): string {
+  const token = getAuthToken();
+  if (!token) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+}
+
 /**
  * Transforms backend Docker ContainerInfo into frontend ContainerItem.
  */
@@ -170,7 +209,7 @@ export const api = {
    * Fetches real container list from Docker daemon via Go backend.
    */
   async fetchContainers(): Promise<ContainerItem[]> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/`, {
+    const res = await authFetch(`${API_BASE}/api/v1/containers/`, {
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) throw new Error(`Fetch containers failed: HTTP ${res.status}`);
@@ -203,11 +242,11 @@ export const api = {
   ): Promise<{ status: string; message: string }> {
     const res =
       action === 'delete'
-        ? await fetch(`${API_BASE}/api/v1/containers/${id}`, {
+        ? await authFetch(`${API_BASE}/api/v1/containers/${id}`, {
             method: 'DELETE',
             signal: AbortSignal.timeout(30000),
           })
-        : await fetch(`${API_BASE}/api/v1/containers/${id}/actions/${action}`, {
+        : await authFetch(`${API_BASE}/api/v1/containers/${id}/actions/${action}`, {
             method: 'POST',
             signal: AbortSignal.timeout(15000),
           });
@@ -222,7 +261,7 @@ export const api = {
    * Fetches a one-shot resource telemetry snapshot for a container.
    */
   async fetchContainerStats(id: string): Promise<ApiContainerStats> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/stats`, {
+    const res = await authFetch(`${API_BASE}/api/v1/containers/${id}/stats`, {
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`Fetch stats failed: HTTP ${res.status}`);
@@ -238,7 +277,7 @@ export const api = {
     onEntry: (entry: ApiLogEntry) => void,
     onError?: (err: Event) => void
   ): () => void {
-    const eventSource = new EventSource(`${API_BASE}/api/v1/containers/${id}/logs/stream?tail=100`);
+    const eventSource = new EventSource(withToken(`${API_BASE}/api/v1/containers/${id}/logs/stream?tail=100`));
 
     eventSource.onmessage = (event) => {
       try {
@@ -273,7 +312,7 @@ export const api = {
     onStats: (stats: ApiContainerStats) => void,
     onError?: (err: Event) => void
   ): () => void {
-    const eventSource = new EventSource(`${API_BASE}/api/v1/containers/${id}/stats/stream`);
+    const eventSource = new EventSource(withToken(`${API_BASE}/api/v1/containers/${id}/stats/stream`));
 
     eventSource.onmessage = (event) => {
       try {
@@ -298,7 +337,7 @@ export const api = {
    * Fetches akson-bridge topology and connected containers.
    */
   async fetchNetworkDetails(): Promise<ApiNetworkDetails> {
-    const res = await fetch(`${API_BASE}/api/v1/network`, {
+    const res = await authFetch(`${API_BASE}/api/v1/network`, {
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error(`Fetch network failed: HTTP ${res.status}`);
@@ -309,7 +348,7 @@ export const api = {
    * Deploys a new container from scratch via Docker daemon (pull, configure, network, start).
    */
   async deployContainer(req: DeployContainerRequest): Promise<DeployContainerResult> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/deploy`, {
+    const res = await authFetch(`${API_BASE}/api/v1/containers/deploy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
