@@ -92,23 +92,23 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
     switch (container.category) {
       case 'core':
         return {
-          icon: <Zap className="w-5 h-5 text-sky-400" />,
-          badgeClass: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
+          icon: <Zap className="w-5 h-5 text-zinc-300" />,
+          badgeClass: 'bg-zinc-300/10 border-white/20 text-zinc-300',
         };
       case 'service':
         return {
-          icon: <Globe className="w-5 h-5 text-emerald-400" />,
-          badgeClass: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+          icon: <Globe className="w-5 h-5 text-zinc-100" />,
+          badgeClass: 'bg-zinc-100/10 border-white/20 text-zinc-100',
         };
       case 'database':
         return {
-          icon: <Database className="w-5 h-5 text-amber-400" />,
-          badgeClass: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+          icon: <Database className="w-5 h-5 text-zinc-400" />,
+          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-400',
         };
       case 'worker':
         return {
-          icon: <Cpu className="w-5 h-5 text-violet-400" />,
-          badgeClass: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
+          icon: <Cpu className="w-5 h-5 text-zinc-300" />,
+          badgeClass: 'bg-zinc-300/10 border-white/20 text-zinc-300',
         };
       default:
         return {
@@ -147,14 +147,14 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-sans border ${
                   isRunning
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                    ? 'bg-zinc-100/10 text-zinc-100 border-white/20'
                     : 'bg-zinc-900 text-zinc-500 border-zinc-800'
                 }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
                     isRunning
-                      ? 'bg-emerald-400'
+                      ? 'bg-zinc-100'
                       : 'bg-zinc-600'
                   }`}
                 />
@@ -173,7 +173,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               >
                 <span>{container.id.slice(0, 12)}</span>
                 {copiedId ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-zinc-100" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}
@@ -215,7 +215,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               whileTap={{ scale: 0.96 }}
               transition={wiseBouncy}
               onClick={() => onAction('start', container.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400 hover:bg-emerald-300 text-black border border-emerald-400 rounded-xl text-xs font-semibold font-sans transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-100 hover:bg-zinc-100 text-black border border-zinc-400 rounded-xl text-xs font-semibold font-sans transition cursor-pointer"
             >
               <Play className="w-3 h-3 fill-black" />
               <span>Başlat</span>
@@ -345,13 +345,13 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-emerald-400 transition-all duration-300"
+                      className="h-full rounded-full bg-zinc-100 transition-all duration-300"
                       style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                     />
                   </div>
                   <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
                     <span>Durum: {liveCpu > 80 ? 'Yüksek Yük' : 'Nominal'}</span>
-                    <span className="font-mono text-emerald-400/90">Anlık SSE Akışı</span>
+                    <span className="font-mono text-zinc-100/90">Anlık SSE Akışı</span>
                   </div>
                 </div>
 
@@ -366,7 +366,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-sky-400 transition-all duration-300"
+                      className="h-full rounded-full bg-zinc-300 transition-all duration-300"
                       style={{
                         width: `${Math.min(
                           (liveMemoryMb / container.memoryLimitMb) * 100,
@@ -377,7 +377,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </div>
                   <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
                     <span>Limit: {container.memoryLimitMb} MB</span>
-                    <span className="font-mono text-sky-400/90">
+                    <span className="font-mono text-zinc-300/90">
                       %{Math.round((liveMemoryMb / container.memoryLimitMb) * 100)} Doluluk
                     </span>
                   </div>
@@ -404,7 +404,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                           href={`https://${container.traefikRoute}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-sky-400 hover:underline flex items-center gap-1 font-mono text-xs"
+                          className="text-zinc-300 hover:underline flex items-center gap-1 font-mono text-xs"
                         >
                           <span>{container.traefikRoute}</span>
                           <ExternalLink className="w-3 h-3" />

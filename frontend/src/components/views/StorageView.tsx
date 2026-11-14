@@ -65,7 +65,7 @@ export const StorageView: React.FC = () => {
                 title="Yolu kopyala"
               >
                 {copiedPath === item.id ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <Check className="w-3.5 h-3.5 text-zinc-100" />
                 ) : (
                   <Copy className="w-3.5 h-3.5" />
                 )}

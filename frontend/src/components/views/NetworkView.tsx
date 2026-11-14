@@ -74,7 +74,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
         </div>
       )}
       {error && (
-        <div className="p-3 rounded-xl border border-rose-500/25 bg-rose-500/10 text-xs text-rose-300 font-sans">
+        <div className="p-3 rounded-xl border border-white/20 bg-zinc-500/10 text-xs text-zinc-500 font-sans">
           Ağ bilgisi alınamadı: {error}
         </div>
       )}
@@ -126,7 +126,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
                     </td>
                     <td className="p-3.5 text-zinc-300">{ipOf(c)}</td>
                     <td className="p-3.5 text-right font-sans">
-                      <span className={c.status === 'running' ? 'text-emerald-400' : 'text-zinc-500'}>
+                      <span className={c.status === 'running' ? 'text-zinc-100' : 'text-zinc-500'}>
                         {c.status === 'running' ? 'Çalışıyor' : 'Durdu'}
                       </span>
                     </td>
@@ -160,7 +160,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
               <div key={c.id} className="bg-[#121212] p-3 rounded-xl border border-[#262626] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-white text-xs font-sans truncate">{c.name}</span>
-                  <span className={`w-2 h-2 rounded-full ${c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                  <span className={`w-2 h-2 rounded-full ${c.status === 'running' ? 'bg-zinc-100' : 'bg-zinc-600'}`} />
                 </div>
                 <div className="text-[11px] text-zinc-300 font-mono">{ipOf(c)}</div>
                 <div className="text-[10px] text-zinc-500 font-mono truncate">{c.image}</div>

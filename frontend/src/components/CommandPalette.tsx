@@ -166,7 +166,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       title: 'Yeni Konteyner Dağıtma Sihirbazı',
       subtitle: 'Hızlı modal penceresini aç',
       category: 'Hızlı Eylemler',
-      icon: <Rocket className="w-4 h-4 text-rose-400" />,
+      icon: <Rocket className="w-4 h-4 text-zinc-500" />,
       action: () => {
         onOpenDeploy();
         onClose();
@@ -183,7 +183,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         <span className="relative flex h-2 w-2">
           <span
             className={`relative inline-flex rounded-full h-2 w-2 ${
-              c.status === 'running' ? 'bg-emerald-400' : 'bg-zinc-600'
+              c.status === 'running' ? 'bg-zinc-100' : 'bg-zinc-600'
             }`}
           />
         </span>

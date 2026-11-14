@@ -33,26 +33,26 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
     switch (container.category) {
       case 'core':
         return {
-          icon: <Zap className="w-4 h-4 text-sky-400" />,
-          badgeClass: 'bg-sky-500/10 border-sky-500/25 text-sky-400',
+          icon: <Zap className="w-4 h-4 text-zinc-300" />,
+          badgeClass: 'bg-zinc-300/10 border-white/20 text-zinc-300',
           sparkColor: 'blue' as const,
         };
       case 'service':
         return {
-          icon: <Globe className="w-4 h-4 text-emerald-400" />,
-          badgeClass: 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400',
+          icon: <Globe className="w-4 h-4 text-zinc-100" />,
+          badgeClass: 'bg-zinc-100/10 border-white/20 text-zinc-100',
           sparkColor: 'emerald' as const,
         };
       case 'database':
         return {
-          icon: <Database className="w-4 h-4 text-amber-400" />,
-          badgeClass: 'bg-amber-500/10 border-amber-500/25 text-amber-400',
+          icon: <Database className="w-4 h-4 text-zinc-400" />,
+          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-400',
           sparkColor: 'amber' as const,
         };
       case 'worker':
         return {
-          icon: <Cpu className="w-4 h-4 text-violet-400" />,
-          badgeClass: 'bg-violet-500/10 border-violet-500/25 text-violet-400',
+          icon: <Cpu className="w-4 h-4 text-zinc-300" />,
+          badgeClass: 'bg-zinc-300/10 border-white/20 text-zinc-300',
           sparkColor: 'purple' as const,
         };
       default:
@@ -133,7 +133,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           <div
             className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${
               isRunning
-                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                ? 'bg-zinc-100/10 border-white/20 text-zinc-100'
                 : 'bg-zinc-900 border-zinc-800 text-zinc-500'
             }`}
           >
@@ -141,7 +141,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
               <span
                 className={`inline-block rounded-full ${
                   isRunning
-                    ? 'h-2 w-2 bg-emerald-400'
+                    ? 'h-2 w-2 bg-zinc-100'
                     : 'h-1.5 w-1.5 border border-zinc-500'
                 }`}
               />

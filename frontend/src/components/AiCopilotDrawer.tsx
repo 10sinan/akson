@@ -149,7 +149,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                 onClick={() => handleQuickChip('Loglarda hata var mı?')}
                 className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <Terminal className="w-3 h-3 text-sky-400" />
+                <Terminal className="w-3 h-3 text-zinc-300" />
                 <span>Log Denetle</span>
               </button>
               <button
@@ -163,7 +163,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                 onClick={() => handleQuickChip('Konteyner özeti')}
                 className="px-2 py-1 rounded-lg bg-[#121212] hover:bg-zinc-800 border border-[#262626] text-zinc-300 flex items-center gap-1.5 transition cursor-pointer shrink-0"
               >
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <ShieldCheck className="w-3 h-3 text-zinc-100" />
                 <span>Özet</span>
               </button>
             </div>

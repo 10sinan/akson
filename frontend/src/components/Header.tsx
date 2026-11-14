@@ -123,12 +123,12 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[11px] font-mono text-zinc-300 shadow-sm transition-colors">
           {/* CPU */}
           <div className="flex items-center gap-1.5" title={`Toplam CPU Kullanımı: %${totalCpu.toFixed(1)}`}>
-            <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-amber-400' : 'text-emerald-400'}`} />
+            <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-zinc-400' : 'text-zinc-100'}`} />
             <div className="flex items-center gap-1.5">
-              <span>CPU: <strong className={totalCpu >= 50 ? 'text-amber-400 font-semibold' : 'text-emerald-400 font-semibold'}>{totalCpu.toFixed(1)}%</strong></span>
+              <span>CPU: <strong className={totalCpu >= 50 ? 'text-zinc-400 font-semibold' : 'text-zinc-100 font-semibold'}>{totalCpu.toFixed(1)}%</strong></span>
               <div className="w-7 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${totalCpu >= 50 ? 'bg-amber-400' : 'bg-emerald-400'} transition-all duration-300 rounded-full`}
+                  className={`h-full ${totalCpu >= 50 ? 'bg-zinc-400' : 'bg-zinc-100'} transition-all duration-300 rounded-full`}
                   style={{ width: `${Math.min(Math.max(totalCpu, 4), 100)}%` }}
                 />
               </div>
@@ -139,9 +139,9 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* RAM */}
           <div className="flex items-center gap-1.5" title={`Toplam Bellek Kullanımı: ${totalMemoryMb} MB`}>
-            <Activity className="w-3.5 h-3.5 text-sky-400" />
+            <Activity className="w-3.5 h-3.5 text-zinc-300" />
             <div className="flex items-center gap-1.5">
-              <span>RAM: <strong className="text-sky-400 font-semibold">{totalMemoryMb} MB</strong></span>
+              <span>RAM: <strong className="text-zinc-300 font-semibold">{totalMemoryMb} MB</strong></span>
             </div>
           </div>
 
@@ -151,13 +151,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5" title={`${runningContainers} aktif / toplam ${totalContainers} servis`}>
             {runningContainers > 0 ? (
               <span className="relative flex h-2 w-2">
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-100" />
               </span>
             ) : (
               <span className="inline-block h-2 w-2 rounded-full bg-zinc-600" />
             )}
             <span>
-              Servisler: <strong className="text-emerald-400 font-semibold">{runningContainers}</strong>/{totalContainers}
+              Servisler: <strong className="text-zinc-100 font-semibold">{runningContainers}</strong>/{totalContainers}
             </span>
           </div>
         </div>
@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span
               className={`inline-block rounded-full ${
                 dockerStatus === 'online'
-                  ? 'h-2 w-2 bg-emerald-400'
+                  ? 'h-2 w-2 bg-zinc-100'
                   : dockerStatus === 'checking'
                   ? 'h-2 w-2 bg-zinc-400 animate-pulse'
                   : 'h-1.5 w-1.5 border border-zinc-400'
@@ -192,7 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           <span className="text-zinc-300 text-[11px]">
             Docker:{' '}
-            <span className={`font-medium ${dockerStatus === 'online' ? 'text-emerald-400' : 'text-white'}`}>
+            <span className={`font-medium ${dockerStatus === 'online' ? 'text-zinc-100' : 'text-white'}`}>
               {dockerStatus === 'online'
                 ? 'Çevrimiçi'
                 : dockerStatus === 'checking'
@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Volume2 className="w-3.5 h-3.5 text-zinc-200" />
           )}
           {!isMuted && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-zinc-100" />
           )}
         </button>
 
