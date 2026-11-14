@@ -282,7 +282,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
       setCurrentStep(3);
       setDeployLogs((prev) => [
         ...prev,
-        `[3/5: network] '${selectedNetwork}' ağına bağlandı ve Traefik v3 rotası tanımlandı: ${customDomain}`,
+        `[3/5: network] '${selectedNetwork}' ağına bağlandı.`,
         ...(res.logs || []).map((l) => `[docker] ${l}`),
       ]);
 
@@ -652,7 +652,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     placeholder="örn: api.localhost veya app.internal"
                     className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
                   />
-                  <p className="text-[10px] text-zinc-500 font-mono">Host(`{customDomain}`) kuralı otomatik Traefik HTTP/HTTPS dinleyicisine eklenecektir.</p>
+                  <p className="text-[10px] text-zinc-500 font-mono">Host(`{customDomain}`) kuralı eklenir. Bu adres yalnızca Traefik çalışıyorsa açılır; çalışmıyorsa uygulamaya localhost adresinden erişirsin.</p>
                 </div>
 
                 <div className="space-y-1.5 pt-2">
@@ -771,7 +771,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-zinc-400 font-sans">Dal / Dockerfile</span>
-                        <span className="text-zinc-300 font-mono">{gitBranch} • {dockerfilePath}</span>
+                        <span className="text-zinc-300 font-mono">{gitBranch} • {dockerfilePath || 'otomatik'}</span>
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-zinc-400 font-sans">Hedef İmaj</span>
