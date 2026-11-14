@@ -38,6 +38,6 @@ Frontend (`cd frontend`):
 **Streaming**: logs and stats go over Server-Sent Events (`/containers/{id}/logs/stream`, `/containers/{id}/stats/stream`). The frontend reads them with `EventSource` in `src/api/client.ts`.
 
 **Frontend** (`frontend/src`, React 19, Tailwind v4 via `@tailwindcss/vite`, framer-motion, lucide-react):
-- `api/client.ts` holds all backend calls and the API types (snake_case, matching Go JSON tags). `mapApiContainerToItem` converts them to the UI's `ContainerItem` (`types/container.ts`). `API_BASE` is `''`, and the Vite dev server proxies `/api` and `/health` to `localhost:3001`.
+- `api/client.ts` holds all backend calls and the API types (snake_case, matching Go JSON tags).  If the backend has `AKSON_TOKEN`, set the same value in localStorage key `akson_token` or in `VITE_AKSON_TOKEN`; it is sent as a Bearer header (and `?token=` for SSE). `mapApiContainerToItem` converts them to the UI's `ContainerItem` (`types/container.ts`). `API_BASE` is `''`, and the Vite dev server proxies `/api` and `/health` to `localhost:3001`.
 - `App.tsx` owns the top-level state (active tab, container list, modals, toasts). On mount it calls `/health`. If the backend or Docker is unreachable, the UI switches to **demo mode** (`dockerStatus: 'demo'`, `isLiveBackend: false`) instead of failing, so UI changes need to work in both modes.
 - Each tab (dashboard/deploy/storage/logs/network) is rendered by a switch in `App.tsx` that picks a component from `components/views/`. Dashboard sub-panels live in `components/dashboard/`.
