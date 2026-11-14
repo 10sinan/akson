@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"akson/internal/db"
+	"akson/internal/detect"
 	"akson/internal/docker"
 	"akson/internal/git"
 	"akson/internal/proxy"
@@ -123,6 +124,28 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 
 		req.Branch = gitInfo.Branch
 		req.CommitHash = gitInfo.CommitHash
+
+		// 1b. No Dockerfile in the repo (and none requested): generate one from the project type.
+		if strings.TrimSpace(req.Dockerfile) == "" && !detect.HasDockerfile(tempDir) {
+			plan, derr := detect.Detect(tempDir)
+			if derr != nil {
+				allLogs = append(allLogs, derr.Error())
+				s.recordFailedDeployment(depID, req.Name, req.GitURL, req.CommitHash, req.Branch, allLogs, derr, now)
+				errorResponse(w, http.StatusBadRequest, derr.Error())
+				return
+			}
+			name, werr := detect.Write(tempDir, plan)
+			if werr != nil {
+				s.recordFailedDeployment(depID, req.Name, req.GitURL, req.CommitHash, req.Branch, allLogs, werr, now)
+				errorResponse(w, http.StatusInternalServerError, "Failed to write generated Dockerfile: "+werr.Error())
+				return
+			}
+			req.Dockerfile = name
+			allLogs = append(allLogs, fmt.Sprintf("No Dockerfile found: detected a %s project and generated one (expected port %d).", plan.Kind, plan.Port))
+			if req.Port == 0 && len(req.Ports) == 0 {
+				req.Port = plan.Port
+			}
+		}
 
 		// 2. Build Docker Image
 		builtTag := fmt.Sprintf("akson/%s:latest", proxy.SanitizeName(req.Name))

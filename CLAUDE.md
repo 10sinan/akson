@@ -33,7 +33,7 @@ Frontend (`cd frontend`):
 - `internal/git`: `CloneRepo` runs the system `git` binary via `exec.CommandContext`, so `git` must be installed.
 - `internal/proxy`: `akson-bridge` network management and Traefik label generation (`GenerateLabels`, `SanitizeName`).
 
-**Deploy flow** (`handleDeployContainer`, used by both `POST /containers/deploy` and `POST /deployments`): if `git_url` is set, it clones into a temp dir, builds the image as `akson/<name>:latest`, then deploys it. Otherwise it deploys `image` directly. Every outcome, success or failure, is recorded as a row in the `deployments` table, and the step logs are returned in the response.
+**Deploy flow** (`handleDeployContainer`, used by both `POST /containers/deploy` and `POST /deployments`): if `git_url` is set, it clones into a temp dir (if the repo has no Dockerfile, `internal/detect` generates `Dockerfile.akson` for Node/Python/Go/static projects), builds the image as `akson/<name>:latest`, then deploys it. Otherwise it deploys `image` directly. Every outcome, success or failure, is recorded as a row in the `deployments` table, and the step logs are returned in the response.
 
 **Streaming**: logs and stats go over Server-Sent Events (`/containers/{id}/logs/stream`, `/containers/{id}/stats/stream`). The frontend reads them with `EventSource` in `src/api/client.ts`.
 
