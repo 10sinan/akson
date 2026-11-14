@@ -72,8 +72,10 @@ func detectNode(dir string) (*Plan, error) {
 		start = fmt.Sprintf(`["node", %q]`, pkg.Main)
 	case exists(dir, "index.js"):
 		start = `["node", "index.js"]`
+	case pkg.Scripts["build"] != "":
+		return nodeStaticPlan(dir, pkg.Scripts["build"]), nil
 	default:
-		return nil, fmt.Errorf("Node.js project has no \"start\" script and no entry file; add a \"start\" script to package.json")
+		return nil, fmt.Errorf("Node.js project has no \"start\" or \"build\" script and no entry file; add a \"start\" script to package.json")
 	}
 
 	install := "npm install"
@@ -101,6 +103,34 @@ CMD %s
 	}, nil
 }
 
+// nodeStaticPlan builds a front-end project (Vite, Create React App, ...) and serves the
+// output folder with nginx.
+func nodeStaticPlan(dir, buildScript string) *Plan {
+	install := "npm install"
+	if exists(dir, "package-lock.json") {
+		install = "npm ci"
+	}
+	out := "dist" // Vite, Vue CLI, Parcel
+	if strings.Contains(buildScript, "react-scripts") {
+		out = "build" // Create React App
+	}
+	return &Plan{
+		Kind: "node-static",
+		Port: 80,
+		Dockerfile: fmt.Sprintf(`FROM node:22-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN %s
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/%s /usr/share/nginx/html
+EXPOSE 80
+`, install, out),
+	}
+}
+
 func detectPython(dir string) (*Plan, error) {
 	entry := ""
 	for _, c := range []string{"main.py", "app.py", "server.py", "run.py"} {
@@ -112,6 +142,16 @@ func detectPython(dir string) (*Plan, error) {
 	if entry == "" {
 		return nil, fmt.Errorf("Python project has no main.py, app.py, server.py or run.py entry file")
 	}
+	reqs, _ := os.ReadFile(filepath.Join(dir, "requirements.txt"))
+	lowerReqs := strings.ToLower(string(reqs))
+	module := strings.TrimSuffix(entry, ".py")
+	cmd := fmt.Sprintf(`["python", %q]`, entry)
+	switch {
+	case strings.Contains(lowerReqs, "fastapi") || strings.Contains(lowerReqs, "uvicorn"):
+		cmd = fmt.Sprintf(`["sh", "-c", "pip show uvicorn >/dev/null 2>&1 || pip install uvicorn; exec uvicorn %s:app --host 0.0.0.0 --port 8000"]`, module)
+	case strings.Contains(lowerReqs, "flask"):
+		cmd = fmt.Sprintf(`["flask", "--app", %q, "run", "--host", "0.0.0.0", "--port", "8000"]`, module)
+	}
 	return &Plan{
 		Kind: "python",
 		Port: 8000,
@@ -122,8 +162,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 ENV PORT=8000
 EXPOSE 8000
-CMD ["python", %q]
-`, entry),
+CMD %s
+`, cmd),
 	}, nil
 }
 

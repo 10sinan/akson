@@ -125,8 +125,10 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 		req.Branch = gitInfo.Branch
 		req.CommitHash = gitInfo.CommitHash
 
-		// 1b. No Dockerfile in the repo (and none requested): generate one from the project type.
-		if strings.TrimSpace(req.Dockerfile) == "" && !detect.HasDockerfile(tempDir) {
+		// 1b. No Dockerfile in the repo: generate one from the project type.
+		// The UI sends "Dockerfile" by default, so that name also counts as "not chosen".
+		requestedDockerfile := strings.TrimSpace(req.Dockerfile)
+		if (requestedDockerfile == "" || requestedDockerfile == "Dockerfile") && !detect.HasDockerfile(tempDir) {
 			plan, derr := detect.Detect(tempDir)
 			if derr != nil {
 				allLogs = append(allLogs, derr.Error())
@@ -142,9 +144,19 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 			}
 			req.Dockerfile = name
 			allLogs = append(allLogs, fmt.Sprintf("No Dockerfile found: detected a %s project and generated one (expected port %d).", plan.Kind, plan.Port))
-			if req.Port == 0 && len(req.Ports) == 0 {
-				req.Port = plan.Port
+			// The generated image listens on plan.Port, so point the container side of every
+			// mapping (and the PORT env var) at it. With no mapping, publish it on a free host port.
+			if len(req.Ports) == 0 {
+				req.Ports = []docker.PortMapping{{PrivatePort: uint16(plan.Port), Type: "tcp"}}
 			}
+			for i := range req.Ports {
+				req.Ports[i].PrivatePort = uint16(plan.Port)
+			}
+			if req.Env == nil {
+				req.Env = map[string]string{}
+			}
+			req.Env["PORT"] = fmt.Sprintf("%d", plan.Port)
+			req.Port = plan.Port
 		}
 
 		// 2. Build Docker Image

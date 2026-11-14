@@ -30,7 +30,11 @@ func TestDetect(t *testing.T) {
 		{"node build script", map[string]string{"package.json": `{"scripts":{"start":"x","build":"y"}}`}, "node", "RUN npm run build"},
 		{"node sets PORT", map[string]string{"package.json": `{"scripts":{"start":"x"}}`}, "node", "ENV PORT=3000"},
 		{"node main field", map[string]string{"package.json": `{"main":"server.js"}`}, "node", `CMD ["node", "server.js"]`},
-		{"python", map[string]string{"requirements.txt": "flask", "app.py": ""}, "python", `CMD ["python", "app.py"]`},
+		{"vite build-only", map[string]string{"package.json": `{"scripts":{"build":"vite build"}}`}, "node-static", "COPY --from=build /app/dist"},
+		{"create react app", map[string]string{"package.json": `{"scripts":{"build":"react-scripts build"}}`}, "node-static", "/app/build "},
+		{"flask", map[string]string{"requirements.txt": "Flask==3.0", "app.py": ""}, "python", `"flask", "--app", "app"`},
+		{"fastapi", map[string]string{"requirements.txt": "fastapi\nuvicorn", "main.py": ""}, "python", "uvicorn main:app"},
+		{"python", map[string]string{"requirements.txt": "requests", "app.py": ""}, "python", `CMD ["python", "app.py"]`},
 		{"go", map[string]string{"go.mod": "module x\n\ngo 1.23.4\n"}, "go", "golang:1.23-alpine"},
 		{"static", map[string]string{"index.html": "<html>"}, "static", "nginx:alpine"},
 	}
