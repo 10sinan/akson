@@ -1,0 +1,17 @@
+services:
+  akson:
+    build: .
+    container_name: akson
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      # Akson manages containers through the host's Docker daemon.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - akson-data:/data
+    environment:
+      # Optional: require a token for the API (see README).
+      - AKSON_TOKEN=${AKSON_TOKEN:-}
+
+volumes:
+  akson-data:

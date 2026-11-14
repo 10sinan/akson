@@ -65,5 +65,10 @@ func (s *Server) NewRouter() http.Handler {
 		r.Post("/network/labels", s.handleGenerateTraefikLabels)
 	})
 
+	// --- Built frontend (single-container install) ---
+	if s.staticDir != "" {
+		r.NotFound(spaHandler(s.staticDir))
+	}
+
 	return r
 }
