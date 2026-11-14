@@ -22,7 +22,7 @@ func TestFailedDeploymentIsRecorded(t *testing.T) {
 	server := NewServer(database, nil, nil)
 	router := server.NewRouter()
 
-	// A local path that does not exist: git clone fails fast without network access.
+	// A local path is rejected by git URL validation, which must still be recorded as a failed deploy.
 	body, _ := json.Marshal(map[string]any{
 		"name":    "akson-failed-svc",
 		"git_url": filepath.Join(t.TempDir(), "missing-repo.git"),
