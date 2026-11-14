@@ -30,10 +30,14 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 		branch = "main"
 	}
 
+	if err := ValidateBranch(branch); err != nil {
+		return nil, nil, err
+	}
+
 	logs = append(logs, fmt.Sprintf("Cloning repository %s (branch: %s)...", repoURL, branch))
 
 	// Attempt 1: Clone specific branch with depth 1
-	args := []string{"clone", "--depth", "1", "-b", branch, repoURL, targetDir}
+	args := []string{"clone", "--depth", "1", "-b", branch, "--", repoURL, targetDir}
 	cmd := exec.CommandContext(ctx, "git", args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -44,7 +48,7 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 		// If cloning specified branch fails and branch was "main", try default clone
 		if branch == "main" {
 			logs = append(logs, fmt.Sprintf("Branch 'main' not found, falling back to default branch for %s...", repoURL))
-			fallbackArgs := []string{"clone", "--depth", "1", repoURL, targetDir}
+			fallbackArgs := []string{"clone", "--depth", "1", "--", repoURL, targetDir}
 			fallbackCmd := exec.CommandContext(ctx, "git", fallbackArgs...)
 			fallbackCmd.Stdout = &stdout
 			fallbackCmd.Stderr = &stderr

@@ -84,6 +84,13 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 			req.Name = proxy.SanitizeName(base)
 		}
 
+		if err := git.ValidateRepoURL(req.GitURL); err != nil {
+			allLogs = append(allLogs, "Git URL rejected: "+err.Error())
+			s.recordFailedDeployment(depID, req.Name, req.GitURL, "unknown", req.GitBranch, allLogs, err, now)
+			errorResponse(w, http.StatusBadRequest, err.Error())
+			return
+		}
+
 		tempDir, err := os.MkdirTemp("", "akson-git-*")
 		if err != nil {
 			errorResponse(w, http.StatusInternalServerError, "Failed to create temp build directory: "+err.Error())
