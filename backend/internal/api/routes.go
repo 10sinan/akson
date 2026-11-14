@@ -31,6 +31,7 @@ func (s *Server) NewRouter() http.Handler {
 
 	// --- API v1 ---
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(AuthMiddleware(s.authToken))
 
 		// Containers
 		r.Route("/containers", func(r chi.Router) {

@@ -24,6 +24,12 @@ type Server struct {
 	db         *db.DB
 	docker     *docker.Client
 	networkMgr *proxy.NetworkManager
+	authToken  string
+}
+
+// SetAuthToken enables token authentication on /api/v1. An empty token disables it.
+func (s *Server) SetAuthToken(token string) {
+	s.authToken = token
 }
 
 // NewServer initializes the API server with all required dependencies.

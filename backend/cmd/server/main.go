@@ -21,6 +21,7 @@ func main() {
 	port := envOr("PORT", "3001")
 	dbPath := envOr("DB_PATH", "./data/akson.db")
 	acmeEmail := envOr("ACME_EMAIL", "")
+	authToken := envOr("AKSON_TOKEN", "")
 
 	log.Printf("🚀 Akson Backend starting on :%s", port)
 
@@ -67,6 +68,12 @@ func main() {
 
 	// --- HTTP Server ---
 	server := api.NewServer(database, dockerClient, networkMgr)
+	server.SetAuthToken(authToken)
+	if authToken == "" {
+		log.Printf("⚠️  AKSON_TOKEN is not set: API is open without authentication")
+	} else {
+		log.Printf("🔒 API token authentication enabled")
+	}
 	router := server.NewRouter()
 
 	httpServer := &http.Server{
