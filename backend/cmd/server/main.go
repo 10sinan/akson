@@ -22,6 +22,7 @@ func main() {
 	dbPath := envOr("DB_PATH", "./data/akson.db")
 	acmeEmail := envOr("ACME_EMAIL", "")
 	authToken := envOr("AKSON_TOKEN", "")
+	staticDir := envOr("STATIC_DIR", "")
 
 	log.Printf("🚀 Akson Backend starting on :%s", port)
 
@@ -73,6 +74,10 @@ func main() {
 		log.Printf("⚠️  AKSON_TOKEN is not set: API is open without authentication")
 	} else {
 		log.Printf("🔒 API token authentication enabled")
+	}
+	if staticDir != "" {
+		server.SetStaticDir(staticDir)
+		log.Printf("🖥️  Serving frontend from %s", staticDir)
 	}
 	router := server.NewRouter()
 

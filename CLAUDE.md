@@ -13,11 +13,12 @@ From the repo root:
 - `npm run dev` — runs `scripts/dev.sh`: Go backend on :3001 and Vite on :5173 together (Ctrl+C stops both). The script finds `go` on PATH or in `~/.local/go/bin`, `/tmp/go/bin`, `/usr/local/go/bin`.
 - `npm run dev:backend` / `npm run dev:frontend` — run one side only.
 - `npm run test:backend` — `go test ./...` in `backend/`.
+- `docker compose up -d --build` — single-container install: the root `Dockerfile` builds the frontend and backend into one image that serves the UI and API on :3001 and talks to the host Docker via the mounted socket.
 
 Backend (`cd backend`):
 - Run a single test: `go test ./internal/docker -run TestCalculateStats_Math -v`
 - Tests that need a live Docker daemon (deploy, containers, logs, stats, proxy network) call `t.Skip` when the daemon can't be reached. If Docker is running they create real containers and networks.
-- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
+- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `STATIC_DIR` (optional; serves the built frontend, used by the Docker image), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
 - The server exits at startup if it can't ping the Docker daemon.
 
 Frontend (`cd frontend`):

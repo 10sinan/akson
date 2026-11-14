@@ -26,6 +26,12 @@ type Server struct {
 	docker     *docker.Client
 	networkMgr *proxy.NetworkManager
 	authToken  string
+	staticDir  string
+}
+
+// SetStaticDir serves the built frontend from dir for all non-API routes.
+func (s *Server) SetStaticDir(dir string) {
+	s.staticDir = dir
 }
 
 // SetAuthToken enables token authentication on /api/v1. An empty token disables it.
