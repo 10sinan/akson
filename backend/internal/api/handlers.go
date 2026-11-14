@@ -220,6 +220,12 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 				req.Labels[k] = v
 			}
 		}
+		// Labels only take effect when a Traefik container is running; say so honestly.
+		if s.traefikRunning(r.Context()) {
+			allLogs = append(allLogs, fmt.Sprintf("Traefik route added: %s", req.Domain))
+		} else {
+			allLogs = append(allLogs, fmt.Sprintf("Traefik is not running: the domain %s will not work yet. Use the localhost address below.", req.Domain))
+		}
 	}
 
 	branch := req.Branch
@@ -597,4 +603,23 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"db":     dbOK,
 		"time":   time.Now().UTC().Format(time.RFC3339),
 	})
+}
+
+// traefikRunning reports whether a running container uses a Traefik image.
+func (s *Server) traefikRunning(ctx context.Context) bool {
+	if s.docker == nil {
+		return false
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	containers, err := s.docker.ListContainers(ctx, false)
+	if err != nil {
+		return false
+	}
+	for _, c := range containers {
+		if strings.Contains(strings.ToLower(c.Image), "traefik") {
+			return true
+		}
+	}
+	return false
 }
