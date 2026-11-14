@@ -1,0 +1,439 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { wiseBouncy } from '../../utils/motion';
+import {
+  Search,
+  Pause,
+  Play,
+  Trash2,
+  Copy,
+  Check,
+  Sparkles,
+} from 'lucide-react';
+import type { ContainerItem } from '../../types/container';
+import { api } from '../../api/client';
+
+interface LogsViewProps {
+  containers: ContainerItem[];
+}
+
+interface LogEntry {
+  id: string;
+  timestamp: string;
+  containerName: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+}
+
+export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [selectedContainer, setSelectedContainer] = useState<string>('all');
+  const [selectedLevel, setSelectedLevel] = useState<'all' | 'info' | 'warn' | 'error'>('all');
+  const [searchGrep, setSearchGrep] = useState('');
+  const [isStreaming, setIsStreaming] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [aiReport, setAiReport] = useState<string | null>(null);
+
+  const terminalBoxRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll effect
+  useEffect(() => {
+    // Scroll only the log box; scrollIntoView would also scroll the whole page on every new line.
+    const box = terminalBoxRef.current;
+    if (autoScroll && box) {
+      box.scrollTop = box.scrollHeight;
+    }
+  }, [logs, autoScroll]);
+
+  // Initial population from containers
+  useEffect(() => {
+    const initial: LogEntry[] = [];
+    containers.forEach((c) => {
+      if (c.logs && c.logs.length > 0) {
+        c.logs.forEach((msg, idx) => {
+          const lower = msg.toLowerCase();
+          const level: 'info' | 'warn' | 'error' =
+            lower.includes('err') || lower.includes('fail')
+              ? 'error'
+              : lower.includes('warn')
+              ? 'warn'
+              : 'info';
+
+          initial.push({
+            id: `init-${c.id}-${idx}`,
+            timestamp: new Date().toTimeString().split(' ')[0],
+            containerName: c.name,
+            level,
+            message: msg,
+          });
+        });
+      }
+    });
+
+    if (initial.length > 0) {
+      setLogs((prev) => (prev.length === 0 ? initial : prev));
+    }
+  }, [containers]);
+
+  // Live SSE stream from running containers
+  useEffect(() => {
+    if (!isStreaming) return;
+    const running = containers.filter((c) => c.status === 'running');
+    if (running.length === 0) return;
+
+    const cleanups: (() => void)[] = [];
+    running.forEach((c) => {
+      const unsub = api.createLogStream(c.id, (entry) => {
+        const text = entry.message || (typeof entry === 'string' ? entry : JSON.stringify(entry));
+        const lower = text.toLowerCase();
+        const level: 'info' | 'warn' | 'error' =
+          lower.includes('err') || lower.includes('fail')
+            ? 'error'
+            : lower.includes('warn')
+            ? 'warn'
+            : 'info';
+
+        setLogs((prev) => [
+          ...prev.slice(-999),
+          {
+            id: `live-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+            timestamp: new Date().toTimeString().split(' ')[0],
+            containerName: c.name,
+            level,
+            message: text,
+          },
+        ]);
+      });
+      cleanups.push(unsub);
+    });
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+    };
+  }, [containers, isStreaming]);
+
+  // Filtered log entries
+  const filteredLogs = logs.filter((log) => {
+    const matchesContainer =
+      selectedContainer === 'all' || log.containerName === selectedContainer;
+    const matchesLevel =
+      selectedLevel === 'all' || log.level === selectedLevel;
+    const matchesGrep =
+      searchGrep.trim() === '' ||
+      log.message.toLowerCase().includes(searchGrep.toLowerCase()) ||
+      log.containerName.toLowerCase().includes(searchGrep.toLowerCase());
+
+    return matchesContainer && matchesLevel && matchesGrep;
+  });
+
+  const handleCopyLogs = () => {
+    const text = filteredLogs
+      .map((l) => `[${l.timestamp}] [${l.containerName}] [${l.level.toUpperCase()}]: ${l.message}`)
+      .join('\n');
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleClearLogs = () => {
+    setLogs([]);
+  };
+
+  // Summarizes the log lines currently on screen. Counts and quotes come only from those lines.
+  const handleAnalyze = () => {
+    if (logs.length === 0) {
+      setAiReport('Henüz log satırı yok.');
+      return;
+    }
+    const errors = logs.filter((l) => l.level === 'error');
+    const warns = logs.filter((l) => l.level === 'warn');
+    const byContainer = new Map<string, number>();
+    errors.forEach((l) => byContainer.set(l.containerName, (byContainer.get(l.containerName) || 0) + 1));
+
+    const lines = [`${logs.length} satır incelendi: ${errors.length} hata, ${warns.length} uyarı.`];
+    if (errors.length === 0) {
+      lines.push('Hata içeren satır bulunmadı.');
+    } else {
+      byContainer.forEach((count, name) => lines.push(`• ${name}: ${count} hata`));
+      lines.push('Son hata satırları:');
+      errors.slice(-3).forEach((l) => lines.push(`  [${l.containerName}] ${l.message}`));
+    }
+    setAiReport(lines.join('\n'));
+  };
+
+  return (
+    <div className="flex flex-col flex-1 space-y-6">
+      {/* Header Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
+              Servis Logları & Canlı Denetleyici
+            </h1>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626] text-zinc-300 font-sans text-xs font-medium">
+              <span className={`w-1.5 h-1.5 rounded-full ${isStreaming ? 'bg-zinc-100 ' : 'bg-zinc-600'}`} />
+              <span className={isStreaming ? 'text-zinc-100' : 'text-zinc-400'}>
+                {isStreaming ? 'Canlı Akış' : 'Duraklatıldı'}
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-zinc-400 mt-1 font-sans">
+            Gerçek zamanlı stdout/stderr günlükleri ve konteyner çalışma zamanı denetimi.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleAnalyze}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] border border-[#262626] text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs font-medium font-sans transition cursor-pointer active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Hızlı Analiz</span>
+          </button>
+
+          <button
+            onClick={() => setIsStreaming(!isStreaming)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-semibold font-sans transition cursor-pointer active:scale-95 shadow"
+          >
+            {isStreaming ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            <span>{isStreaming ? 'Duraklat' : 'Devam Et'}</span>
+          </button>
+
+          <button
+            onClick={handleCopyLogs}
+            className="p-2 bg-[#121212] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-[#262626] rounded-xl transition cursor-pointer active:scale-95"
+            title="Logları Kopyala"
+          >
+            {copied ? <Check className="w-4 h-4 text-zinc-100" /> : <Copy className="w-4 h-4" />}
+          </button>
+
+          <button
+            onClick={handleClearLogs}
+            className="p-2 bg-[#121212] hover:bg-zinc-800 text-zinc-400 hover:text-white border border-[#262626] rounded-xl transition cursor-pointer active:scale-95"
+            title="Logları Temizle"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Summary card (if generated) */}
+      {aiReport && (
+        <div className="bg-[#121212] border border-[#262626] rounded-2xl p-4 flex flex-col gap-2 font-mono text-xs text-zinc-200">
+          <div className="flex items-center justify-between border-b border-[#262626] pb-2">
+            <div className="flex items-center gap-2 font-semibold text-white font-sans">
+              <Sparkles className="w-4 h-4 text-zinc-400" />
+              <span>Log Özeti</span>
+            </div>
+            <button
+              onClick={() => setAiReport(null)}
+              className="text-zinc-400 hover:text-white font-sans text-xs cursor-pointer"
+            >
+              Kapat
+            </button>
+          </div>
+          <div className="whitespace-pre-wrap leading-relaxed">{aiReport}</div>
+        </div>
+      )}
+
+      {/* Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column (3 cols): Container Switcher */}
+        <div className="lg:col-span-3 bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-sm">
+          <span className="text-xs font-bold text-white uppercase font-sans tracking-wider block">
+            Konteyner Filtresi
+          </span>
+
+          <div className="space-y-1 font-sans text-xs">
+            <motion.button
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setSelectedContainer('all')}
+              className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
+                selectedContainer === 'all'
+                  ? 'text-white font-semibold'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              }`}
+            >
+              {selectedContainer === 'all' && (
+                <motion.div
+                  layoutId="logsContainerPill"
+                  className="absolute inset-0 bg-[#171717] border border-[#262626] rounded-xl shadow-sm"
+                  transition={wiseBouncy}
+                />
+              )}
+              <span className="relative z-10">Tüm Konteynerler</span>
+              <span className="relative z-10 text-[10px] font-mono text-zinc-400">{containers.length}</span>
+            </motion.button>
+
+            {containers.map((c) => (
+              <motion.button
+                key={c.id}
+                whileHover={{ y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedContainer(c.name)}
+                className={`relative w-full text-left px-3 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-between select-none ${
+                  selectedContainer === c.name
+                    ? 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                }`}
+              >
+                {selectedContainer === c.name && (
+                  <motion.div
+                    layoutId="logsContainerPill"
+                    className="absolute inset-0 bg-[#171717] border border-[#262626] rounded-xl shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10 truncate font-mono">{c.name}</span>
+                <span
+                  className={`relative z-10 w-2 h-2 rounded-full ${
+                    c.status === 'running'
+                      ? 'bg-zinc-100'
+                      : 'bg-zinc-600'
+                  }`}
+                />
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column (9 cols): Grep Search, Level Filters & Live Console */}
+        <div className="lg:col-span-9 bg-[#0a0a0a] border border-[#262626] rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+          {/* Controls Bar */}
+          <div className="p-3.5 bg-[#121212] border-b border-[#262626] flex flex-wrap items-center justify-between gap-3">
+            {/* Grep search */}
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={searchGrep}
+                onChange={(e) => setSearchGrep(e.target.value)}
+                placeholder="Loglarda ara (grep)..."
+                className="w-full bg-[#000000] border border-[#262626] text-xs text-white rounded-xl pl-9 pr-3 py-1.5 focus:outline-none focus:border-white font-mono placeholder:text-zinc-500"
+              />
+            </div>
+
+            {/* Level Filters with Sliding Spring Pill */}
+            <div className="flex items-center gap-1 bg-[#000000] p-1 rounded-xl border border-[#262626] text-[11px] font-sans">
+              <button
+                onClick={() => setSelectedLevel('all')}
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
+                  selectedLevel === 'all'
+                    ? 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {selectedLevel === 'all' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-[#171717] rounded-lg border border-[#262626] shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">Tümü</span>
+              </button>
+              <button
+                onClick={() => setSelectedLevel('info')}
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
+                  selectedLevel === 'info'
+                    ? 'text-zinc-300 font-semibold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {selectedLevel === 'info' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-zinc-300/15 rounded-lg border border-white/20 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">INFO</span>
+              </button>
+              <button
+                onClick={() => setSelectedLevel('warn')}
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
+                  selectedLevel === 'warn'
+                    ? 'text-zinc-400 font-semibold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {selectedLevel === 'warn' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-zinc-400/15 rounded-lg border border-white/20 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">WARN</span>
+              </button>
+              <button
+                onClick={() => setSelectedLevel('error')}
+                className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
+                  selectedLevel === 'error'
+                    ? 'text-zinc-500 font-semibold'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {selectedLevel === 'error' && (
+                  <motion.div
+                    layoutId="logsLevelFilterPill"
+                    className="absolute inset-0 bg-zinc-500/15 rounded-lg border border-white/20 shadow-sm"
+                    transition={wiseBouncy}
+                  />
+                )}
+                <span className="relative z-10">ERROR</span>
+              </button>
+            </div>
+
+            {/* Auto-scroll toggle */}
+            <label className="flex items-center gap-1.5 text-xs text-zinc-400 font-sans cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={autoScroll}
+                onChange={(e) => setAutoScroll(e.target.checked)}
+                className="rounded border-[#262626] bg-[#000000] text-white focus:ring-0 accent-white"
+              />
+              <span>Otomatik Kaydır</span>
+            </label>
+          </div>
+
+          {/* Terminal Console */}
+          <div ref={terminalBoxRef} className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
+            {filteredLogs.length === 0 ? (
+              <div className="text-zinc-500 italic pt-8 text-center font-sans">
+                {containers.length === 0 ? "Henüz servis yok. Loglar servis dağıtıldığında burada görünür." : "Arama kriterlerine uygun log bulunamadı."}
+              </div>
+            ) : (
+              filteredLogs.map((log) => {
+                return (
+                  <div
+                    key={log.id}
+                    className="hover:bg-white/[0.04] px-2 py-0.5 rounded flex items-start gap-3 transition-colors"
+                  >
+                    <span className="text-zinc-500 shrink-0">{log.timestamp}</span>
+                    <span className="text-white font-semibold shrink-0">[{log.containerName}]</span>
+                    <span
+                      className={`font-bold shrink-0 text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                        log.level === 'error'
+                          ? 'bg-zinc-500/10 text-zinc-500 border border-white/20'
+                          : log.level === 'warn'
+                          ? 'bg-zinc-400/10 text-zinc-400 border border-white/20'
+                          : 'bg-zinc-300/10 text-zinc-300 border border-white/20'
+                      }`}
+                    >
+                      {log.level.toUpperCase()}
+                    </span>
+                    <span className="text-zinc-200 break-all">{log.message}</span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

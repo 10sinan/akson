@@ -1,0 +1,244 @@
+import { useState } from 'react';
+import {
+  Search,
+  RefreshCw,
+  Plus,
+  Cpu,
+  Activity,
+  Server,
+  Volume2,
+  VolumeX,
+  LayoutDashboard,
+  Rocket,
+  HardDrive,
+  Terminal,
+  Network,
+  Layers,
+  Sparkles,
+} from 'lucide-react';
+import { soundManager } from '../utils/sound';
+import type { ActiveNavTab } from './Sidebar';
+
+interface HeaderProps {
+  currentTabName: string;
+  activeTab?: ActiveNavTab;
+  totalContainers: number;
+  runningContainers: number;
+  totalCpu: number;
+  totalMemoryMb: number;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onRefresh: () => void;
+  onOpenDeploy: () => void;
+  onOpenAi?: () => void;
+  onOpenCommandPalette?: () => void;
+  isRefreshing: boolean;
+  isAiOpen?: boolean;
+  dockerStatus?: 'online' | 'demo' | 'checking';
+}
+
+const TAB_ICONS: Record<ActiveNavTab, React.FC<{ className?: string }>> = {
+  dashboard: LayoutDashboard,
+  deploy: Rocket,
+  storage: HardDrive,
+  logs: Terminal,
+  network: Network,
+};
+
+export const Header: React.FC<HeaderProps> = ({
+  currentTabName,
+  activeTab = 'dashboard',
+  totalContainers,
+  runningContainers,
+  totalCpu,
+  totalMemoryMb,
+  searchQuery,
+  onSearchChange,
+  onRefresh,
+  onOpenDeploy,
+  onOpenAi,
+  onOpenCommandPalette,
+  isRefreshing,
+  isAiOpen = false,
+  dockerStatus = 'online',
+}) => {
+  const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
+  const PageIcon = (activeTab && TAB_ICONS[activeTab]) || Layers;
+
+  return (
+    <header className="fixed top-0 left-0 md:left-16 right-0 h-14 bg-[#0c0d10] border-b border-[#262626] z-40 flex items-center justify-between px-4 sm:px-6 pl-20 md:pl-6 select-none">
+      {/* Sol alt birleşim köşesi: Main canvas rounded-tl-3xl kavisini tamamlayan köprü */}
+      <div
+        className="hidden md:block absolute -bottom-6 left-0 w-6 h-6 pointer-events-none z-40 overflow-hidden"
+        aria-hidden="true"
+      >
+        <svg className="w-6 h-6 block" viewBox="0 0 24 24" fill="none">
+          <path d="M 0 0 L 24 0 A 24 24 0 0 0 0 24 Z" fill="#0c0d10" />
+          <path d="M 24 0 A 24 24 0 0 0 0 24" stroke="#262626" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
+      {/* Left: Breadcrumbs & Cluster Status */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <Server className="w-3 h-3 text-white" />
+          </div>
+          <span className="font-bold text-sm text-white tracking-wide">akson</span>
+        </div>
+        <span className="text-zinc-600 font-mono text-xs">/</span>
+        <span className="text-zinc-500 font-mono text-xs hidden sm:inline">varsayilan-ag</span>
+        <span className="text-zinc-600 font-mono text-xs hidden sm:inline">/</span>
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800/90 shadow-sm">
+          <PageIcon className="w-3.5 h-3.5 text-zinc-300" />
+          <span className="text-white text-xs font-mono font-medium">{currentTabName}</span>
+        </div>
+      </div>
+
+      {/* Middle: Search bar / Spotlight trigger */}
+      <div className="flex-1 max-w-sm mx-6 hidden md:block">
+        <div
+          onClick={onOpenCommandPalette}
+          className="relative cursor-pointer group"
+        >
+          <Search className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-colors absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            readOnly
+            value={searchQuery}
+            onClick={onOpenCommandPalette}
+            onChange={(e) => onSearchChange?.(e.target.value)}
+            placeholder="Konteyner, servis ara... (⌘K)"
+            className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-500 cursor-pointer"
+          />
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
+            ⌘K
+          </kbd>
+        </div>
+      </div>
+
+      {/* Right: Quick Stats & Action Buttons */}
+      <div className="flex items-center gap-3">
+        {/* Cluster Telemetry Pill */}
+        <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[11px] font-mono text-zinc-300 shadow-sm transition-colors">
+          {/* CPU */}
+          <div className="flex items-center gap-1.5" title={`Toplam CPU Kullanımı: %${totalCpu.toFixed(1)}`}>
+            <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-zinc-400' : 'text-zinc-100'}`} />
+            <div className="flex items-center gap-1.5">
+              <span>CPU: <strong className={totalCpu >= 50 ? 'text-zinc-400 font-semibold' : 'text-zinc-100 font-semibold'}>{totalCpu.toFixed(1)}%</strong></span>
+              <div className="w-7 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${totalCpu >= 50 ? 'bg-zinc-400' : 'bg-zinc-100'} transition-all duration-300 rounded-full`}
+                  style={{ width: `${Math.min(Math.max(totalCpu, 4), 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-[1px] h-3.5 bg-zinc-800" />
+
+          {/* RAM */}
+          <div className="flex items-center gap-1.5" title={`Toplam Bellek Kullanımı: ${totalMemoryMb} MB`}>
+            <Activity className="w-3.5 h-3.5 text-zinc-300" />
+            <div className="flex items-center gap-1.5">
+              <span>RAM: <strong className="text-zinc-300 font-semibold">{totalMemoryMb} MB</strong></span>
+            </div>
+          </div>
+
+          <div className="w-[1px] h-3.5 bg-zinc-800" />
+
+          {/* Servisler / Live Pulsing Dot */}
+          <div className="flex items-center gap-1.5" title={`${runningContainers} aktif / toplam ${totalContainers} servis`}>
+            {runningContainers > 0 ? (
+              <span className="relative flex h-2 w-2">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-100" />
+              </span>
+            ) : (
+              <span className="inline-block h-2 w-2 rounded-full bg-zinc-600" />
+            )}
+            <span>
+              Servisler: <strong className="text-zinc-100 font-semibold">{runningContainers}</strong>/{totalContainers}
+            </span>
+          </div>
+        </div>
+
+        {/* Assistant trigger */}
+        {onOpenAi && (
+          <button
+            onClick={onOpenAi}
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition shadow-sm active:scale-95 cursor-pointer font-mono text-[11px] font-medium ${
+              isAiOpen
+                ? 'bg-zinc-800 text-white border-zinc-600'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Asistan</span>
+          </button>
+        )}
+
+        {/* Docker Status Badge */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono">
+          <span className="relative flex h-2 w-2 items-center justify-center">
+            <span
+              className={`inline-block rounded-full ${
+                dockerStatus === 'online'
+                  ? 'h-2 w-2 bg-zinc-100'
+                  : dockerStatus === 'checking'
+                  ? 'h-2 w-2 bg-zinc-400 animate-pulse'
+                  : 'h-1.5 w-1.5 border border-zinc-400'
+              }`}
+            />
+          </span>
+          <span className="text-zinc-300 text-[11px]">
+            Docker:{' '}
+            <span className={`font-medium ${dockerStatus === 'online' ? 'text-zinc-100' : 'text-white'}`}>
+              {dockerStatus === 'online'
+                ? 'Çevrimiçi'
+                : dockerStatus === 'checking'
+                ? 'Bağlanıyor...'
+                : 'Demo Modu'}
+            </span>
+          </span>
+        </div>
+
+        {/* Haptic UI Sound Toggle */}
+        <button
+          onClick={() => {
+            const enabled = soundManager.toggleSound();
+            setIsMuted(!enabled);
+          }}
+          title={isMuted ? 'Arayüz Dokunsal Seslerini Aç' : 'Arayüz Seslerini Kapat'}
+          className="relative p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
+        >
+          {isMuted ? (
+            <VolumeX className="w-3.5 h-3.5 text-zinc-600" />
+          ) : (
+            <Volume2 className="w-3.5 h-3.5 text-zinc-200" />
+          )}
+          {!isMuted && (
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-zinc-100" />
+          )}
+        </button>
+
+        {/* Refresh Button */}
+        <button
+          onClick={onRefresh}
+          title="Metrikleri ve Durumu Yenile"
+          className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-white' : ''}`} />
+        </button>
+
+        {/* Deploy New Container Button */}
+        <button
+          onClick={onOpenDeploy}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded-lg transition cursor-pointer active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>Yeni Servis</span>
+        </button>
+      </div>
+    </header>
+  );
+};

@@ -1,0 +1,35 @@
+# Node / Frontend
+node_modules/
+dist/
+build/
+.DS_Store
+.idea/
+.vscode/
+
+# Environment and local files
+.env
+.env.local
+*.local
+
+# Logs
+*.log
+logs/
+
+# Go / Backend
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+akson
+
+# SQLite & Data
+*.db
+*.db-shm
+*.db-wal
+data/
+
+akson_proje_zeti_ve_tech_stack
