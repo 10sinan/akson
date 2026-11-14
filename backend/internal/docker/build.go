@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -163,7 +164,7 @@ func (c *Client) BuildImage(ctx context.Context, opts BuildOptions) (*BuildResul
 				return nil, fmt.Errorf("docker build failed: %s", p.Error)
 			}
 			if p.Stream != "" {
-				trimmed := strings.TrimRight(p.Stream, "\r\n")
+				trimmed := strings.TrimRight(StripANSI(p.Stream), "\r\n")
 				if trimmed != "" {
 					logs = append(logs, trimmed)
 				}
@@ -179,4 +180,11 @@ func (c *Client) BuildImage(ctx context.Context, opts BuildOptions) (*BuildResul
 		Tag:  opts.Tag,
 		Logs: logs,
 	}, nil
+}
+
+var ansiRe = regexp.MustCompile(`\x1b\[[0-9;?]*[A-Za-z]`)
+
+// StripANSI removes terminal color/control sequences from build output.
+func StripANSI(s string) string {
+	return ansiRe.ReplaceAllString(s, "")
 }

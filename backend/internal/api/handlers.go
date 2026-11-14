@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"akson/internal/db"
+	"akson/internal/detect"
 	"akson/internal/docker"
 	"akson/internal/git"
 	"akson/internal/proxy"
@@ -123,6 +124,40 @@ func (s *Server) handleDeployContainer(w http.ResponseWriter, r *http.Request) {
 
 		req.Branch = gitInfo.Branch
 		req.CommitHash = gitInfo.CommitHash
+
+		// 1b. No Dockerfile in the repo: generate one from the project type.
+		// The UI sends "Dockerfile" by default, so that name also counts as "not chosen".
+		requestedDockerfile := strings.TrimSpace(req.Dockerfile)
+		if (requestedDockerfile == "" || requestedDockerfile == "Dockerfile") && !detect.HasDockerfile(tempDir) {
+			plan, derr := detect.Detect(tempDir)
+			if derr != nil {
+				allLogs = append(allLogs, derr.Error())
+				s.recordFailedDeployment(depID, req.Name, req.GitURL, req.CommitHash, req.Branch, allLogs, derr, now)
+				errorResponse(w, http.StatusBadRequest, derr.Error())
+				return
+			}
+			name, werr := detect.Write(tempDir, plan)
+			if werr != nil {
+				s.recordFailedDeployment(depID, req.Name, req.GitURL, req.CommitHash, req.Branch, allLogs, werr, now)
+				errorResponse(w, http.StatusInternalServerError, "Failed to write generated Dockerfile: "+werr.Error())
+				return
+			}
+			req.Dockerfile = name
+			allLogs = append(allLogs, fmt.Sprintf("No Dockerfile found: detected a %s project and generated one (expected port %d).", plan.Kind, plan.Port))
+			// The generated image listens on plan.Port, so point the container side of every
+			// mapping (and the PORT env var) at it. With no mapping, publish it on a free host port.
+			if len(req.Ports) == 0 {
+				req.Ports = []docker.PortMapping{{PrivatePort: uint16(plan.Port), Type: "tcp"}}
+			}
+			for i := range req.Ports {
+				req.Ports[i].PrivatePort = uint16(plan.Port)
+			}
+			if req.Env == nil {
+				req.Env = map[string]string{}
+			}
+			req.Env["PORT"] = fmt.Sprintf("%d", plan.Port)
+			req.Port = plan.Port
+		}
 
 		// 2. Build Docker Image
 		builtTag := fmt.Sprintf("akson/%s:latest", proxy.SanitizeName(req.Name))

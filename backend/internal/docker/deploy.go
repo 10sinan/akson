@@ -78,13 +78,15 @@ func (c *Client) DeployContainer(ctx context.Context, cfg DeployConfig) (*Deploy
 		cPort := nat.Port(fmt.Sprintf("%d/%s", p.PrivatePort, proto))
 		exposedPorts[cPort] = struct{}{}
 
+		// PublicPort 0 means "any free host port": Docker picks one and reports it on inspect.
+		hostPort := ""
 		if p.PublicPort > 0 {
-			binding := nat.PortBinding{
-				HostIP:   p.IP,
-				HostPort: fmt.Sprintf("%d", p.PublicPort),
-			}
-			portBindings[cPort] = append(portBindings[cPort], binding)
+			hostPort = fmt.Sprintf("%d", p.PublicPort)
 		}
+		portBindings[cPort] = append(portBindings[cPort], nat.PortBinding{
+			HostIP:   p.IP,
+			HostPort: hostPort,
+		})
 	}
 
 	// 3. Prepare Environment Variables

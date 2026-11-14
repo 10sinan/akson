@@ -56,3 +56,10 @@ func TestCreateTarStream_Success(t *testing.T) {
 		}
 	}
 }
+
+func TestStripANSI(t *testing.T) {
+	in := "\x1b[91mnpm warn deprecated\n\x1b[0m"
+	if got := StripANSI(in); got != "npm warn deprecated\n" {
+		t.Fatalf("got %q", got)
+	}
+}

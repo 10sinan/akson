@@ -107,12 +107,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
   const [deploySource, setDeploySource] = useState<'template' | 'git'>('template');
   const [gitUrl, setGitUrl] = useState<string>('');
   const [gitBranch, setGitBranch] = useState<string>('main');
-  const [dockerfilePath, setDockerfilePath] = useState<string>('Dockerfile');
+  const [dockerfilePath, setDockerfilePath] = useState<string>('');
 
   const [selectedTemplate, setSelectedTemplate] = useState<string>('nginx');
   const [customImage, setCustomImage] = useState<string>('nginx:alpine');
   const [serviceName, setServiceName] = useState<string>('web-frontend');
-  const [hostPort, setHostPort] = useState<number>(8080);
+  const [hostPort, setHostPort] = useState<number>(0);
   const [containerPort, setContainerPort] = useState<number>(80);
   const [customDomain, setCustomDomain] = useState<string>('web-frontend.localhost');
   const [selectedNetwork, setSelectedNetwork] = useState<string>('akson-bridge');
@@ -162,7 +162,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
     setCustomImage(`${tpl.image}:${tpl.tag}`);
     setServiceName(tpl.name);
     setContainerPort(tpl.defaultPort);
-    setHostPort(tpl.defaultPort === 80 ? 8080 : tpl.defaultPort + 1000);
+    setHostPort(0);
     setCustomDomain(`${tpl.name}.localhost`);
   };
 
@@ -274,7 +274,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
       setCurrentStep(2);
       setDeployLogs((prev) => [
         ...prev,
-        `[2/5: config] Port (${hostPort}:${containerPort}) ve ${Object.keys(envMap).length} ortam değişkeni yapılandırılıyor...`,
+        `[2/5: config] Port (${hostPort || 'otomatik'}:${containerPort}) ve ${Object.keys(envMap).length} ortam değişkeni yapılandırılıyor...`,
       ]);
 
       const res = await api.deployContainer(deployPayload);
@@ -300,6 +300,9 @@ export const DeployView: React.FC<DeployViewProps> = ({
         ...prev,
         `[5/5: health] Konteyner çalışıyor (ID: ${res.container.id.substring(0, 12)})!`,
         `'${serviceName}' başarıyla dağıtıldı.`,
+        ...[...new Set((res.container.ports || []).map((p) => p.public_port).filter(Boolean))].map(
+          (port) => `Erişim adresi: http://localhost:${port}`
+        ),
       ]);
 
       // Report right away: the container really exists now, even if the user leaves this tab.
@@ -490,7 +493,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                           type="text"
                           value={dockerfilePath}
                           onChange={(e) => setDockerfilePath(e.target.value)}
-                          placeholder="Dockerfile"
+                          placeholder="Boş bırak: otomatik"
                           className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
                         />
                       </div>
@@ -501,7 +504,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                         <span>Git ile derleme:</span>
                       </div>
                       <p className="text-zinc-400 leading-relaxed">
-                        Akson bu repoyu saniyeler içinde klonlar, projenizdeki <span className="text-white font-mono">{dockerfilePath}</span> dosyasını Docker Engine üzerinde derler ve izole köprü ağına alarak yayına başlatır.
+                        Akson repoyu klonlar ve <span className="text-white font-mono">{dockerfilePath || 'Dockerfile'}</span> dosyasıyla derler. Repoda Dockerfile yoksa proje türünü (Node, Python, Go, statik site) tanır ve Dockerfile'ı kendisi üretir.
                       </p>
                     </div>
                   </div>
@@ -542,7 +545,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <label className="text-[11px] text-zinc-400 font-sans">Dış Port (Host Port):</label>
+                    <label className="text-[11px] text-zinc-400 font-sans">Dış Port (Host Port, 0 = otomatik):</label>
                     <input
                       type="number"
                       value={hostPort}
@@ -783,7 +786,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   )}
                   <div className="flex justify-between py-2">
                     <span className="text-zinc-400 font-sans">Port Yönlendirmesi</span>
-                    <span className="text-zinc-300 font-mono">{hostPort} → {containerPort}</span>
+                    <span className="text-zinc-300 font-mono">{hostPort || 'otomatik'} → {containerPort}</span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-zinc-400 font-sans">Traefik Host Rotası</span>
