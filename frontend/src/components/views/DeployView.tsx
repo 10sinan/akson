@@ -81,14 +81,14 @@ const TEMPLATE_IMAGES: TemplateImage[] = [
 const getTemplateCategoryBadge = (category: string) => {
   switch (category) {
     case 'service':
-      return 'bg-sky-500/10 text-sky-400 border-sky-500/25';
+      return 'bg-zinc-300/10 text-zinc-300 border-white/20';
     case 'database':
-      return 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+      return 'bg-zinc-400/10 text-zinc-400 border-white/20';
     case 'core':
-      return 'bg-violet-500/10 text-violet-400 border-violet-500/25';
+      return 'bg-zinc-300/10 text-zinc-300 border-white/20';
     case 'worker':
     default:
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25';
+      return 'bg-zinc-100/10 text-zinc-100 border-white/20';
   }
 };
 
@@ -366,12 +366,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-sky-400" />
+                    <Layers className="w-4 h-4 text-zinc-300" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       1. Adım: Dağıtım Kaynağı & İmaj Seçimi
                     </h2>
                   </div>
-                  <span className="text-[10px] text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded border border-sky-500/25 font-mono">
+                  <span className="text-[10px] text-zinc-300 bg-zinc-300/10 px-2 py-0.5 rounded border border-white/20 font-mono">
                     {deploySource === 'git' ? 'Git Engine' : 'Docker Registry'}
                   </span>
                 </div>
@@ -390,7 +390,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    <Layers className="w-3.5 h-3.5 text-sky-400" />
+                    <Layers className="w-3.5 h-3.5 text-zinc-300" />
                     <span>Hazır Şablon & İmaj</span>
                   </button>
                   <button
@@ -405,7 +405,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                         : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    <GitBranch className="w-3.5 h-3.5 text-rose-400" />
+                    <GitBranch className="w-3.5 h-3.5 text-zinc-500" />
                     <span>GitHub / Git Reposu</span>
                   </button>
                 </div>
@@ -461,7 +461,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                           value={gitUrl}
                           onChange={(e) => handleGitUrlChange(e.target.value)}
                           placeholder="https://github.com/kullanici/proje-adi.git"
-                          className="w-full bg-[#121212] border border-[#262626] rounded-xl pl-10 pr-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-rose-500/50"
+                          className="w-full bg-[#121212] border border-[#262626] rounded-xl pl-10 pr-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/20"
                         />
                       </div>
                     </div>
@@ -469,7 +469,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
-                          <GitBranch className="w-3.5 h-3.5 text-rose-400" />
+                          <GitBranch className="w-3.5 h-3.5 text-zinc-500" />
                           <span>Branch (Dal):</span>
                         </label>
                         <input
@@ -483,7 +483,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
 
                       <div className="space-y-1.5">
                         <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
-                          <Code2 className="w-3.5 h-3.5 text-sky-400" />
+                          <Code2 className="w-3.5 h-3.5 text-zinc-300" />
                           <span>Dockerfile Konumu:</span>
                         </label>
                         <input
@@ -496,8 +496,8 @@ export const DeployView: React.FC<DeployViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20 text-[11px] text-zinc-300 space-y-1">
-                      <div className="font-semibold text-rose-400 flex items-center gap-1.5">
+                    <div className="p-3 rounded-xl bg-zinc-500/5 border border-white/20 text-[11px] text-zinc-300 space-y-1">
+                      <div className="font-semibold text-zinc-500 flex items-center gap-1.5">
                         <span>Git ile derleme:</span>
                       </div>
                       <p className="text-zinc-400 leading-relaxed">
@@ -530,12 +530,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-amber-400" />
+                    <Sliders className="w-4 h-4 text-zinc-400" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       2. Adım: Port & Ortam Değişkenleri (ENV)
                     </h2>
                   </div>
-                  <span className="text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/25 font-mono">
+                  <span className="text-[10px] text-zinc-400 bg-zinc-400/10 px-2 py-0.5 rounded border border-white/20 font-mono">
                     Network & Config
                   </span>
                 </div>
@@ -630,12 +630,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-emerald-400" />
+                    <Globe className="w-4 h-4 text-zinc-100" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       3. Adım: Ağ Köprüsü & Traefik SSL Rotalama
                     </h2>
                   </div>
-                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25 font-mono">
+                  <span className="text-[10px] text-zinc-100 bg-zinc-100/10 px-2 py-0.5 rounded border border-white/20 font-mono">
                     Traefik v3 SSL
                   </span>
                 </div>
@@ -677,12 +677,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-violet-400" />
+                    <Cpu className="w-4 h-4 text-zinc-300" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       4. Adım: Donanım Sınırları & Cgroup
                     </h2>
                   </div>
-                  <span className="text-[10px] text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/25 font-mono">
+                  <span className="text-[10px] text-zinc-300 bg-zinc-300/10 px-2 py-0.5 rounded border border-white/20 font-mono">
                     Cgroupv2
                   </span>
                 </div>
@@ -745,12 +745,12 @@ export const DeployView: React.FC<DeployViewProps> = ({
               >
                 <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
                   <div className="flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-rose-400" />
+                    <Rocket className="w-4 h-4 text-zinc-500" />
                     <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
                       5. Adım: Dağıtım Özeti & Onay
                     </h2>
                   </div>
-                  <span className="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/25 font-mono">
+                  <span className="text-[10px] text-zinc-500 bg-zinc-500/10 px-2 py-0.5 rounded border border-white/20 font-mono">
                     Hazır
                   </span>
                 </div>
@@ -764,7 +764,7 @@ export const DeployView: React.FC<DeployViewProps> = ({
                     <>
                       <div className="flex justify-between py-2">
                         <span className="text-zinc-400 font-sans">Git Deposu</span>
-                        <span className="text-rose-400 font-mono truncate max-w-[260px]">{gitUrl || 'Belirtilmedi'}</span>
+                        <span className="text-zinc-500 font-mono truncate max-w-[260px]">{gitUrl || 'Belirtilmedi'}</span>
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-zinc-400 font-sans">Dal / Dockerfile</span>
@@ -850,8 +850,8 @@ export const DeployView: React.FC<DeployViewProps> = ({
                 </span>
               </div>
               <span className="text-[10px] text-zinc-300 flex items-center gap-1.5 font-sans px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626]">
-                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}`} />
-                <span className={isDeploying ? 'text-emerald-400' : 'text-zinc-300'}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-zinc-100 animate-pulse' : 'bg-zinc-600'}`} />
+                <span className={isDeploying ? 'text-zinc-100' : 'text-zinc-300'}>
                   {isDeploying ? 'Çalışıyor' : 'Hazır'}
                 </span>
               </span>
@@ -877,19 +877,19 @@ export const DeployView: React.FC<DeployViewProps> = ({
                   const isDeployStep = log.includes('[5/5: deploy]');
 
                   const colorClass = isSuccess
-                    ? 'text-emerald-400 font-bold'
+                    ? 'text-zinc-100 font-bold'
                     : isErr
-                    ? 'text-rose-400 underline font-semibold'
+                    ? 'text-zinc-500 underline font-semibold'
                     : isImageStep
-                    ? 'text-sky-300'
+                    ? 'text-zinc-300'
                     : isConfigStep
-                    ? 'text-amber-300'
+                    ? 'text-zinc-400'
                     : isNetworkStep
-                    ? 'text-emerald-300'
+                    ? 'text-zinc-100'
                     : isCgroupStep
-                    ? 'text-violet-300'
+                    ? 'text-zinc-300'
                     : isDeployStep
-                    ? 'text-rose-300'
+                    ? 'text-zinc-500'
                     : 'text-zinc-300';
 
                   return (

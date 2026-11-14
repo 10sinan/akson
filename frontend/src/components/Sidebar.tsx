@@ -63,14 +63,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Brand Logo - Clickable to Dashboard */}
         <button
           onClick={() => onSelectTab('dashboard')}
-          className="relative group w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-emerald-500/50 flex items-center justify-center text-white transition-all duration-200 cursor-pointer"
+          className="relative group w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 hover:border-white/20 flex items-center justify-center text-white transition-all duration-200 cursor-pointer"
         >
-          <Layers className="w-5 h-5 text-white group-hover:text-emerald-400 transition-colors" />
+          <Layers className="w-5 h-5 text-white group-hover:text-zinc-100 transition-colors" />
 
           {/* Instant Tooltip */}
           <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
             <span className="font-bold text-white">akson</span>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 font-mono">v1.0.0</span>
+            <span className="text-[10px] text-zinc-100 bg-zinc-100/10 px-1.5 py-0.2 rounded border border-white/20 font-mono">v1.0.0</span>
           </div>
         </button>
 
@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <motion.div
                     layoutId="sidebarActiveIndicator"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    className="absolute -left-2 top-2 bottom-2 w-1 rounded-r-full bg-emerald-400"
+                    className="absolute -left-2 top-2 bottom-2 w-1 rounded-r-full bg-zinc-100"
                   />
                 )}
 
@@ -111,7 +111,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* Live Activity Dot on Logs */}
                 {showLiveDot && !isActive && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-zinc-100" />
                 )}
 
                 {/* Instant Cyber Tooltip */}
@@ -184,13 +184,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="relative group cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300 relative shadow-sm hover:border-zinc-500 transition-colors">
             AK
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#0c0d10]" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-zinc-100 border-2 border-[#0c0d10]" />
           </div>
 
           {/* Instant Tooltip */}
           <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
             <span className="font-semibold text-white">Akson Root</span>
-            <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-mono">Çevrimiçi</span>
+            <span className="text-[9px] text-zinc-100 bg-zinc-100/10 px-1.5 py-0.5 rounded border border-white/20 font-mono">Çevrimiçi</span>
           </div>
         </div>
       </div>
