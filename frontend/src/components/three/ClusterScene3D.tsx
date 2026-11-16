@@ -27,7 +27,7 @@ const TAB_COUNT = 5;
 interface NodeEntry {
   id: string;
   running: boolean;
-  mesh: THREE.LineSegments;
+  mesh: THREE.Group;
   material: THREE.LineBasicMaterial;
   dir: THREE.Vector3;
   phase: number;
@@ -125,7 +125,22 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
   scene.add(dust);
 
   // Service nodes (rebuilt whenever the container set changes)
-  const cubeGeometry = track(new THREE.EdgesGeometry(track(new THREE.BoxGeometry(0.34, 0.34, 0.34))));
+  // Each service is a small shipping container: box outline, corrugated long sides, a door seam.
+  const [cw, ch, cd] = [0.62, 0.3, 0.3];
+  const boxGeometry = track(new THREE.BoxGeometry(cw, ch, cd));
+  const outline = track(new THREE.EdgesGeometry(boxGeometry));
+  const containerLines = Array.from(outline.getAttribute('position').array as Float32Array);
+  for (let i = 1; i < 8; i++) {
+    const x = -cw / 2 + (cw * i) / 8;
+    for (const z of [-cd / 2, cd / 2]) containerLines.push(x, -ch / 2, z, x, ch / 2, z);
+  }
+  containerLines.push(cw / 2, -ch / 2, 0, cw / 2, ch / 2, 0);
+  const containerGeometry = track(new THREE.BufferGeometry());
+  containerGeometry.setAttribute('position', new THREE.Float32BufferAttribute(containerLines, 3));
+  // Opaque body so a container hides the lines behind it and reads as a solid object.
+  const bodyMaterial = track(
+    new THREE.MeshBasicMaterial({ color: 0x060606, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }),
+  );
   const nodeGroup = new THREE.Group();
   cluster.add(nodeGroup);
   let entries: NodeEntry[] = [];
@@ -165,9 +180,10 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
         opacity: node.running ? 0.9 : 0.22,
         depthWrite: false,
       });
-      const mesh = new THREE.LineSegments(cubeGeometry, material);
+      const mesh = new THREE.Group();
+      mesh.add(new THREE.Mesh(boxGeometry, bodyMaterial), new THREE.LineSegments(containerGeometry, material));
       mesh.position.copy(dir).multiplyScalar(ORBIT_RADIUS);
-      mesh.rotation.set(i * 1.3, i * 0.7, 0);
+      mesh.rotation.set(0.25, i * 0.9, 0.1);
       nodeGroup.add(mesh);
       return { id: node.id, running: node.running, mesh, material, dir, phase: (i * 0.37) % 1 };
     });
@@ -176,7 +192,7 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
     const linkPositions = new Float32Array(entries.length * 6);
     entries.forEach((entry, i) => {
       const a = entry.dir.clone().multiplyScalar(CORE_RADIUS);
-      const b = entry.dir.clone().multiplyScalar(ORBIT_RADIUS - 0.25);
+      const b = entry.dir.clone().multiplyScalar(ORBIT_RADIUS - 0.4);
       linkPositions.set([a.x, a.y, a.z, b.x, b.y, b.z], i * 6);
     });
     linkGeometry.setAttribute('position', new THREE.BufferAttribute(linkPositions, 3));
@@ -229,11 +245,10 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
 
     for (const entry of entries) {
       const isSelected = entry.id === selectedId;
-      const targetScale = isSelected ? 1.9 : 1;
+      const targetScale = isSelected ? 1.7 : 1;
       entry.mesh.scale.setScalar(entry.mesh.scale.x + (targetScale - entry.mesh.scale.x) * ease);
       if (entry.running) {
-        entry.mesh.rotation.x += dt * 0.5;
-        entry.mesh.rotation.y += dt * 0.7;
+        entry.mesh.rotation.y += dt * 0.45;
       }
       const targetOpacity = isSelected ? 1 : entry.running ? 0.9 : 0.22;
       entry.material.opacity += (targetOpacity - entry.material.opacity) * ease;
@@ -244,7 +259,7 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
     if (pulseAttr && pulseAttr.count === running.length) {
       running.forEach((entry, i) => {
         const t = (time * 0.45 + entry.phase) % 1;
-        const r = CORE_RADIUS + t * (ORBIT_RADIUS - 0.25 - CORE_RADIUS);
+        const r = CORE_RADIUS + t * (ORBIT_RADIUS - 0.4 - CORE_RADIUS);
         pulseAttr.setXYZ(i, entry.dir.x * r, entry.dir.y * r, entry.dir.z * r);
       });
       pulseAttr.needsUpdate = true;
@@ -306,7 +321,7 @@ function createScene(canvas: HTMLCanvasElement, reducedMotion: boolean): SceneAp
 }
 
 /**
- * Ambient 3D view of the cluster: the proxy core in the middle, one cube per container
+ * Ambient 3D view of the cluster: the proxy core in the middle, one shipping container per service
  * (bright + spinning when running, dim when stopped), traffic pulses on the links.
  * Purely decorative: it never receives pointer events and is hidden from assistive tech.
  */
