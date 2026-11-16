@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { TiltCard } from '../three/TiltCard';
 import {
   Globe,
   ShieldCheck,
@@ -78,7 +78,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
   return (
     <div
-      className={`relative w-full rounded-2xl bg-zinc-950 border border-zinc-800 p-4 sm:p-5 ${
+      className={`relative w-full rounded-2xl bg-zinc-950/80 backdrop-blur-[2px] border border-zinc-800 p-4 sm:p-5 ${
         isDetailOpen ? 'lg:p-5' : 'lg:p-6'
       } overflow-hidden shadow-2xl transition-all duration-300`}
     >
@@ -249,7 +249,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               const catStyles = getCategoryStyles(container.category);
 
               return (
-                <motion.div
+                <TiltCard
                   key={container.id}
                   role="button"
                   tabIndex={0}
@@ -364,7 +364,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       {container.memoryUsageMb} MB
                     </span>
                   </div>
-                </motion.div>
+                </TiltCard>
               );
             })}
 

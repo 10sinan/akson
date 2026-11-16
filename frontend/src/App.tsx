@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Sidebar, type ActiveNavTab } from './components/Sidebar';
 import { Header } from './components/Header';
 import { ContainerCard } from './components/ContainerCard';
@@ -26,7 +26,10 @@ import {
   Workflow,
   Activity,
 } from 'lucide-react';
-import { wiseBouncy, wiseSpring, wiseGentle, snappyEase, snappySpring, staggerContainerVariants } from './utils/motion';
+import { wiseBouncy, wiseSpring, wiseGentle, tab3DProps, panel3DProps, staggerContainerVariants } from './utils/motion';
+
+// three.js is heavy, so the 3D scene ships as its own chunk and never blocks first paint.
+const ClusterScene3D = lazy(() => import('./components/three/ClusterScene3D'));
 
 const NAV_TABS: ActiveNavTab[] = ['dashboard', 'deploy', 'storage', 'logs', 'network'];
 
@@ -154,6 +157,11 @@ export function App() {
 
   // Global metrics summary
   const runningCount = containers.filter((c) => c.status === 'running').length;
+  const reducedMotion = useReducedMotion() ?? false;
+  const sceneNodes = useMemo(
+    () => containers.map((c) => ({ id: c.id, running: c.status === 'running' })),
+    [containers],
+  );
   const totalCpu = containers.reduce(
     (acc, c) => acc + (c.status === 'running' ? c.cpuPercent : 0),
     0
@@ -379,6 +387,18 @@ export function App() {
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
+          {/* Ambient 3D cluster scene: sits behind every panel, never takes input */}
+          <div className="fixed top-14 left-16 right-0 bottom-0 -z-10 pointer-events-none opacity-60" aria-hidden="true">
+            <Suspense fallback={null}>
+              <ClusterScene3D
+                nodes={sceneNodes}
+                selectedId={isDetailOpen ? selectedId : null}
+                tabIndex={NAV_TABS.indexOf(activeTab)}
+                reducedMotion={reducedMotion}
+              />
+            </Suspense>
+          </div>
+
           {dockerStatus === 'demo' && (
             <div className="mb-6 px-4 py-2.5 rounded-xl border border-[#262626] bg-[#0a0a0a] text-xs text-zinc-400 font-sans">
               Demo modu: {isLiveBackend ? 'Docker çalışmıyor.' : 'backend bağlı değil.'} İşlemler gerçek Docker&apos;a uygulanmaz.
@@ -391,10 +411,7 @@ export function App() {
             {activeTab === 'dashboard' && (
               <motion.div
                 key="dashboard"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, transition: { duration: 0.08 } }}
-                transition={snappyEase}
+                {...tab3DProps}
                 className="flex flex-col flex-1 space-y-6"
               >
                 {/* SubHeader Bar */}
@@ -490,10 +507,7 @@ export function App() {
                       {isDetailOpen && (
                         <motion.section
                           key={selectedId || 'node-detail-panel'}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: 20, transition: { duration: 0.08 } }}
-                          transition={snappySpring}
+                          {...panel3DProps}
                           className="xl:col-span-5 w-full xl:sticky xl:top-20"
                         >
                           {selectedContainer ? (
@@ -706,10 +720,7 @@ export function App() {
             {activeTab === 'deploy' && (
               <motion.div
                 key="deploy"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, transition: { duration: 0.08 } }}
-                transition={snappyEase}
+                {...tab3DProps}
                 className="flex flex-col flex-1"
               >
                 <DeployView
@@ -724,10 +735,7 @@ export function App() {
             {activeTab === 'storage' && (
               <motion.div
                 key="storage"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, transition: { duration: 0.08 } }}
-                transition={snappyEase}
+                {...tab3DProps}
                 className="flex flex-col flex-1"
               >
                 <StorageView />
@@ -738,10 +746,7 @@ export function App() {
             {activeTab === 'logs' && (
               <motion.div
                 key="logs"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, transition: { duration: 0.08 } }}
-                transition={snappyEase}
+                {...tab3DProps}
                 className="flex flex-col flex-1"
               >
                 <LogsView containers={containers} />
@@ -752,10 +757,7 @@ export function App() {
             {activeTab === 'network' && (
               <motion.div
                 key="network"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, transition: { duration: 0.08 } }}
-                transition={snappyEase}
+                {...tab3DProps}
                 className="flex flex-col flex-1"
               >
                 <NetworkView containers={containers} isLiveBackend={isLiveBackend} />
