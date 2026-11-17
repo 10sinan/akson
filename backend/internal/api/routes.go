@@ -62,6 +62,9 @@ func (s *Server) NewRouter() http.Handler {
 		})
 
 		// Network & Proxy
+		r.Get("/system", s.handleSystemInfo)
+		r.Post("/system/prune-images", s.handlePruneImages)
+
 		r.Get("/network", s.handleGetNetwork)
 		r.Post("/network/labels", s.handleGenerateTraefikLabels)
 	})

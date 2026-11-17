@@ -7,6 +7,7 @@ import {
   Database,
   Terminal,
   Network,
+  Settings,
   Sparkles,
   RotateCw,
   ArrowRight,
@@ -132,6 +133,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       icon: <Network className="w-4 h-4 text-white" />,
       action: () => {
         onSelectTab('network');
+        onClose();
+      },
+    },
+
+    {
+      id: 'nav-settings',
+      title: 'Ayarlar',
+      subtitle: 'Sistem durumu, imaj temizliği ve arayüz sesi',
+      category: 'Gezinme',
+      icon: <Settings className="w-4 h-4 text-white" />,
+      action: () => {
+        onSelectTab('settings');
         onClose();
       },
     },

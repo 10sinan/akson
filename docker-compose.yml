@@ -12,6 +12,8 @@ services:
     environment:
       # Optional: require a token for the API (see README).
       - AKSON_TOKEN=${AKSON_TOKEN:-}
+      # Optional: e-mail for free Let's Encrypt HTTPS certificates via Traefik.
+      - ACME_EMAIL=${ACME_EMAIL:-}
 
 volumes:
   akson-data:

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Search,
   RefreshCw,
@@ -14,8 +14,9 @@ import {
   Terminal,
   Network,
   Layers,
+  Settings,
 } from 'lucide-react';
-import { soundManager } from '../utils/sound';
+import { soundManager, SOUND_CHANGE_EVENT } from '../utils/sound';
 import type { ActiveNavTab } from './Sidebar';
 
 interface HeaderProps {
@@ -40,6 +41,7 @@ const TAB_ICONS: Record<ActiveNavTab, React.FC<{ className?: string }>> = {
   storage: HardDrive,
   logs: Terminal,
   network: Network,
+  settings: Settings,
 };
 
 export const Header: React.FC<HeaderProps> = ({
@@ -58,6 +60,13 @@ export const Header: React.FC<HeaderProps> = ({
   dockerStatus = 'online',
 }) => {
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
+
+  // The settings page can also toggle sound; keep this icon in sync with it.
+  useEffect(() => {
+    const onChange = (e: Event) => setIsMuted(!(e as CustomEvent<boolean>).detail);
+    window.addEventListener(SOUND_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(SOUND_CHANGE_EVENT, onChange);
+  }, []);
   const PageIcon = (activeTab && TAB_ICONS[activeTab]) || Layers;
 
   return (
@@ -183,8 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Haptic UI Sound Toggle */}
         <button
           onClick={() => {
-            const enabled = soundManager.toggleSound();
-            setIsMuted(!enabled);
+            soundManager.toggleSound();
           }}
           title={isMuted ? 'Arayüz Dokunsal Seslerini Aç' : 'Arayüz Seslerini Kapat'}
           className="relative p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"

@@ -23,6 +23,7 @@ type Server struct {
 	networkMgr *proxy.NetworkManager
 	authToken  string
 	staticDir  string
+	sysConfig  SystemConfig
 }
 
 // SetStaticDir serves the built frontend from dir for all non-API routes.

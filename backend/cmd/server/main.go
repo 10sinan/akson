@@ -70,6 +70,7 @@ func main() {
 	// --- HTTP Server ---
 	server := api.NewServer(database, dockerClient, networkMgr)
 	server.SetAuthToken(authToken)
+	server.SetSystemConfig(api.SystemConfig{DBPath: dbPath, ACMEEmailSet: acmeEmail != ""})
 	if authToken == "" {
 		log.Printf("⚠️  AKSON_TOKEN is not set: API is open without authentication")
 	} else {
