@@ -46,7 +46,7 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ containers = [],
             Dağıtım & Görev Akışı
           </h2>
         </div>
-        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-900 text-zinc-400 border border-zinc-800 font-medium">
+        <span className="text-[13px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-900 text-zinc-300 border border-zinc-800 font-medium">
           {dynamicPipelines.length} Görev
         </span>
       </div>
@@ -82,34 +82,34 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ containers = [],
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
+                  <span className="text-[12px] font-mono font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
                     {item.type}
                   </span>
                   <h3 className="text-xs font-semibold text-white tracking-tight font-sans group-hover:text-zinc-300 transition-colors truncate">
                     {item.name}
                   </h3>
                 </div>
-                <p className="text-[11px] text-zinc-400 mt-1 font-mono truncate">{item.description}</p>
+                <p className="text-[13px] text-zinc-300 mt-1 font-mono truncate">{item.description}</p>
               </div>
 
               {item.status === 'success' ? (
-                <span className="shrink-0 inline-flex items-center gap-1 text-[10px] text-white font-sans bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-medium">
+                <span className="shrink-0 inline-flex items-center gap-1 text-[12px] text-white font-sans bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-medium">
                   <CheckCircle2 className="w-3 h-3 text-zinc-300" />
                   Başarılı
                 </span>
               ) : (
-                <span className="shrink-0 inline-flex items-center gap-1 text-[10px] text-zinc-400 font-sans bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-medium">
-                  <Loader2 className="w-3 h-3 animate-spin text-zinc-400" />
+                <span className="shrink-0 inline-flex items-center gap-1 text-[12px] text-zinc-300 font-sans bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-medium">
+                  <Loader2 className="w-3 h-3 animate-spin text-zinc-300" />
                   İşleniyor
                 </span>
               )}
             </div>
 
             {/* Clean Metadata Line (No nested box!) */}
-            <div className="flex items-center justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-800/80 font-mono">
+            <div className="flex items-center justify-between text-[13px] text-zinc-400 pt-1 border-t border-zinc-800/80 font-mono">
               <span className="truncate pr-2">{item.branchOrTarget}</span>
-              <span className="shrink-0 text-zinc-400 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-zinc-500" />
+              <span className="shrink-0 text-zinc-300 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-zinc-400" />
                 {item.duration}
               </span>
             </div>
@@ -117,7 +117,7 @@ export const PipelineColumn: React.FC<PipelineColumnProps> = ({ containers = [],
         ))}
 
         {dynamicPipelines.length === 0 && (
-          <div className="p-6 text-center text-xs font-sans text-zinc-500 bg-zinc-950 rounded-xl border border-zinc-800">
+          <div className="p-6 text-center text-xs font-sans text-zinc-400 bg-zinc-950 rounded-xl border border-zinc-800">
             Kayıtlı işlem veya olay geçmişi bulunmuyor.
           </div>
         )}

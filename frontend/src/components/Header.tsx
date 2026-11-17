@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <span className="font-bold text-sm text-white tracking-wide">akson</span>
         </div>
-        <span className="text-zinc-600 font-mono text-xs">/</span>
+        <span className="text-zinc-400 font-mono text-xs">/</span>
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800/90 shadow-sm">
           <PageIcon className="w-3.5 h-3.5 text-zinc-300" />
           <span className="text-white text-xs font-mono font-medium">{currentTabName}</span>
@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onOpenCommandPalette}
           className="relative cursor-pointer group"
         >
-          <Search className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-colors absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-zinc-300 group-hover:text-white transition-colors absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             readOnly
@@ -111,9 +111,9 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenCommandPalette}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder="Konteyner, servis ara... (⌘K)"
-            className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-500 cursor-pointer"
+            className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-400 cursor-pointer"
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[12px] text-zinc-300 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
             ⌘K
           </kbd>
         </div>
@@ -122,12 +122,12 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right: Quick Stats & Action Buttons */}
       <div className="flex items-center gap-3">
         {/* Cluster Telemetry Pill */}
-        <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[11px] font-mono text-zinc-300 shadow-sm transition-colors">
+        <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[13px] font-mono text-zinc-300 shadow-sm transition-colors">
           {/* CPU */}
           <div className="flex items-center gap-1.5" title={`Toplam CPU Kullanımı: %${totalCpu.toFixed(1)}`}>
-            <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-zinc-400' : 'text-zinc-100'}`} />
+            <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-zinc-300' : 'text-zinc-100'}`} />
             <div className="flex items-center gap-1.5">
-              <span>CPU: <strong className={totalCpu >= 50 ? 'text-zinc-400 font-semibold' : 'text-zinc-100 font-semibold'}>{totalCpu.toFixed(1)}%</strong></span>
+              <span>CPU: <strong className={totalCpu >= 50 ? 'text-zinc-300 font-semibold' : 'text-zinc-100 font-semibold'}>{totalCpu.toFixed(1)}%</strong></span>
               <div className="w-7 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${totalCpu >= 50 ? 'bg-zinc-400' : 'bg-zinc-100'} transition-all duration-300 rounded-full`}
@@ -177,7 +177,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             />
           </span>
-          <span className="text-zinc-300 text-[11px]">
+          <span className="text-zinc-300 text-[13px]">
             Docker:{' '}
             <span className={`font-medium ${dockerStatus === 'online' ? 'text-zinc-100' : 'text-white'}`}>
               {dockerStatus === 'online'
@@ -195,10 +195,10 @@ export const Header: React.FC<HeaderProps> = ({
             soundManager.toggleSound();
           }}
           title={isMuted ? 'Arayüz Dokunsal Seslerini Aç' : 'Arayüz Seslerini Kapat'}
-          className="relative p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
+          className="relative p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
         >
           {isMuted ? (
-            <VolumeX className="w-3.5 h-3.5 text-zinc-600" />
+            <VolumeX className="w-3.5 h-3.5 text-zinc-400" />
           ) : (
             <Volume2 className="w-3.5 h-3.5 text-zinc-200" />
           )}
@@ -211,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onRefresh}
           title="Metrikleri ve Durumu Yenile"
-          className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
+          className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg border border-zinc-800 hover:border-zinc-700 transition cursor-pointer active:scale-95"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-white' : ''}`} />
         </button>

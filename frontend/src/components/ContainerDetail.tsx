@@ -102,8 +102,8 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         };
       case 'database':
         return {
-          icon: <Database className="w-5 h-5 text-zinc-400" />,
-          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-400',
+          icon: <Database className="w-5 h-5 text-zinc-300" />,
+          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-300',
         };
       case 'worker':
         return {
@@ -134,7 +134,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         <div className="flex items-center gap-3.5">
           <div
             className={`w-11 h-11 rounded-xl border flex items-center justify-center shrink-0 shadow-inner ${
-              isRunning ? catStyles.badgeClass : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+              isRunning ? catStyles.badgeClass : 'bg-zinc-900 border-zinc-800 text-zinc-400'
             }`}
           >
             {catStyles.icon}
@@ -148,7 +148,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-sans border ${
                   isRunning
                     ? 'bg-zinc-100/10 text-zinc-100 border-white/20'
-                    : 'bg-zinc-900 text-zinc-500 border-zinc-800'
+                    : 'bg-zinc-900 text-zinc-400 border-zinc-800'
                 }`}
               >
                 <span
@@ -161,15 +161,15 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 {container.statusText}
               </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-zinc-400">
+            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-zinc-300">
               <span className="font-mono text-zinc-300">
                 {container.image}:{container.tag}
               </span>
-              <span className="text-zinc-600">•</span>
+              <span className="text-zinc-400">•</span>
               <button
                 onClick={copyContainerId}
                 title="Konteyner ID'sini Kopyala"
-                className="flex items-center gap-1 font-mono text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                className="flex items-center gap-1 font-mono text-zinc-300 hover:text-white transition-colors cursor-pointer"
               >
                 <span>{container.id.slice(0, 12)}</span>
                 {copiedId ? (
@@ -193,7 +193,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121212] text-zinc-300 hover:text-white border border-[#262626] hover:bg-zinc-800 text-xs font-medium font-sans transition cursor-pointer"
               title="Asistanda özetle"
             >
-              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+              <Sparkles className="w-3.5 h-3.5 text-zinc-300" />
               <span>Özetle</span>
             </motion.button>
           )}
@@ -240,7 +240,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             transition={wiseBouncy}
             onClick={() => onAction('delete', container.id)}
             title="Konteyneri Sil"
-            className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700 rounded-xl transition cursor-pointer shadow-sm"
+            className="p-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 rounded-xl transition cursor-pointer shadow-sm"
           >
             <Trash2 className="w-4 h-4" />
           </motion.button>
@@ -266,7 +266,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         <button
           onClick={() => setActiveTab('overview')}
           className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-lg ${
-            activeTab === 'overview' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            activeTab === 'overview' ? 'text-white font-semibold' : 'text-zinc-300 hover:text-white'
           }`}
         >
           {activeTab === 'overview' && (
@@ -285,7 +285,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         <button
           onClick={() => setActiveTab('logs')}
           className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-lg ${
-            activeTab === 'logs' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            activeTab === 'logs' ? 'text-white font-semibold' : 'text-zinc-300 hover:text-white'
           }`}
         >
           {activeTab === 'logs' && (
@@ -304,7 +304,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
         <button
           onClick={() => setActiveTab('env')}
           className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-lg ${
-            activeTab === 'env' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-white'
+            activeTab === 'env' ? 'text-white font-semibold' : 'text-zinc-300 hover:text-white'
           }`}
         >
           {activeTab === 'env' && (
@@ -338,7 +338,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 {/* Metric Card 1: CPU */}
                 <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-zinc-400 font-sans">İşlemci (CPU)</span>
+                    <span className="text-zinc-300 font-sans">İşlemci (CPU)</span>
                     <span className="text-white font-mono font-bold text-sm">
                       <AnimatedNumber value={liveCpu} decimals={1} suffix="%" />
                     </span>
@@ -349,7 +349,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
+                  <div className="flex justify-between items-center text-[13px] text-zinc-300 font-sans">
                     <span>Durum: {liveCpu > 80 ? 'Yüksek Yük' : 'Nominal'}</span>
                     <span className="font-mono text-zinc-100/90">Anlık SSE Akışı</span>
                   </div>
@@ -358,10 +358,10 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                 {/* Metric Card 2: Memory */}
                 <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-zinc-400 font-sans">Bellek (RAM)</span>
+                    <span className="text-zinc-300 font-sans">Bellek (RAM)</span>
                     <span className="text-white font-mono font-bold text-sm">
                       <AnimatedNumber value={liveMemoryMb} decimals={0} suffix=" MB" />
-                      <span className="text-zinc-500 text-xs font-normal"> / {container.memoryLimitMb} MB</span>
+                      <span className="text-zinc-400 text-xs font-normal"> / {container.memoryLimitMb} MB</span>
                     </span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
@@ -375,7 +375,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
+                  <div className="flex justify-between items-center text-[13px] text-zinc-300 font-sans">
                     <span>Limit: {container.memoryLimitMb} MB</span>
                     <span className="font-mono text-zinc-300/90">
                       %{Math.round((liveMemoryMb / container.memoryLimitMb) * 100)} Doluluk
@@ -390,16 +390,16 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </h4>
                   <div className="divide-y divide-zinc-800 text-xs">
                     <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Docker Köprüsü</span>
+                      <span className="text-zinc-300 font-sans">Docker Köprüsü</span>
                       <span className="text-white font-mono">{container.network}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Dahili IP Adresi</span>
+                      <span className="text-zinc-300 font-sans">Dahili IP Adresi</span>
                       <span className="text-white font-mono">{container.ipAddress || '—'}</span>
                     </div>
                     {container.traefikRoute && (
                       <div className="flex justify-between py-2 items-center">
-                        <span className="text-zinc-400 font-sans">Traefik Rotası</span>
+                        <span className="text-zinc-300 font-sans">Traefik Rotası</span>
                         <a
                           href={`https://${container.traefikRoute}`}
                           target="_blank"
@@ -421,15 +421,15 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   </h4>
                   <div className="divide-y divide-zinc-800 text-xs">
                     <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Konteyner İmajı</span>
+                      <span className="text-zinc-300 font-sans">Konteyner İmajı</span>
                       <span className="text-white font-mono">{container.image}:{container.tag}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Çalışma Süresi</span>
+                      <span className="text-zinc-300 font-sans">Çalışma Süresi</span>
                       <span className="text-white font-mono">{container.uptime}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Yeniden Başlatma</span>
+                      <span className="text-zinc-300 font-sans">Yeniden Başlatma</span>
                       <span className="text-white font-mono">{container.restartCount} kez</span>
                     </div>
                   </div>
@@ -442,11 +442,11 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 text-white border border-zinc-800 text-[10px] font-sans">
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 text-white border border-zinc-800 text-[12px] font-sans">
                       <span className="w-1.5 h-1.5 rounded-full bg-white" />
                       <span>Canlı Akış</span>
                     </span>
-                    <span className="text-xs text-zinc-400 font-mono">
+                    <span className="text-xs text-zinc-300 font-mono">
                       Docker Engine API stdout/stderr
                     </span>
                   </div>
@@ -486,7 +486,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
             {activeTab === 'env' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-400 font-sans">
+                  <span className="text-xs text-zinc-300 font-sans">
                     Kayıtlı ortam değişkenleri ({container.env.length})
                   </span>
                   <button
@@ -500,7 +500,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
 
                 <div className="rounded-xl border border-zinc-800 overflow-hidden text-xs">
                   <table className="w-full text-left font-mono">
-                    <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800 font-sans">
+                    <thead className="bg-zinc-900 text-zinc-300 border-b border-zinc-800 font-sans">
                       <tr>
                         <th className="p-3">Anahtar (Key)</th>
                         <th className="p-3">Değer (Value)</th>
@@ -510,7 +510,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       {container.env.map((e, index) => (
                         <tr key={index} className="hover:bg-zinc-900/50">
                           <td className="p-3 text-zinc-200 font-semibold">{e.key}</td>
-                          <td className="p-3 text-zinc-400">
+                          <td className="p-3 text-zinc-300">
                             {e.secret && !showSecrets ? '••••••••••••••••' : e.value}
                           </td>
                         </tr>

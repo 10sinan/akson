@@ -45,7 +45,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
             Sistem Sağlığı & Telemetri
           </h2>
         </div>
-        <span className="text-[11px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-100/10 text-zinc-100 border border-white/20 font-medium flex items-center gap-1.5">
+        <span className="text-[13px] font-sans px-2.5 py-0.5 rounded-full bg-zinc-100/10 text-zinc-100 border border-white/20 font-medium flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-zinc-100" />
           Canlı
         </span>
@@ -89,7 +89,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
               <span className="text-xl font-bold text-white tracking-tight font-mono">
                 %{overallLoad}
               </span>
-              <span className="text-[10px] text-zinc-500 font-sans">Küme Yükü</span>
+              <span className="text-[12px] text-zinc-400 font-sans">Küme Yükü</span>
             </div>
           </div>
 
@@ -98,7 +98,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
               <CheckCircle2 className="w-4 h-4 text-zinc-100" />
               <span>{totalCount === 0 ? 'Henüz servis yok' : `${runningCount} / ${totalCount} servis çalışıyor`}</span>
             </div>
-            <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+            <p className="text-xs text-zinc-300 leading-relaxed font-sans">
               {totalCount === 0
                 ? 'Yeni Servis Dağıt ile ilk servisinizi başlatın.'
                 : totalCount === runningCount
@@ -113,7 +113,7 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           {/* CPU Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+              <span className="text-zinc-300 flex items-center gap-1.5 font-sans">
                 <Cpu className="w-3.5 h-3.5 text-zinc-100" />
                 İşlemci (Konteyner CPU)
               </span>
@@ -132,13 +132,13 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           {/* RAM Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+              <span className="text-zinc-300 flex items-center gap-1.5 font-sans">
                 <Activity className="w-3.5 h-3.5 text-zinc-300" />
                 Bellek Tahsisi (RAM)
               </span>
               <span className="text-white font-mono font-medium">
                 <AnimatedNumber value={totalMemoryMb} decimals={0} suffix=" MB" />
-                <span className="text-zinc-500 text-[10px]"> / 2048 MB</span>
+                <span className="text-zinc-400 text-[12px]"> / 2048 MB</span>
               </span>
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
@@ -152,12 +152,12 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
           {/* Disk Meter */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400 flex items-center gap-1.5 font-sans">
+              <span className="text-zinc-300 flex items-center gap-1.5 font-sans">
                 <HardDrive className="w-3.5 h-3.5 text-zinc-300" />
                 NVMe Depolama
               </span>
               <span className="text-white font-mono font-medium">
-                128.4 <span className="text-zinc-500 text-[10px]">/ 500 GB (%25.6)</span>
+                128.4 <span className="text-zinc-400 text-[12px]">/ 500 GB (%25.6)</span>
               </span>
             </div>
             <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-800">
@@ -170,12 +170,12 @@ export const MetricsColumn: React.FC<MetricsColumnProps> = ({
         </div>
 
         {/* Compact Proxy Footer Pill */}
-        <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[11px] text-zinc-400">
+        <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[13px] text-zinc-300">
           <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-zinc-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-zinc-300" />
             <span className="font-sans">Traefik v3.0 Rotaları:</span>
           </span>
-          <span className="text-zinc-300 font-mono text-[10px]">TLS 1.3 / HTTP2 (Aktif)</span>
+          <span className="text-zinc-300 font-mono text-[12px]">TLS 1.3 / HTTP2 (Aktif)</span>
         </div>
       </div>
     </section>

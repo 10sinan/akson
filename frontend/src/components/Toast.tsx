@@ -31,9 +31,9 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
       case 'success':
         return <CheckCircle2 className="w-4 h-4 text-zinc-100 shrink-0" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-zinc-500 shrink-0" />;
+        return <AlertCircle className="w-4 h-4 text-zinc-400 shrink-0" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-zinc-400 shrink-0" />;
+        return <AlertTriangle className="w-4 h-4 text-zinc-300 shrink-0" />;
       case 'info':
       default:
         return <Info className="w-4 h-4 text-zinc-300 shrink-0" />;
@@ -78,7 +78,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
                 {toast.title}
               </span>
               {toast.description && (
-                <span className="text-[11px] text-zinc-400 block mt-0.5 leading-snug">
+                <span className="text-[13px] text-zinc-300 block mt-0.5 leading-snug">
                   {toast.description}
                 </span>
               )}
@@ -87,7 +87,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
             {/* Close Button */}
             <button
               onClick={() => onDismiss(toast.id)}
-              className="text-zinc-400 hover:text-white p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+              className="text-zinc-300 hover:text-white p-1 rounded-lg transition-colors cursor-pointer shrink-0"
             >
               <X className="w-3.5 h-3.5" />
             </button>

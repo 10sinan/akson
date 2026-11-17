@@ -23,7 +23,7 @@ const StepNode: React.FC<{ step: StepDef; state: StepState }> = ({ step, state }
   const Icon = step.icon;
   const base = 'relative w-12 h-12 rounded-2xl flex items-center justify-center border transition-colors duration-300';
   const look: Record<StepState, string> = {
-    pending: 'border-[#262626] bg-[#0a0a0a] text-zinc-600',
+    pending: 'border-[#262626] bg-[#0a0a0a] text-zinc-400',
     running: 'border-white bg-[#121212] text-white',
     done: 'border-white bg-white text-black',
     error: 'border-zinc-500 bg-[#121212] text-zinc-300',
@@ -64,7 +64,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-white">Dağıtım ilerlemesi</h2>
         {demo && (
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 border border-[#262626] rounded-md px-2 py-0.5">
+          <span className="text-[12px] font-mono uppercase tracking-wider text-zinc-300 border border-[#262626] rounded-md px-2 py-0.5">
             Demo
           </span>
         )}
@@ -93,10 +93,10 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
               )}
               <StepNode step={step} state={state} />
               <div className="min-w-0">
-                <div className={`text-xs font-semibold ${state === 'pending' ? 'text-zinc-500' : 'text-white'}`}>
+                <div className={`text-xs font-semibold ${state === 'pending' ? 'text-zinc-400' : 'text-white'}`}>
                   {step.label}
                 </div>
-                <div className="text-[11px] text-zinc-500">
+                <div className="text-[13px] text-zinc-400">
                   {state === 'running' ? step.hint : STATE_TEXT[state]}
                 </div>
                 {detail && state !== 'pending' && (
@@ -104,7 +104,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={snappySpring}
-                    className="mt-1 inline-block max-w-[12rem] truncate text-[10px] font-mono text-zinc-200 bg-white/5 border border-[#262626] rounded-md px-1.5 py-0.5"
+                    className="mt-1 inline-block max-w-[12rem] truncate text-[12px] font-mono text-zinc-200 bg-white/5 border border-[#262626] rounded-md px-1.5 py-0.5"
                     title={detail}
                   >
                     {detail}
@@ -120,7 +120,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
         <button
           type="button"
           onClick={() => setShowLogs((v) => !v)}
-          className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition cursor-pointer"
+          className="flex items-center gap-2 text-xs text-zinc-300 hover:text-white transition cursor-pointer"
           aria-expanded={showLogs}
         >
           <Terminal className="w-3.5 h-3.5" />
@@ -128,8 +128,8 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showLogs ? 'rotate-180' : ''}`} />
         </button>
         {showLogs && (
-          <div className="mt-3 max-h-72 overflow-y-auto bg-black border border-[#262626] rounded-xl p-3 font-mono text-[11px] leading-relaxed text-zinc-300 whitespace-pre-wrap break-words">
-            {logs.length === 0 ? <span className="text-zinc-600">Henüz çıktı yok.</span> : logs.join('\n')}
+          <div className="mt-3 max-h-72 overflow-y-auto bg-black border border-[#262626] rounded-xl p-3 font-mono text-[13px] leading-relaxed text-zinc-300 whitespace-pre-wrap break-words">
+            {logs.length === 0 ? <span className="text-zinc-400">Henüz çıktı yok.</span> : logs.join('\n')}
             <div ref={logEndRef} />
           </div>
         )}

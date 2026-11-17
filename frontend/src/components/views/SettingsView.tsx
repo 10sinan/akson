@@ -44,8 +44,8 @@ const StatusCard: React.FC<StatusCardProps> = ({ icon: Icon, title, value, ok, h
       </div>
       {ok !== null && (
         <span
-          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
-            ok ? 'bg-white text-black border-white' : 'text-zinc-400 border-zinc-700'
+          className={`text-[12px] font-mono px-2 py-0.5 rounded-full border ${
+            ok ? 'bg-white text-black border-white' : 'text-zinc-300 border-zinc-700'
           }`}
         >
           {ok ? labels[0] : labels[1]}
@@ -53,19 +53,19 @@ const StatusCard: React.FC<StatusCardProps> = ({ icon: Icon, title, value, ok, h
       )}
     </div>
     <div>
-      <p className="text-[11px] text-zinc-500 font-sans">{title}</p>
+      <p className="text-[13px] text-zinc-400 font-sans">{title}</p>
       <p className="text-sm font-semibold text-white font-mono truncate" title={value}>
         {value}
       </p>
     </div>
-    <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">{hint}</p>
+    <p className="text-[13px] text-zinc-300 font-sans leading-relaxed">{hint}</p>
   </div>
 );
 
 const SectionTitle: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
   <div>
     <h2 className="text-sm font-bold text-white font-sans">{title}</h2>
-    <p className="text-xs text-zinc-500 font-sans">{desc}</p>
+    <p className="text-xs text-zinc-400 font-sans">{desc}</p>
   </div>
 );
 
@@ -133,7 +133,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
       <div className="pb-6 border-b border-[#262626] flex items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Ayarlar</h1>
-          <p className="text-xs text-zinc-400 mt-1 font-sans">
+          <p className="text-xs text-zinc-300 mt-1 font-sans">
             Akson&apos;un nasıl çalıştığını gör, bilgisayarında yer aç, arayüzü kendine göre ayarla.
           </p>
         </div>
@@ -153,12 +153,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
         <SectionTitle title="Sistem durumu" desc="Bu bilgiler sadece gösterilir; nasıl değiştirileceği en altta." />
 
         {!isLiveBackend ? (
-          <div className="p-4 rounded-2xl border border-dashed border-[#262626] text-xs text-zinc-400 font-sans">
+          <div className="p-4 rounded-2xl border border-dashed border-[#262626] text-xs text-zinc-300 font-sans">
             Demo modundasın: Akson&apos;un arka yüzüne bağlanılamadı, bu yüzden sistem bilgisi gösterilemiyor.
           </div>
         ) : loadError ? (
           <div className="p-4 rounded-2xl border border-zinc-700 text-xs text-zinc-300 font-sans">
-            Sistem bilgisi alınamadı: <span className="font-mono text-zinc-400">{loadError}</span>
+            Sistem bilgisi alınamadı: <span className="font-mono text-zinc-300">{loadError}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -216,13 +216,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-white font-sans">Kullanılmayan imajlar</p>
-              <p className="text-xs text-zinc-400 font-sans">
+              <p className="text-xs text-zinc-300 font-sans">
                 Her yeniden dağıtımda eski derleme boşta kalır ve yer kaplar. Çalışan uygulamalara dokunulmaz.
               </p>
               {known && unused && (
                 <p className="mt-2 font-mono text-lg text-white">
                   {unused.count} imaj
-                  <span className="text-zinc-500"> • </span>
+                  <span className="text-zinc-400"> • </span>
                   {formatBytes(unused.size_bytes)}
                 </p>
               )}
@@ -232,7 +232,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
           <div className="shrink-0 flex flex-col items-stretch sm:items-end gap-2">
             {prunePhase === 'confirm' ? (
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2">
-                <p className="text-[11px] text-zinc-400 font-sans">Silinen imajlar geri gelmez. Emin misin?</p>
+                <p className="text-[13px] text-zinc-300 font-sans">Silinen imajlar geri gelmez. Emin misin?</p>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePrune}
@@ -252,7 +252,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
               <button
                 onClick={() => setPrunePhase('confirm')}
                 disabled={!known || prunePhase === 'running' || (unused?.count ?? 0) === 0}
-                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded-lg transition cursor-pointer disabled:bg-zinc-900 disabled:text-zinc-600 disabled:border disabled:border-zinc-800 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded-lg transition cursor-pointer disabled:bg-zinc-900 disabled:text-zinc-400 disabled:border disabled:border-zinc-800 disabled:cursor-not-allowed"
               >
                 {prunePhase === 'running' ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -263,7 +263,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
               </button>
             )}
             {(prunePhase === 'done' || prunePhase === 'error') && (
-              <p className="text-[11px] font-sans text-zinc-300 flex items-center gap-1.5">
+              <p className="text-[13px] font-sans text-zinc-300 flex items-center gap-1.5">
                 {prunePhase === 'done' && <Check className="w-3.5 h-3.5" />}
                 {prunePhase === 'error' ? `Temizlenemedi: ${pruneMessage}` : pruneMessage}
               </p>
@@ -282,11 +282,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
           className="w-full bg-[#0a0a0a] border border-[#262626] hover:border-zinc-700 rounded-2xl p-4 flex items-center gap-4 text-left cursor-pointer transition-colors"
         >
           <div className="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-            {soundOn ? <Volume2 className="w-4 h-4 text-zinc-200" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
+            {soundOn ? <Volume2 className="w-4 h-4 text-zinc-200" /> : <VolumeX className="w-4 h-4 text-zinc-400" />}
           </div>
           <div className="flex-1">
             <p className="text-sm font-semibold text-white font-sans">Arayüz sesleri</p>
-            <p className="text-xs text-zinc-400 font-sans">Düğmelere basınca kısa tık sesi.</p>
+            <p className="text-xs text-zinc-300 font-sans">Düğmelere basınca kısa tık sesi.</p>
           </div>
           <span
             className={`relative w-10 h-6 rounded-full border transition-colors ${
@@ -321,8 +321,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
               değişikliği görürsün.
             </li>
           </ol>
-          <div className="bg-[#121212] border border-[#262626] rounded-xl p-3 font-mono text-[11px] text-zinc-300 overflow-x-auto">
-            <div className="flex items-center gap-2 text-zinc-500 mb-2">
+          <div className="bg-[#121212] border border-[#262626] rounded-xl p-3 font-mono text-[13px] text-zinc-300 overflow-x-auto">
+            <div className="flex items-center gap-2 text-zinc-400 mb-2">
               <FileCode2 className="w-3.5 h-3.5" />
               docker-compose.yml
             </div>
