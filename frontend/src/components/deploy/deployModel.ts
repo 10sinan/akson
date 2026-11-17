@@ -75,6 +75,12 @@ export function friendlyError(message: string): FriendlyError {
       hint: 'Projenin kendi kodunda veya bağımlılıklarında bir hata var. Ayrıntılı loglarda son satırlara bak.',
     };
   }
+  if (m.includes('exited right after starting')) {
+    return {
+      title: 'Uygulama başladı ama hemen kapandı',
+      hint: 'Ayrıntılı loglarda uygulamanın son çıktısı var. Çoğu zaman eksik bir ortam değişkeni (ENV) ya da dosya yüzünden olur.',
+    };
+  }
   if (m.includes('port is already allocated') || m.includes('address already in use')) {
     return {
       title: 'Bu port dolu',
