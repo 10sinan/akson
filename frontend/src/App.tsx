@@ -181,6 +181,14 @@ export function App() {
       return;
     }
 
+    if (action === 'stop') {
+      const isSelf = targetName === 'akson';
+      const msg = isSelf
+        ? `${targetName} bu paneli çalıştıran servis olabilir. Durdurursan panel kapanabilir. Yine de durdurulsun mu?`
+        : `${targetName} durdurulsun mu?`;
+      if (!window.confirm(msg)) return;
+    }
+
     // If live Docker daemon is active, call Go backend REST API
     if (isLiveBackend && dockerStatus === 'online') {
       try {
