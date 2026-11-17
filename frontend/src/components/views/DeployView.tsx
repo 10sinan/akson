@@ -1,27 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRight, Boxes, ChevronDown, GitBranch, Globe, Link2, Plus, Rocket, Sliders, Trash2 } from 'lucide-react';
 import { snappySpring } from '../../utils/motion';
 import { soundManager } from '../../utils/sound';
-import {
-  Rocket,
-  Globe,
-  Terminal,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  Sliders,
-  Cpu,
-  Layers,
-  GitBranch,
-  GitFork,
-  Code2,
-  RotateCcw,
-} from 'lucide-react';
 import type { ContainerItem } from '../../types/container';
-import { PipelinePathStepper } from '../deploy/PipelinePathStepper';
 import { api, mapApiContainerToItem } from '../../api/client';
+import type { DeployContainerRequest, DeployEvent } from '../../api/client';
+import { DeployProgress } from '../deploy/DeployProgress';
+import { DeployError, DeploySuccess } from '../deploy/DeployResult';
+import { GIT_STEPS, IMAGE_STEPS, KIND_LABELS } from '../deploy/deployModel';
+import type { StepState } from '../deploy/deployModel';
 
 interface DeployViewProps {
   onDeploySuccess: (container: ContainerItem) => void;
@@ -33,885 +21,508 @@ interface TemplateImage {
   id: string;
   name: string;
   image: string;
-  tag: string;
   defaultPort: number;
-  category: 'service' | 'database' | 'core' | 'worker';
   desc: string;
 }
 
 const TEMPLATE_IMAGES: TemplateImage[] = [
-  {
-    id: 'nginx',
-    name: 'web-frontend',
-    image: 'nginx',
-    tag: 'alpine',
-    defaultPort: 80,
-    category: 'service',
-    desc: 'Hafif ve yüksek performanslı Nginx web sunucusu',
-  },
-  {
-    id: 'redis',
-    name: 'cache-redis',
-    image: 'redis',
-    tag: '7-alpine',
-    defaultPort: 6379,
-    category: 'database',
-    desc: 'Ultra hızlı bellek içi anahtar-değer önbelleği',
-  },
-  {
-    id: 'postgres',
-    name: 'db-postgres',
-    image: 'postgres',
-    tag: '16-alpine',
-    defaultPort: 5432,
-    category: 'database',
-    desc: 'Güçlü ve güvenilir ilişkisel SQL veritabanı',
-  },
-  {
-    id: 'node',
-    name: 'api-service',
-    image: 'node',
-    tag: '20-alpine',
-    defaultPort: 3000,
-    category: 'core',
-    desc: 'Modern JavaScript/TypeScript REST mikroservisi',
-  },
+  { id: 'nginx', name: 'web-frontend', image: 'nginx:alpine', defaultPort: 80, desc: 'Nginx web sunucusu' },
+  { id: 'redis', name: 'cache-redis', image: 'redis:7-alpine', defaultPort: 6379, desc: 'Bellek içi önbellek' },
+  { id: 'postgres', name: 'db-postgres', image: 'postgres:16-alpine', defaultPort: 5432, desc: 'SQL veritabanı (veriler kalıcı değil)' },
+  { id: 'node', name: 'api-service', image: 'node:20-alpine', defaultPort: 3000, desc: 'Boş Node.js ortamı' },
 ];
 
-const getTemplateCategoryBadge = (category: string) => {
-  switch (category) {
-    case 'service':
-      return 'bg-zinc-300/10 text-zinc-300 border-white/20';
-    case 'database':
-      return 'bg-zinc-400/10 text-zinc-400 border-white/20';
-    case 'core':
-      return 'bg-zinc-300/10 text-zinc-300 border-white/20';
-    case 'worker':
-    default:
-      return 'bg-zinc-100/10 text-zinc-100 border-white/20';
-  }
+type Mode = 'git' | 'image';
+type Phase = 'idle' | 'running' | 'success' | 'error';
+
+const inputCls =
+  'w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white disabled:opacity-50';
+
+const nameFromUrl = (url: string) => {
+  const parts = url.trim().replace(/\.git$/, '').replace(/\/+$/, '').split('/');
+  return (parts[parts.length - 1] || '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
 };
 
-export const DeployView: React.FC<DeployViewProps> = ({
-  onDeploySuccess,
-  onNavigateDashboard,
-  isLiveBackend,
-}) => {
-  // Stepper state
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [isDeploying, setIsDeploying] = useState<boolean>(false);
-  const [deployLogs, setDeployLogs] = useState<string[]>([]);
-  const [isDeployed, setIsDeployed] = useState<boolean>(false);
+const HOW_IT_WORKS = [
+  { icon: Link2, text: 'Linki yapıştır' },
+  { icon: Rocket, text: 'Akson derler ve başlatır' },
+  { icon: Globe, text: 'Adresin hazır' },
+];
 
-  // Form Configurations
-  const [deploySource, setDeploySource] = useState<'template' | 'git'>('template');
-  const [gitUrl, setGitUrl] = useState<string>('');
-  const [gitBranch, setGitBranch] = useState<string>('main');
-  const [dockerfilePath, setDockerfilePath] = useState<string>('');
-
+export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavigateDashboard, isLiveBackend }) => {
+  // Form
+  const [mode, setMode] = useState<Mode>('git');
+  const [gitUrl, setGitUrl] = useState('');
+  const [gitBranch, setGitBranch] = useState('main');
+  const [dockerfilePath, setDockerfilePath] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string>('nginx');
-  const [customImage, setCustomImage] = useState<string>('nginx:alpine');
-  const [serviceName, setServiceName] = useState<string>('web-frontend');
-  const [hostPort, setHostPort] = useState<number>(0);
-  const [containerPort, setContainerPort] = useState<number>(80);
-  const [customDomain, setCustomDomain] = useState<string>('web-frontend.localhost');
-  const [selectedNetwork, setSelectedNetwork] = useState<string>('akson-bridge');
-  const [ramLimitMb, setRamLimitMb] = useState<number>(256);
-  const [cpuLimitCore, setCpuLimitCore] = useState<number>(0.5);
-  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string; secret: boolean }>>([
-    { key: 'ENV', value: 'production', secret: false },
-    { key: 'PORT', value: '80', secret: false },
-  ]);
-  const [showSecrets, setShowSecrets] = useState<boolean>(false);
+  const [image, setImage] = useState('nginx:alpine');
+  const [serviceName, setServiceName] = useState('');
+  const [appPort, setAppPort] = useState<number | ''>('');
+  const [hostPort, setHostPort] = useState(0);
+  const [domain, setDomain] = useState('');
+  const [ramLimitMb, setRamLimitMb] = useState(512);
+  const [cpuLimitCore, setCpuLimitCore] = useState(1);
+  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string }>>([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Timers of the demo-mode simulation; cleared when the view unmounts or a new deploy starts.
-  const simTimersRef = useRef<number[]>([]);
-  const clearSimTimers = () => {
-    simTimersRef.current.forEach((t) => window.clearTimeout(t));
-    simTimersRef.current = [];
-  };
-  const schedule = (fn: () => void, ms: number) => {
-    simTimersRef.current.push(window.setTimeout(fn, ms));
-  };
-  useEffect(() => clearSimTimers, []);
+  // Run state
+  const [phase, setPhase] = useState<Phase>('idle');
+  const [runMode, setRunMode] = useState<Mode>('git');
+  const [stepStates, setStepStates] = useState<Partial<Record<string, StepState>>>({});
+  const [stepDetails, setStepDetails] = useState<Partial<Record<string, string>>>({});
+  const [logs, setLogs] = useState<string[]>([]);
+  const [resultUrl, setResultUrl] = useState<string | undefined>();
+  const [errorMessage, setErrorMessage] = useState('');
+  const [deployedName, setDeployedName] = useState('');
+  const abortRef = useRef<AbortController | null>(null);
+  const demoTimers = useRef<number[]>([]);
 
-  // After a finished deploy, go back to step 1 with the same form values so it can be deployed again.
-  const handleResetDeploy = () => {
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+      demoTimers.current.forEach((t) => window.clearTimeout(t));
+    },
+    []
+  );
+
+  const busy = phase === 'running';
+  const effectiveName =
+    serviceName.trim() ||
+    (mode === 'git' ? nameFromUrl(gitUrl) : TEMPLATE_IMAGES.find((t) => t.id === selectedTemplate)?.name || nameFromUrl(image.split(':')[0]));
+  const canDeploy = !busy && (mode === 'git' ? gitUrl.trim() !== '' : image.trim() !== '');
+
+  const selectMode = (m: Mode) => {
+    if (busy) return;
     soundManager.playClick();
-    clearSimTimers();
-    setIsDeployed(false);
-    setCurrentStep(1);
-    setDeployLogs([]);
-  };
-
-  const handleGitUrlChange = (url: string) => {
-    setGitUrl(url);
-    const cleaned = url.trim().replace(/\.git$/, '');
-    const parts = cleaned.split('/');
-    const repoName = parts[parts.length - 1];
-    if (repoName) {
-      const sanitized = repoName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-      setServiceName(sanitized);
-      setCustomDomain(`${sanitized}.localhost`);
+    setMode(m);
+    if (m === 'git') {
+      setAppPort('');
+    } else {
+      setAppPort(TEMPLATE_IMAGES.find((t) => t.id === selectedTemplate)?.defaultPort ?? 80);
     }
   };
 
-  const handleSelectTemplate = (tpl: TemplateImage) => {
+  const selectTemplate = (tpl: TemplateImage) => {
+    if (busy) return;
     soundManager.playClick();
     setSelectedTemplate(tpl.id);
-    setCustomImage(`${tpl.image}:${tpl.tag}`);
-    setServiceName(tpl.name);
-    setContainerPort(tpl.defaultPort);
-    setHostPort(0);
-    setCustomDomain(`${tpl.name}.localhost`);
+    setImage(tpl.image);
+    setAppPort(tpl.defaultPort);
+    setServiceName('');
   };
 
-  const handleAddEnv = () => {
-    soundManager.playClick();
-    setEnvVars((prev) => [...prev, { key: '', value: '', secret: false }]);
+  // Applies one stream event to the visual state.
+  const handleEvent = (ev: DeployEvent, onResult: (url?: string) => void, onError: (msg: string) => void) => {
+    switch (ev.type) {
+      case 'step': {
+        setStepStates((prev) => ({ ...prev, [ev.step]: ev.status }));
+        let detail: string | undefined;
+        if (ev.step === 'detect' && ev.detail) detail = KIND_LABELS[ev.detail] ?? ev.detail;
+        if (ev.step === 'clone' && ev.status === 'done' && ev.detail) detail = `commit ${ev.detail}`;
+        if (ev.step === 'ready' && ev.detail) detail = ev.detail;
+        if (detail) setStepDetails((prev) => ({ ...prev, [ev.step]: detail }));
+        break;
+      }
+      case 'log':
+        setLogs((prev) => [...prev, ...ev.line.split('\n').filter((l) => l.trim() !== '')]);
+        break;
+      case 'result':
+        onDeploySuccess(mapApiContainerToItem(ev.container));
+        onResult(ev.url);
+        break;
+      case 'error':
+        onError(ev.message);
+        break;
+    }
   };
 
-  const handleRemoveEnv = (index: number) => {
-    soundManager.playPop();
-    setEnvVars((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Demo mode only: no backend is reachable, so nothing is really deployed. The steps below just show the flow.
-  const runSimulatedDeploy = () => {
-    setDeployLogs((prev) => [...prev, '[demo] Backend bağlı değil, gerçek dağıtım yapılmıyor.']);
-
-    [2, 3, 4, 5].forEach((step, i) => {
-      schedule(() => {
-        soundManager.playClick();
-        setCurrentStep(step);
-      }, 600 * (i + 1));
+  // Demo mode only: no backend is reachable, so the steps are played back without deploying anything.
+  const runDemo = (m: Mode) => {
+    const steps = m === 'git' ? GIT_STEPS : IMAGE_STEPS;
+    const events: DeployEvent[] = [];
+    steps.forEach((s) => {
+      events.push({ type: 'step', step: s.id, status: 'running' });
+      events.push({ type: 'log', line: `[demo] ${s.label}` });
+      events.push({ type: 'step', step: s.id, status: 'done', detail: s.id === 'detect' ? 'node' : undefined });
     });
-
-    schedule(() => {
-      setIsDeploying(false);
-      setIsDeployed(true);
-      setDeployLogs((prev) => [...prev, `[demo] '${serviceName}' yalnızca bu ekranda oluşturuldu.`]);
-
-      const [imgName, tagPart] = deploySource === 'git'
-        ? [`akson/${serviceName}`, 'latest']
-        : customImage.split(':');
-
-      const newContainer: ContainerItem = {
-        id: `demo-${Date.now().toString().slice(-6)}`,
-        name: serviceName,
-        subtitle: `${imgName}:${tagPart || 'latest'}`,
-        status: 'running',
-        statusText: 'Çalışıyor',
-        uptime: 'Demo',
-        cpuPercent: 0,
-        memoryUsageMb: 0,
-        memoryLimitMb: ramLimitMb,
-        image: imgName,
-        tag: tagPart || 'latest',
-        category: (selectedTemplate === 'nginx' ? 'service' : selectedTemplate === 'redis' || selectedTemplate === 'postgres' ? 'database' : 'core'),
-        ports: [{ hostPort, containerPort, protocol: 'tcp' }],
-        network: selectedNetwork,
-        ipAddress: '',
-        traefikRoute: customDomain,
-        restartCount: 0,
-        logs: [`[demo] ${serviceName} yalnızca arayüzde var, gerçek bir konteyner değil.`],
-        env: envVars.filter((e) => e.key.trim() !== ''),
-      };
-
-      onDeploySuccess(newContainer);
-    }, 3000);
+    events.forEach((ev, i) => {
+      demoTimers.current.push(window.setTimeout(() => handleEvent(ev, () => {}, () => {}), 350 * (i + 1)));
+    });
+    demoTimers.current.push(window.setTimeout(() => setPhase('success'), 350 * (events.length + 1)));
   };
 
-  // Live Animated & Real API Deployment Flow
-  const handleStartDeploy = async () => {
-    // Guard against double clicks: both deploy buttons call this.
-    if (isDeploying) return;
-    if (isDeployed) {
-      handleResetDeploy();
+  const handleDeploy = async () => {
+    if (!canDeploy) return;
+    soundManager.playClick();
+    const name = effectiveName;
+    setRunMode(mode);
+    setPhase('running');
+    setStepStates({});
+    setStepDetails({});
+    setLogs([]);
+    setResultUrl(undefined);
+    setErrorMessage('');
+    setDeployedName(name);
+
+    if (!isLiveBackend) {
+      runDemo(mode);
       return;
     }
-    clearSimTimers();
-    soundManager.playSuccess();
-    setIsDeploying(true);
-    setCurrentStep(1);
-    setDeployLogs([
-      `[akson-engine] Dağıtım işlemi başlatıldı: ${serviceName}`,
-      deploySource === 'git'
-        ? `[1/5: git & build] '${gitUrl}' (${gitBranch}) klonlanıyor ve Dockerfile derleniyor...`
-        : `[1/5: image] Docker Hub'dan imaj doğrulanıyor: ${customImage}...`,
-    ]);
 
-    const envMap: Record<string, string> = {};
+    const env: Record<string, string> = {};
     envVars.forEach((e) => {
-      if (e.key.trim()) {
-        envMap[e.key.trim()] = e.value;
-      }
+      if (e.key.trim()) env[e.key.trim()] = e.value;
     });
-
-    const deployPayload = {
-      name: serviceName.trim(),
-      image: deploySource === 'git' ? undefined : customImage.trim(),
-      git_url: deploySource === 'git' ? gitUrl.trim() : undefined,
-      git_branch: deploySource === 'git' ? gitBranch.trim() : undefined,
-      dockerfile: deploySource === 'git' ? dockerfilePath.trim() : undefined,
-      ports: [
-        {
-          private_port: containerPort,
-          public_port: hostPort,
-          type: 'tcp',
-        },
-      ],
-      env: envMap,
+    const port = appPort === '' ? undefined : Number(appPort);
+    const payload: DeployContainerRequest = {
+      name,
+      image: mode === 'image' ? image.trim() : undefined,
+      git_url: mode === 'git' ? gitUrl.trim() : undefined,
+      git_branch: mode === 'git' ? gitBranch.trim() || 'main' : undefined,
+      dockerfile: mode === 'git' ? dockerfilePath.trim() || undefined : undefined,
+      ports: port ? [{ private_port: port, public_port: hostPort || undefined, type: 'tcp' }] : undefined,
+      env,
       memory_limit_mb: ramLimitMb,
       cpu_limit: cpuLimitCore,
-      network_name: selectedNetwork,
+      network_name: 'akson-bridge',
       restart_policy: 'unless-stopped',
-      domain: customDomain.trim(),
-      port: containerPort,
+      domain: domain.trim() || undefined,
+      port,
     };
 
+    let finished = false;
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      setCurrentStep(2);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[2/5: config] Port (${hostPort || 'otomatik'}:${containerPort}) ve ${Object.keys(envMap).length} ortam değişkeni yapılandırılıyor...`,
-      ]);
-
-      const res = await api.deployContainer(deployPayload);
-
-      setCurrentStep(3);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[3/5: network] '${selectedNetwork}' ağına bağlandı.`,
-        ...(res.logs || []).map((l) => `[docker] ${l}`),
-      ]);
-
-      setCurrentStep(4);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[4/5: cgroup] cgroup limitleri uygulandı: RAM ${ramLimitMb} MB, CPU ${cpuLimitCore} vCPU`,
-      ]);
-
-      setCurrentStep(5);
-      soundManager.playSuccess();
-      setIsDeploying(false);
-      setIsDeployed(true);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[5/5: health] Konteyner çalışıyor (ID: ${res.container.id.substring(0, 12)})!`,
-        `'${serviceName}' başarıyla dağıtıldı.`,
-        ...[...new Set((res.container.ports || []).map((p) => p.public_port).filter(Boolean))].map(
-          (port) => `Erişim adresi: http://localhost:${port}`
-        ),
-      ]);
-
-      // Report right away: the container really exists now, even if the user leaves this tab.
-      onDeploySuccess(mapApiContainerToItem(res.container));
-    } catch (err) {
-      if (!isLiveBackend) {
-        // Demo mode: no backend reachable, so play the interactive simulation instead.
-        runSimulatedDeploy();
-        return;
+      await api.deployStream(
+        payload,
+        (ev) =>
+          handleEvent(
+            ev,
+            (url) => {
+              finished = true;
+              setResultUrl(url);
+              setPhase('success');
+              soundManager.playSuccess();
+            },
+            (msg) => {
+              finished = true;
+              setErrorMessage(msg);
+              setPhase('error');
+            }
+          ),
+        controller.signal
+      );
+      if (!finished) {
+        setErrorMessage('Bağlantı koptu. Dağıtım sunucuda devam ediyor olabilir, durumunu panelden kontrol et.');
+        setPhase('error');
       }
-      // Live backend returned an error (clone/build/pull/port failure, timeout): surface it, never fake success.
-      const message = err instanceof Error ? err.message : String(err);
-      setIsDeploying(false);
-      setIsDeployed(false);
-      setDeployLogs((prev) => [
-        ...prev,
-        `[ERR] Dağıtım başarısız (deploy failed): ${message}`,
-      ]);
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      setErrorMessage(err instanceof Error ? err.message : String(err));
+      setPhase('error');
     }
+  };
+
+  const resetToForm = () => {
+    soundManager.playClick();
+    setPhase('idle');
   };
 
   return (
-    <div className="flex flex-col flex-1 space-y-5">
-      {/* Header Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#262626]">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight font-sans">
-              Yeni Servis Dağıtımı
-            </h1>
-          </div>
-          <p className="text-xs text-zinc-400 mt-1 font-sans">
-            İmajı, portları, alan adını ve kaynak sınırlarını seçip servisi başlatın.
-          </p>
-        </div>
-
+    <div className="w-full max-w-4xl mx-auto space-y-6 pb-10">
+      {/* Heading */}
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Projeni yayına al</h1>
+        <p className="text-sm text-zinc-400">Git linkini yapıştır, Dağıt’a bas. Akson indirir, derler ve sana bir adres verir.</p>
       </div>
 
-      {/* 1. ÜST GÖRSEL DAĞITIM TÜNELİ (PIPELINE PATH STEPPER) */}
-      <PipelinePathStepper
-        currentStep={currentStep}
-        isDeploying={isDeploying}
-        isDeployed={isDeployed}
-        onSelectStep={(step) => {
-          if (!isDeploying) setCurrentStep(step);
-        }}
-        onDeploy={handleStartDeploy}
-        onReset={handleResetDeploy}
-        onNavigateDashboard={onNavigateDashboard}
-      />
+      {/* Form card */}
+      <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4 sm:p-6 space-y-5">
+        {/* Source toggle */}
+        <div className="inline-flex p-1 rounded-xl bg-[#121212] border border-[#262626] text-xs">
+          {(
+            [
+              { m: 'git', label: 'Git linki', Icon: GitBranch },
+              { m: 'image', label: 'Hazır şablon', Icon: Boxes },
+            ] as const
+          ).map(({ m, label, Icon }) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => selectMode(m)}
+              disabled={busy}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer disabled:cursor-not-allowed ${
+                mode === m ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" /> {label}
+            </button>
+          ))}
+        </div>
 
-      {/* 2. ADIM KONFİGÜRASYON FORMU & CANLI ETKİLEŞİM */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left Column (7 cols): Step Configuration Panel */}
-        <div className="lg:col-span-7 flex flex-col gap-5">
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-5 shadow-sm">
-            {/* Step 1: Image & Source */}
-            {currentStep === 1 && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={snappySpring}
-                className="space-y-4 text-xs font-sans"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-zinc-300" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      1. Adım: Dağıtım Kaynağı & İmaj Seçimi
-                    </h2>
+        {mode === 'git' ? (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <label className="relative flex-1">
+              <span className="sr-only">Git linki</span>
+              <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <input
+                type="url"
+                value={gitUrl}
+                onChange={(e) => setGitUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleDeploy()}
+                disabled={busy}
+                placeholder="https://github.com/kullanici/proje"
+                className="w-full bg-[#121212] border border-[#262626] rounded-xl pl-11 pr-4 py-3.5 text-white text-sm font-mono focus:outline-none focus:border-white disabled:opacity-50"
+              />
+            </label>
+            <DeployButton onClick={handleDeploy} disabled={!canDeploy} busy={busy} />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {TEMPLATE_IMAGES.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => selectTemplate(tpl)}
+                  disabled={busy}
+                  className={`text-left p-3 rounded-xl border transition cursor-pointer disabled:cursor-not-allowed ${
+                    selectedTemplate === tpl.id ? 'border-white bg-white/5' : 'border-[#262626] hover:border-zinc-500'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-white">{tpl.name}</span>
+                    <span className="text-[10px] font-mono text-zinc-400">{tpl.image}</span>
                   </div>
-                  <span className="text-[10px] text-zinc-300 bg-zinc-300/10 px-2 py-0.5 rounded border border-white/20 font-mono">
-                    {deploySource === 'git' ? 'Git Engine' : 'Docker Registry'}
-                  </span>
+                  <p className="text-[11px] text-zinc-500 mt-0.5">{tpl.desc}</p>
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <label className="flex-1">
+                <span className="sr-only">Docker imajı</span>
+                <input
+                  type="text"
+                  value={image}
+                  onChange={(e) => {
+                    setImage(e.target.value);
+                    setSelectedTemplate('');
+                  }}
+                  disabled={busy}
+                  placeholder="örn: nginx:alpine"
+                  className="w-full bg-[#121212] border border-[#262626] rounded-xl px-4 py-3.5 text-white text-sm font-mono focus:outline-none focus:border-white disabled:opacity-50"
+                />
+              </label>
+              <DeployButton onClick={handleDeploy} disabled={!canDeploy} busy={busy} />
+            </div>
+          </div>
+        )}
+
+        {/* How it works: a small picture of the flow while nothing is running */}
+        {phase === 'idle' && mode === 'git' && (
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {HOW_IT_WORKS.map(({ icon: Icon, text }, i) => (
+              <div key={text} className="relative flex flex-col items-center gap-1.5 py-2">
+                <div className="w-9 h-9 rounded-xl border border-[#262626] bg-[#121212] flex items-center justify-center text-zinc-300">
+                  <Icon className="w-4 h-4" />
                 </div>
-
-                {/* Source Mode Toggle */}
-                <div className="flex items-center gap-2 p-1 bg-[#121212] border border-[#262626] rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundManager.playClick();
-                      setDeploySource('template');
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                      deploySource === 'template'
-                        ? 'bg-[#1f1f1f] text-white shadow-sm border border-white/10'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    <Layers className="w-3.5 h-3.5 text-zinc-300" />
-                    <span>Hazır Şablon & İmaj</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      soundManager.playClick();
-                      setDeploySource('git');
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer ${
-                      deploySource === 'git'
-                        ? 'bg-[#1f1f1f] text-white shadow-sm border border-white/10'
-                        : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    <GitBranch className="w-3.5 h-3.5 text-zinc-500" />
-                    <span>GitHub / Git Reposu</span>
-                  </button>
-                </div>
-
-                {deploySource === 'template' ? (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {TEMPLATE_IMAGES.map((tpl) => (
-                        <div
-                          key={tpl.id}
-                          onClick={() => handleSelectTemplate(tpl)}
-                          className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                            selectedTemplate === tpl.id
-                              ? 'bg-[#171717] border-white text-white shadow-md ring-1 ring-white/20'
-                              : 'bg-[#121212] border-[#262626] text-zinc-400 hover:border-zinc-500 hover:text-white'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between font-bold">
-                            <span className="text-white font-sans">{tpl.name}</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono border ${getTemplateCategoryBadge(tpl.category)}`}>
-                              :{tpl.tag}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1 font-sans">
-                            {tpl.desc}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-1.5 pt-2">
-                      <label className="text-[11px] text-zinc-400 font-sans">Özel Docker İmajı ve Sürüm Etiketi:</label>
-                      <input
-                        type="text"
-                        value={customImage}
-                        onChange={(e) => setCustomImage(e.target.value)}
-                        placeholder="örn: nginx:alpine, redis:7, python:3.11"
-                        className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-3 pt-1">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] text-zinc-400 font-sans flex items-center justify-between">
-                        <span>Git Repository URL:</span>
-                        <span className="text-[10px] text-zinc-500">HTTPS veya Git URL</span>
-                      </label>
-                      <div className="relative">
-                        <GitFork className="w-4 h-4 text-zinc-500 absolute left-3.5 top-2.5" />
-                        <input
-                          type="text"
-                          value={gitUrl}
-                          onChange={(e) => handleGitUrlChange(e.target.value)}
-                          placeholder="https://github.com/kullanici/proje-adi.git"
-                          className="w-full bg-[#121212] border border-[#262626] rounded-xl pl-10 pr-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white/20"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
-                          <GitBranch className="w-3.5 h-3.5 text-zinc-500" />
-                          <span>Branch (Dal):</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={gitBranch}
-                          onChange={(e) => setGitBranch(e.target.value)}
-                          placeholder="main"
-                          className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] text-zinc-400 font-sans flex items-center gap-1.5">
-                          <Code2 className="w-3.5 h-3.5 text-zinc-300" />
-                          <span>Dockerfile Konumu:</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={dockerfilePath}
-                          onChange={(e) => setDockerfilePath(e.target.value)}
-                          placeholder="Boş bırak: otomatik"
-                          className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-xl bg-zinc-500/5 border border-white/20 text-[11px] text-zinc-300 space-y-1">
-                      <div className="font-semibold text-zinc-500 flex items-center gap-1.5">
-                        <span>Git ile derleme:</span>
-                      </div>
-                      <p className="text-zinc-400 leading-relaxed">
-                        Akson repoyu klonlar ve <span className="text-white font-mono">{dockerfilePath || 'Dockerfile'}</span> dosyasıyla derler. Repoda Dockerfile yoksa proje türünü (Node, Python, Go, statik site) tanır ve Dockerfile'ı kendisi üretir.
-                      </p>
-                    </div>
-                  </div>
+                <span className="text-[11px] text-zinc-400 leading-tight">{text}</span>
+                {i < HOW_IT_WORKS.length - 1 && (
+                  <ArrowRight className="hidden sm:block absolute -right-2 top-4 w-4 h-4 text-zinc-600" />
                 )}
+              </div>
+            ))}
+          </div>
+        )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] text-zinc-400 font-sans">Konteyner Servis Adı:</label>
-                  <input
-                    type="text"
-                    value={serviceName}
-                    onChange={(e) => setServiceName(e.target.value)}
-                    placeholder="örn: my-web-app"
-                    className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                  />
-                </div>
-              </motion.div>
-            )}
+        {/* Advanced settings */}
+        <div className="border-t border-[#262626] pt-4">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced((v) => !v)}
+            className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition cursor-pointer"
+            aria-expanded={showAdvanced}
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            Gelişmiş ayarlar
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+          </button>
 
-            {/* Step 2: Port & ENV */}
-            {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={snappySpring}
-                className="space-y-4 text-xs font-sans"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-zinc-400" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      2. Adım: Port & Ortam Değişkenleri (ENV)
-                    </h2>
-                  </div>
-                  <span className="text-[10px] text-zinc-400 bg-zinc-400/10 px-2 py-0.5 rounded border border-white/20 font-mono">
-                    Network & Config
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] text-zinc-400 font-sans">Dış Port (Host Port, 0 = otomatik):</label>
+          {showAdvanced && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={snappySpring}
+              className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs"
+            >
+              <Field label="Servis adı" hint="Boşsa linkten otomatik alınır">
+                <input
+                  className={inputCls}
+                  value={serviceName}
+                  disabled={busy}
+                  placeholder={effectiveName || 'my-app'}
+                  onChange={(e) => setServiceName(e.target.value)}
+                />
+              </Field>
+              {mode === 'git' && (
+                <>
+                  <Field label="Branch">
+                    <input className={inputCls} value={gitBranch} disabled={busy} onChange={(e) => setGitBranch(e.target.value)} />
+                  </Field>
+                  <Field label="Dockerfile" hint="Boşsa otomatik bulunur veya üretilir">
                     <input
-                      type="number"
-                      value={hostPort}
-                      onChange={(e) => setHostPort(Number(e.target.value))}
-                      className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
+                      className={inputCls}
+                      value={dockerfilePath}
+                      disabled={busy}
+                      placeholder="otomatik"
+                      onChange={(e) => setDockerfilePath(e.target.value)}
                     />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] text-zinc-400 font-sans">İç Port (Container Port):</label>
-                    <input
-                      type="number"
-                      value={containerPort}
-                      onChange={(e) => setContainerPort(Number(e.target.value))}
-                      className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                    />
-                  </div>
-                </div>
+                  </Field>
+                </>
+              )}
+              <Field label="Uygulama portu" hint={mode === 'git' ? 'Boşsa otomatik bulunur' : 'Konteynerin içinde dinlenen port'}>
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={appPort}
+                  disabled={busy}
+                  placeholder="otomatik"
+                  onChange={(e) => setAppPort(e.target.value === '' ? '' : Number(e.target.value))}
+                />
+              </Field>
+              <Field label="Dış port" hint="0 = boş bir port otomatik seçilir">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={hostPort}
+                  disabled={busy}
+                  onChange={(e) => setHostPort(Number(e.target.value) || 0)}
+                />
+              </Field>
+              <Field label="Alan adı (Traefik)" hint="Sadece Traefik çalışıyorsa açılır">
+                <input
+                  className={inputCls}
+                  value={domain}
+                  disabled={busy}
+                  placeholder="uygulama.siten.com"
+                  onChange={(e) => setDomain(e.target.value)}
+                />
+              </Field>
+              <Field label={`RAM sınırı: ${ramLimitMb} MB`}>
+                <input
+                  type="range"
+                  min={128}
+                  max={4096}
+                  step={128}
+                  value={ramLimitMb}
+                  disabled={busy}
+                  onChange={(e) => setRamLimitMb(Number(e.target.value))}
+                  className="w-full accent-white"
+                />
+              </Field>
+              <Field label={`CPU sınırı: ${cpuLimitCore} çekirdek`}>
+                <input
+                  type="range"
+                  min={0.25}
+                  max={4}
+                  step={0.25}
+                  value={cpuLimitCore}
+                  disabled={busy}
+                  onChange={(e) => setCpuLimitCore(Number(e.target.value))}
+                  className="w-full accent-white"
+                />
+              </Field>
 
-                {/* Env Vars List */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-zinc-400 font-sans">Ortam Değişkenleri ({envVars.length}):</span>
+              <div className="sm:col-span-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-zinc-400">Ortam değişkenleri (ENV)</span>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => setEnvVars((prev) => [...prev, { key: '', value: '' }])}
+                    className="inline-flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white cursor-pointer disabled:opacity-50"
+                  >
+                    <Plus className="w-3 h-3" /> Ekle
+                  </button>
+                </div>
+                {envVars.length === 0 && <p className="text-[11px] text-zinc-600">Henüz değişken yok.</p>}
+                {envVars.map((ev, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input
+                      className={inputCls}
+                      placeholder="ANAHTAR"
+                      value={ev.key}
+                      disabled={busy}
+                      onChange={(e) => setEnvVars((prev) => prev.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))}
+                    />
+                    <input
+                      className={inputCls}
+                      placeholder="değer"
+                      value={ev.value}
+                      disabled={busy}
+                      onChange={(e) => setEnvVars((prev) => prev.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))}
+                    />
                     <button
                       type="button"
-                      onClick={() => setShowSecrets(!showSecrets)}
-                      className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 font-sans cursor-pointer"
+                      aria-label="Değişkeni sil"
+                      disabled={busy}
+                      onClick={() => setEnvVars((prev) => prev.filter((_, j) => j !== i))}
+                      className="px-2 text-zinc-500 hover:text-white cursor-pointer disabled:opacity-50"
                     >
-                      {showSecrets ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      <span>{showSecrets ? 'Gizle' : 'Göster'}</span>
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-
-                  {envVars.map((env, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="ANAHTAR"
-                        value={env.key}
-                        onChange={(e) => {
-                          const updated = [...envVars];
-                          updated[idx].key = e.target.value;
-                          setEnvVars(updated);
-                        }}
-                        className="flex-1 bg-[#121212] border border-[#262626] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-white"
-                      />
-                      <input
-                        type={env.secret && !showSecrets ? 'password' : 'text'}
-                        placeholder="DEĞER"
-                        value={env.value}
-                        onChange={(e) => {
-                          const updated = [...envVars];
-                          updated[idx].value = e.target.value;
-                          setEnvVars(updated);
-                        }}
-                        className="flex-1 bg-[#121212] border border-[#262626] rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveEnv(idx)}
-                        className="p-1.5 text-zinc-500 hover:text-white transition cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={handleAddEnv}
-                    className="inline-flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white font-medium pt-1 font-sans cursor-pointer"
-                  >
-                    <Plus className="w-3 h-3" /> Değişken Ekle
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Network & Traefik */}
-            {currentStep === 3 && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={snappySpring}
-                className="space-y-4 text-xs font-sans"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-zinc-100" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      3. Adım: Ağ Köprüsü & Traefik SSL Rotalama
-                    </h2>
-                  </div>
-                  <span className="text-[10px] text-zinc-100 bg-zinc-100/10 px-2 py-0.5 rounded border border-white/20 font-mono">
-                    Traefik v3 SSL
-                  </span>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[11px] text-zinc-400 font-sans">Traefik Web Router Domaini:</label>
-                  <input
-                    type="text"
-                    value={customDomain}
-                    onChange={(e) => setCustomDomain(e.target.value)}
-                    placeholder="örn: api.localhost veya app.internal"
-                    className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                  />
-                  <p className="text-[10px] text-zinc-500 font-mono">Host(`{customDomain}`) kuralı eklenir. Bu adres yalnızca Traefik çalışıyorsa açılır; çalışmıyorsa uygulamaya localhost adresinden erişirsin.</p>
-                </div>
-
-                <div className="space-y-1.5 pt-2">
-                  <label className="text-[11px] text-zinc-400 font-sans">Docker Ağı:</label>
-                  <select
-                    value={selectedNetwork}
-                    onChange={(e) => setSelectedNetwork(e.target.value)}
-                    className="w-full bg-[#121212] border border-[#262626] rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:outline-none focus:border-white"
-                  >
-                    <option value="akson-bridge">akson-bridge (İzole Dahili Ağ)</option>
-                    <option value="bridge">bridge (Varsayılan Docker Köprüsü)</option>
-                    <option value="host">host (Doğrudan Host Ağı)</option>
-                  </select>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 4: Resources */}
-            {currentStep === 4 && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={snappySpring}
-                className="space-y-4 text-xs font-sans"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-zinc-300" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      4. Adım: Donanım Sınırları & Cgroup
-                    </h2>
-                  </div>
-                  <span className="text-[10px] text-zinc-300 bg-zinc-300/10 px-2 py-0.5 rounded border border-white/20 font-mono">
-                    Cgroupv2
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-[11px] text-zinc-400 font-sans">Bellek Limiti (Hard RAM):</span>
-                    <span className="text-white font-bold font-mono">{ramLimitMb} MB</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[128, 256, 512, 1024].map((mb) => (
-                      <button
-                        key={mb}
-                        type="button"
-                        onClick={() => setRamLimitMb(mb)}
-                        className={`py-2 rounded-lg border text-center transition font-mono cursor-pointer ${
-                          ramLimitMb === mb
-                            ? 'bg-white text-black border-white font-bold'
-                            : 'bg-[#121212] border-[#262626] text-zinc-400 hover:text-white'
-                        }`}
-                      >
-                        {mb} MB
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <div className="flex justify-between">
-                    <span className="text-[11px] text-zinc-400 font-sans">İşlemci Limiti (vCPU):</span>
-                    <span className="text-white font-bold font-mono">{cpuLimitCore} Çekirdek</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {[0.25, 0.5, 1.0, 2.0].map((core) => (
-                      <button
-                        key={core}
-                        type="button"
-                        onClick={() => setCpuLimitCore(core)}
-                        className={`py-2 rounded-lg border text-center transition font-mono cursor-pointer ${
-                          cpuLimitCore === core
-                            ? 'bg-white text-black border-white font-bold'
-                            : 'bg-[#121212] border-[#262626] text-zinc-400 hover:text-white'
-                        }`}
-                      >
-                        {core} CPU
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 5: Summary */}
-            {currentStep === 5 && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={snappySpring}
-                className="space-y-4 text-xs font-sans"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-[#262626]">
-                  <div className="flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-zinc-500" />
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                      5. Adım: Dağıtım Özeti & Onay
-                    </h2>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 bg-zinc-500/10 px-2 py-0.5 rounded border border-white/20 font-mono">
-                    Hazır
-                  </span>
-                </div>
-
-                <div className="bg-[#121212] p-4 rounded-xl border border-[#262626] divide-y divide-[#262626]">
-                  <div className="flex justify-between py-2">
-                    <span className="text-zinc-400 font-sans">Servis Adı</span>
-                    <span className="text-white font-semibold font-mono">{serviceName}</span>
-                  </div>
-                  {deploySource === 'git' ? (
-                    <>
-                      <div className="flex justify-between py-2">
-                        <span className="text-zinc-400 font-sans">Git Deposu</span>
-                        <span className="text-zinc-500 font-mono truncate max-w-[260px]">{gitUrl || 'Belirtilmedi'}</span>
-                      </div>
-                      <div className="flex justify-between py-2">
-                        <span className="text-zinc-400 font-sans">Dal / Dockerfile</span>
-                        <span className="text-zinc-300 font-mono">{gitBranch} • {dockerfilePath || 'otomatik'}</span>
-                      </div>
-                      <div className="flex justify-between py-2">
-                        <span className="text-zinc-400 font-sans">Hedef İmaj</span>
-                        <span className="text-white font-mono">akson/{serviceName}:latest</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex justify-between py-2">
-                      <span className="text-zinc-400 font-sans">Docker İmajı</span>
-                      <span className="text-white font-mono">{customImage}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between py-2">
-                    <span className="text-zinc-400 font-sans">Port Yönlendirmesi</span>
-                    <span className="text-zinc-300 font-mono">{hostPort || 'otomatik'} → {containerPort}</span>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-zinc-400 font-sans">Traefik Host Rotası</span>
-                    <span className="text-white font-mono">{customDomain}</span>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-zinc-400 font-sans">Kaynak Sınırı</span>
-                    <span className="text-zinc-300 font-mono">{ramLimitMb} MB RAM, {cpuLimitCore} vCPU</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step Navigation Controls */}
-            <div className="flex items-center justify-between pt-4 border-t border-[#262626]">
-              <button
-                type="button"
-                disabled={currentStep === 1 || isDeploying}
-                onClick={() => {
-                  soundManager.playClick();
-                  setCurrentStep((prev) => Math.max(1, prev - 1));
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-[#171717] hover:bg-zinc-800 text-white text-xs font-sans transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer border border-[#262626]"
-              >
-                Geri
-              </button>
-
-              {currentStep < 5 ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundManager.playClick();
-                    setCurrentStep((prev) => Math.min(5, prev + 1));
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition cursor-pointer shadow-md active:scale-95"
-                >
-                  <span>Sonraki Adım</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isDeploying}
-                  onClick={isDeployed ? handleResetDeploy : handleStartDeploy}
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-sans font-bold transition cursor-pointer shadow-md active:scale-95 disabled:opacity-50"
-                >
-                  {isDeployed ? <RotateCcw className="w-3.5 h-3.5" /> : <Rocket className="w-3.5 h-3.5" />}
-                  <span>{isDeployed ? 'Yeni Dağıtım' : 'Dağıtımı Başlat'}</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column (5 cols): Live Terminal Stream */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          {/* LIVE TERMINAL LOG STREAM */}
-          <div className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-5 space-y-3 font-mono text-xs shadow-inner">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#262626]">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <Terminal className="w-4 h-4 text-white" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider font-sans">
-                  Canlı Dağıtım Konsolu
-                </span>
+                ))}
               </div>
-              <span className="text-[10px] text-zinc-300 flex items-center gap-1.5 font-sans px-2.5 py-0.5 rounded-full bg-white/5 border border-[#262626]">
-                <span className={`w-1.5 h-1.5 rounded-full ${isDeploying ? 'bg-zinc-100 animate-pulse' : 'bg-zinc-600'}`} />
-                <span className={isDeploying ? 'text-zinc-100' : 'text-zinc-300'}>
-                  {isDeploying ? 'Çalışıyor' : 'Hazır'}
-                </span>
-              </span>
-            </div>
-
-            <p className="text-[11px] text-zinc-400 font-sans">
-              Dağıtım başlayınca adımlar ve Docker çıktıları burada görünür.
-            </p>
-
-            <div className="h-[340px] overflow-y-auto space-y-1.5 text-[11px] pr-1 bg-[#000000] p-3 rounded-xl border border-[#262626] font-mono">
-              {deployLogs.length === 0 ? (
-                <div className="text-zinc-600 italic pt-24 text-center text-xs font-sans">
-                  Henüz çıktı yok.
-                </div>
-              ) : (
-                deployLogs.map((log, idx) => {
-                  const isSuccess = log.includes('başarıyla');
-                  const isErr = log.includes('ERR') || log.includes('fail');
-                  const isImageStep = log.includes('[1/5: image]');
-                  const isConfigStep = log.includes('[2/5: config]');
-                  const isNetworkStep = log.includes('[3/5: network]');
-                  const isCgroupStep = log.includes('[4/5: cgroup]');
-                  const isDeployStep = log.includes('[5/5: deploy]');
-
-                  const colorClass = isSuccess
-                    ? 'text-zinc-100 font-bold'
-                    : isErr
-                    ? 'text-zinc-500 underline font-semibold'
-                    : isImageStep
-                    ? 'text-zinc-300'
-                    : isConfigStep
-                    ? 'text-zinc-400'
-                    : isNetworkStep
-                    ? 'text-zinc-100'
-                    : isCgroupStep
-                    ? 'text-zinc-300'
-                    : isDeployStep
-                    ? 'text-zinc-500'
-                    : 'text-zinc-300';
-
-                  return (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className={`leading-relaxed ${colorClass}`}
-                    >
-                      {log}
-                    </motion.div>
-                  );
-                })
-              )}
-            </div>
-          </div>
+            </motion.div>
+          )}
         </div>
       </div>
+
+      {/* Live progress */}
+      {phase !== 'idle' && (
+        <DeployProgress
+          steps={runMode === 'git' ? GIT_STEPS : IMAGE_STEPS}
+          states={stepStates}
+          details={stepDetails}
+          logs={logs}
+          demo={!isLiveBackend}
+        />
+      )}
+
+      {/* Outcome */}
+      {phase === 'success' && (
+        <DeploySuccess
+          name={deployedName}
+          url={resultUrl}
+          demo={!isLiveBackend}
+          onRedeploy={resetToForm}
+          onDashboard={onNavigateDashboard}
+        />
+      )}
+      {phase === 'error' && <DeployError message={errorMessage} onRetry={resetToForm} />}
     </div>
   );
 };
+
+const DeployButton: React.FC<{ onClick: () => void; disabled: boolean; busy: boolean }> = ({ onClick, disabled, busy }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    className="inline-flex items-center justify-center gap-2 bg-white text-black text-sm font-semibold rounded-xl px-6 py-3.5 hover:bg-zinc-200 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+  >
+    <Rocket className={`w-4 h-4 ${busy ? 'animate-pulse' : ''}`} />
+    {busy ? 'Dağıtılıyor…' : 'Dağıt'}
+  </button>
+);
+
+const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({ label, hint, children }) => (
+  <label className="block space-y-1.5">
+    <span className="text-[11px] text-zinc-400">{label}</span>
+    {children}
+    {hint && <span className="block text-[10px] text-zinc-600">{hint}</span>}
+  </label>
+);

@@ -79,6 +79,16 @@ export interface DeployContainerResult {
   logs: string[];
 }
 
+export type DeployStep = 'clone' | 'detect' | 'build' | 'pull' | 'start' | 'ready';
+export type DeployStepStatus = 'running' | 'done' | 'error';
+
+/** One line of the live deploy stream (POST /api/v1/deployments/stream). */
+export type DeployEvent =
+  | { type: 'step'; step: DeployStep; status: DeployStepStatus; detail?: string }
+  | { type: 'log'; line: string }
+  | { type: 'result'; container: ApiContainer; url?: string }
+  | { type: 'error'; message: string };
+
 const API_BASE = '';
 
 /**
@@ -303,6 +313,47 @@ export const api = {
     });
     if (!res.ok) throw new Error(`Fetch network failed: HTTP ${res.status}`);
     return res.json();
+  },
+
+  /**
+   * Deploys and streams progress events as they happen. Resolves when the stream ends.
+   * Aborting the signal stops reading; the deployment itself keeps running on the server.
+   */
+  async deployStream(
+    req: DeployContainerRequest,
+    onEvent: (ev: DeployEvent) => void,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const res = await fetch(`${API_BASE}/api/v1/deployments/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+      signal,
+    });
+    if (!res.ok || !res.body) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Deploy failed with HTTP ${res.status}`);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    const flush = (line: string) => {
+      if (!line.trim()) return;
+      try {
+        onEvent(JSON.parse(line) as DeployEvent);
+      } catch {
+        // ignore a malformed line rather than breaking the whole stream
+      }
+    };
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      lines.forEach(flush);
+    }
+    flush(buffer);
   },
 
   /**
