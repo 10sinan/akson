@@ -236,7 +236,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
       {/* Heading */}
       <div className="space-y-1">
         <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Projeni yayına al</h1>
-        <p className="text-sm text-zinc-400">Git linkini yapıştır, Dağıt’a bas. Akson indirir, derler ve sana bir adres verir.</p>
+        <p className="text-sm text-zinc-300">Git linkini yapıştır, Dağıt’a bas. Akson indirir, derler ve sana bir adres verir.</p>
       </div>
 
       {/* Form card */}
@@ -255,7 +255,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
               onClick={() => selectMode(m)}
               disabled={busy}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer disabled:cursor-not-allowed ${
-                mode === m ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+                mode === m ? 'bg-white text-black font-semibold' : 'text-zinc-300 hover:text-white'
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {label}
@@ -267,7 +267,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
           <div className="flex flex-col sm:flex-row gap-2">
             <label className="relative flex-1">
               <span className="sr-only">Git linki</span>
-              <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Link2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
               <input
                 type="url"
                 value={gitUrl}
@@ -295,9 +295,9 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-white">{tpl.name}</span>
-                    <span className="text-[12px] font-mono text-zinc-400">{tpl.image}</span>
+                    <span className="text-[12px] font-mono text-zinc-300">{tpl.image}</span>
                   </div>
-                  <p className="text-[13px] text-zinc-500 mt-0.5">{tpl.desc}</p>
+                  <p className="text-[13px] text-zinc-400 mt-0.5">{tpl.desc}</p>
                 </button>
               ))}
             </div>
@@ -329,9 +329,9 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                 <div className="w-9 h-9 rounded-xl border border-[#262626] bg-[#121212] flex items-center justify-center text-zinc-300">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[13px] text-zinc-400 leading-tight">{text}</span>
+                <span className="text-[13px] text-zinc-300 leading-tight">{text}</span>
                 {i < HOW_IT_WORKS.length - 1 && (
-                  <ArrowRight className="hidden sm:block absolute -right-2 top-4 w-4 h-4 text-zinc-600" />
+                  <ArrowRight className="hidden sm:block absolute -right-2 top-4 w-4 h-4 text-zinc-400" />
                 )}
               </div>
             ))}
@@ -343,7 +343,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
-            className="flex items-center gap-2 text-xs text-zinc-400 hover:text-white transition cursor-pointer"
+            className="flex items-center gap-2 text-xs text-zinc-300 hover:text-white transition cursor-pointer"
             aria-expanded={showAdvanced}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -438,7 +438,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
 
               <div className="sm:col-span-2 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-zinc-400">Ortam değişkenleri (ENV)</span>
+                  <span className="text-[13px] text-zinc-300">Ortam değişkenleri (ENV)</span>
                   <button
                     type="button"
                     disabled={busy}
@@ -448,7 +448,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                     <Plus className="w-3 h-3" /> Ekle
                   </button>
                 </div>
-                {envVars.length === 0 && <p className="text-[13px] text-zinc-600">Henüz değişken yok.</p>}
+                {envVars.length === 0 && <p className="text-[13px] text-zinc-400">Henüz değişken yok.</p>}
                 {envVars.map((ev, i) => (
                   <div key={i} className="flex gap-2">
                     <input
@@ -470,7 +470,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                       aria-label="Değişkeni sil"
                       disabled={busy}
                       onClick={() => setEnvVars((prev) => prev.filter((_, j) => j !== i))}
-                      className="px-2 text-zinc-500 hover:text-white cursor-pointer disabled:opacity-50"
+                      className="px-2 text-zinc-400 hover:text-white cursor-pointer disabled:opacity-50"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -522,8 +522,8 @@ const DeployButton: React.FC<{ onClick: () => void; disabled: boolean; busy: boo
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({ label, hint, children }) => (
   <label className="block space-y-1.5">
-    <span className="text-[13px] text-zinc-400">{label}</span>
+    <span className="text-[13px] text-zinc-300">{label}</span>
     {children}
-    {hint && <span className="block text-[12px] text-zinc-600">{hint}</span>}
+    {hint && <span className="block text-[12px] text-zinc-400">{hint}</span>}
   </label>
 );

@@ -55,8 +55,8 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
         };
       case 'database':
         return {
-          icon: <Database className="w-4 h-4 text-zinc-400" />,
-          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-400',
+          icon: <Database className="w-4 h-4 text-zinc-300" />,
+          badgeClass: 'bg-zinc-400/10 border-white/20 text-zinc-300',
           sparkColor: 'amber' as const,
         };
       case 'worker':
@@ -99,16 +99,16 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               Canlı Ağ Akışı
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5 font-sans">
+          <p className="text-xs text-zinc-300 mt-0.5 font-sans">
             Trafik akışı, Traefik ters vekil yönlendirmeleri ve bağlı Docker servisleri
           </p>
         </div>
 
         <div className="flex items-center gap-3 text-xs font-mono">
           <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800">
-            <span className="text-zinc-400 font-sans">Aktif Düğümler:</span>
+            <span className="text-zinc-300 font-sans">Aktif Düğümler:</span>
             <span className="text-zinc-100 font-bold">{runningCount}</span>
-            <span className="text-zinc-500">/</span>
+            <span className="text-zinc-400">/</span>
             <span className="text-zinc-300">{containers.length}</span>
           </div>
         </div>
@@ -198,7 +198,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           <div className="h-[2px] bg-zinc-800" />
 
           {/* Merkez Kavşak Dağıtım Rozeti */}
-          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[12px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-md">
+          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[12px] font-mono text-zinc-300 flex items-center gap-1.5 shadow-md">
             <span className="inline-flex rounded-full h-1.5 w-1.5 bg-zinc-100" />
             <span>
               akson-bridge: <strong className="text-zinc-100 font-semibold">{runningCount} çalışan servis</strong>
@@ -214,7 +214,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               Bağlı Servis Düğümleri
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-[13px] font-sans text-zinc-400 hidden sm:inline">
+              <span className="text-[13px] font-sans text-zinc-300 hidden sm:inline">
                 {isDetailOpen
                   ? 'Düğüm detayları sağ panelde açıktır (Kapatmak için seçili düğüme tekrar tıklayın)'
                   : 'Tıklanan düğüm sağ panelde canlı detay görünümünü açar'}
@@ -295,7 +295,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                             ? 'bg-zinc-800 border-zinc-700 text-white'
                             : isRunning
                             ? catStyles.badgeClass
-                            : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+                            : 'bg-zinc-900 border-zinc-800 text-zinc-400'
                         }`}
                       >
                         {catStyles.icon}
@@ -311,7 +311,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                             </span>
                           )}
                         </div>
-                        <div className="text-[12px] text-zinc-400 font-mono truncate">
+                        <div className="text-[12px] text-zinc-300 font-mono truncate">
                           {container.image}:{container.tag}
                         </div>
                       </div>
@@ -321,7 +321,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       className={`shrink-0 flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${
                         isRunning
                           ? 'bg-zinc-100/10 border-white/20 text-zinc-100'
-                          : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+                          : 'bg-zinc-900 border-zinc-800 text-zinc-400'
                       }`}
                     >
                       <span className="relative flex h-2 w-2 items-center justify-center">
@@ -341,7 +341,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
                   {/* Middle: Live Sparkline Pulse Wave */}
                   <div className="mt-2.5 relative z-10">
-                    <div className="flex items-center justify-between text-[12px] font-mono text-zinc-400 mb-1">
+                    <div className="flex items-center justify-between text-[12px] font-mono text-zinc-300 mb-1">
                       <span>CPU</span>
                       <span className="text-white font-medium">%{container.cpuPercent}</span>
                     </div>
@@ -354,7 +354,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   </div>
 
                   {/* Bottom: Port & IP Specs */}
-                  <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[13px] font-mono text-zinc-400 relative z-10">
+                  <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[13px] font-mono text-zinc-300 relative z-10">
                     <span className="text-zinc-300 truncate max-w-[120px]">
                       {container.ports.length > 0
                         ? `:${container.ports[0].hostPort}➔${container.ports[0].containerPort}`
@@ -369,7 +369,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             })}
 
             {containers.length === 0 && (
-              <div className="col-span-full p-8 text-center text-xs font-sans text-zinc-500 bg-zinc-950 rounded-2xl border border-zinc-800">
+              <div className="col-span-full p-8 text-center text-xs font-sans text-zinc-400 bg-zinc-950 rounded-2xl border border-zinc-800">
                 Henüz aktif servis düğümü bulunmuyor. Yeni bir servis dağıtarak ağ akışını başlatabilirsiniz.
               </div>
             )}
@@ -385,7 +385,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
                 selectedContainer.status === 'running'
                   ? getCategoryStyles(selectedContainer.category).badgeClass
-                  : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                  : 'bg-zinc-800 border-zinc-700 text-zinc-300'
               }`}
             >
               {getCategoryStyles(selectedContainer.category).icon}
@@ -393,7 +393,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-white font-sans">{selectedContainer.name}</span>
-                <span className="text-xs text-zinc-400 font-mono">({selectedContainer.image}:{selectedContainer.tag})</span>
+                <span className="text-xs text-zinc-300 font-mono">({selectedContainer.image}:{selectedContainer.tag})</span>
                 {selectedContainer.traefikRoute && (
                   <a
                     href={`https://${selectedContainer.traefikRoute}`}
@@ -406,7 +406,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   </a>
                 )}
               </div>
-              <div className="text-[13px] text-zinc-400 font-mono mt-0.5">
+              <div className="text-[13px] text-zinc-300 font-mono mt-0.5">
                 Dahili IP: <span className="text-white">{selectedContainer.ipAddress || '—'}</span> • Çalışma Süresi: <span className="text-zinc-100">{selectedContainer.uptime}</span>
               </div>
             </div>

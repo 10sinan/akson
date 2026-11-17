@@ -51,7 +51,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[#262626]">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Ağ</h1>
-          <p className="text-xs text-zinc-400 mt-1 font-sans">
+          <p className="text-xs text-zinc-300 mt-1 font-sans">
             Servislerin bağlı olduğu Docker ağı ve Traefik rotaları.
           </p>
         </div>
@@ -69,12 +69,12 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
       </div>
 
       {!isLiveBackend && (
-        <div className="p-3 rounded-xl border border-[#262626] bg-[#0a0a0a] text-xs text-zinc-400 font-sans">
+        <div className="p-3 rounded-xl border border-[#262626] bg-[#0a0a0a] text-xs text-zinc-300 font-sans">
           Demo modu: backend bağlı olmadığı için ağ bilgisi okunamıyor.
         </div>
       )}
       {error && (
-        <div className="p-3 rounded-xl border border-white/20 bg-zinc-500/10 text-xs text-zinc-500 font-sans">
+        <div className="p-3 rounded-xl border border-white/20 bg-zinc-500/10 text-xs text-zinc-400 font-sans">
           Ağ bilgisi alınamadı: {error}
         </div>
       )}
@@ -87,7 +87,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
           { label: 'Ağ geçidi', value: details?.gateway },
         ].map((item) => (
           <div key={item.label} className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4">
-            <span className="text-[13px] text-zinc-400 font-sans block">{item.label}</span>
+            <span className="text-[13px] text-zinc-300 font-sans block">{item.label}</span>
             <span className="text-sm text-white font-mono mt-1 block">{item.value || '—'}</span>
           </div>
         ))}
@@ -100,12 +100,12 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
             <Network className="w-4 h-4 text-white" />
             <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">Traefik rotaları</h2>
           </div>
-          <span className="text-[13px] font-sans text-zinc-400">{routed.length} rota</span>
+          <span className="text-[13px] font-sans text-zinc-300">{routed.length} rota</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#121212] text-zinc-400 border-b border-[#262626] font-sans">
+            <thead className="bg-[#121212] text-zinc-300 border-b border-[#262626] font-sans">
               <tr>
                 <th className="p-3.5 font-medium">Servis</th>
                 <th className="p-3.5 font-medium">Kural</th>
@@ -121,12 +121,12 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
                   <tr key={c.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="p-3.5 text-white">{c.name}</td>
                     <td className="p-3.5 text-zinc-300">{c.traefikRoute}</td>
-                    <td className="p-3.5 text-zinc-400">
+                    <td className="p-3.5 text-zinc-300">
                       {port ? (port.hostPort ? `${port.hostPort} → ${port.containerPort}` : port.containerPort) : '—'}
                     </td>
                     <td className="p-3.5 text-zinc-300">{ipOf(c)}</td>
                     <td className="p-3.5 text-right font-sans">
-                      <span className={c.status === 'running' ? 'text-zinc-100' : 'text-zinc-500'}>
+                      <span className={c.status === 'running' ? 'text-zinc-100' : 'text-zinc-400'}>
                         {c.status === 'running' ? 'Çalışıyor' : 'Durdu'}
                       </span>
                     </td>
@@ -135,7 +135,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
               })}
               {routed.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-zinc-500 font-sans">
+                  <td colSpan={5} className="p-8 text-center text-zinc-400 font-sans">
                     Traefik rotası olan servis yok. Dağıtım sırasında bir alan adı girerseniz burada görünür.
                   </td>
                 </tr>
@@ -153,7 +153,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
         </div>
 
         {containers.length === 0 ? (
-          <p className="text-xs text-zinc-500 font-sans">Henüz servis yok.</p>
+          <p className="text-xs text-zinc-400 font-sans">Henüz servis yok.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {containers.map((c) => (
@@ -163,7 +163,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
                   <span className={`w-2 h-2 rounded-full ${c.status === 'running' ? 'bg-zinc-100' : 'bg-zinc-600'}`} />
                 </div>
                 <div className="text-[13px] text-zinc-300 font-mono">{ipOf(c)}</div>
-                <div className="text-[12px] text-zinc-500 font-mono truncate">{c.image}</div>
+                <div className="text-[12px] text-zinc-400 font-mono truncate">{c.image}</div>
               </div>
             ))}
           </div>

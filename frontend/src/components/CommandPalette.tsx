@@ -166,7 +166,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       title: 'Asistanı Aç',
       subtitle: 'Seçili konteynerin durumunu ve loglarını özetle',
       category: 'Hızlı Eylemler',
-      icon: <Sparkles className="w-4 h-4 text-zinc-400" />,
+      icon: <Sparkles className="w-4 h-4 text-zinc-300" />,
       action: () => {
         onOpenAi();
         onClose();
@@ -247,7 +247,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
           >
             {/* Search Input Bar */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#262626] bg-[#121212]">
-              <Search className="w-4 h-4 text-zinc-400 shrink-0" />
+              <Search className="w-4 h-4 text-zinc-300 shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
@@ -258,9 +258,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Komut yazın veya servis arayın (örn: restart, redis, logs)..."
-                className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none font-mono"
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-400 focus:outline-none font-mono"
               />
-              <div className="flex items-center gap-1 bg-[#171717] border border-[#262626] px-2 py-0.5 rounded text-[12px] font-mono text-zinc-400">
+              <div className="flex items-center gap-1 bg-[#171717] border border-[#262626] px-2 py-0.5 rounded text-[12px] font-mono text-zinc-300">
                 <span>ESC</span>
               </div>
             </div>
@@ -268,7 +268,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             {/* Results List */}
             <div className="max-h-[360px] overflow-y-auto p-2 space-y-1">
               {filteredCommands.length === 0 ? (
-                <div className="p-8 text-center text-xs text-zinc-500 font-mono">
+                <div className="p-8 text-center text-xs text-zinc-400 font-mono">
                   Sonuç bulunamadı: "<strong className="text-white">{query}</strong>"
                 </div>
               ) : (
@@ -280,7 +280,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       onClick={cmd.action}
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={`relative flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer select-none transition-colors ${
-                        isSelected ? 'bg-[#171717] text-white' : 'text-zinc-400 hover:text-white'
+                        isSelected ? 'bg-[#171717] text-white' : 'text-zinc-300 hover:text-white'
                       }`}
                     >
                       {/* Active Sliding Highlight */}
@@ -301,7 +301,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                             {cmd.title}
                           </span>
                           {cmd.subtitle && (
-                            <span className="text-[13px] text-zinc-400 block truncate">
+                            <span className="text-[13px] text-zinc-300 block truncate">
                               {cmd.subtitle}
                             </span>
                           )}
@@ -309,7 +309,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       </div>
 
                       <div className="relative z-10 flex items-center gap-2 shrink-0 ml-3">
-                        <span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[#121212] border border-[#262626] text-zinc-400">
+                        <span className="text-[12px] font-mono px-2 py-0.5 rounded bg-[#121212] border border-[#262626] text-zinc-300">
                           {cmd.category}
                         </span>
                         {isSelected && (
@@ -323,7 +323,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             </div>
 
             {/* Bottom Keyboard Hint Bar */}
-            <div className="px-4 py-2 bg-[#000000] border-t border-[#262626] flex items-center justify-between text-[13px] font-mono text-zinc-400">
+            <div className="px-4 py-2 bg-[#000000] border-t border-[#262626] flex items-center justify-between text-[13px] font-mono text-zinc-300">
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1">
                   <kbd className="px-1.5 py-0.5 bg-[#121212] rounded border border-[#262626] text-[12px] text-zinc-300">↑</kbd>
@@ -335,7 +335,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   Çalıştır
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-zinc-400">
+              <div className="flex items-center gap-1 text-zinc-300">
                 <Command className="w-3 h-3" />
                 <span>Akson Spotlight</span>
               </div>

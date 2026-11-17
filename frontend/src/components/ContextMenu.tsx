@@ -109,7 +109,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
           >
-            <Square className="w-3.5 h-3.5 fill-current text-zinc-400" />
+            <Square className="w-3.5 h-3.5 fill-current text-zinc-300" />
             <span>Konteyneri Durdur</span>
           </button>
         ) : (
@@ -166,9 +166,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         {/* Action: Copy ID */}
         <button
           onClick={copyId}
-          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition cursor-pointer"
         >
-          <Copy className="w-3.5 h-3.5 text-zinc-400" />
+          <Copy className="w-3.5 h-3.5 text-zinc-300" />
           <span>ID Kopyala</span>
         </button>
 
@@ -180,9 +180,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             onAction('delete', container.id);
             onClose();
           }}
-          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-500/90 hover:text-zinc-500 hover:bg-zinc-500/10 rounded-xl transition cursor-pointer"
+          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-zinc-400/90 hover:text-zinc-400 hover:bg-zinc-500/10 rounded-xl transition cursor-pointer"
         >
-          <Trash2 className="w-3.5 h-3.5 text-zinc-500" />
+          <Trash2 className="w-3.5 h-3.5 text-zinc-400" />
           <span>Konteyneri Sil</span>
         </button>
       </motion.div>

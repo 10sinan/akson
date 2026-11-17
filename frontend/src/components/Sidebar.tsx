@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className="group relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-400 hover:text-white"
+                className="group relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-300 hover:text-white"
               >
                 {/* Active Sliding Pill */}
                 {isActive && (
@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[13px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
                   <div className="flex flex-col text-left">
                     <span className="font-semibold text-white font-sans">{item.title}</span>
-                    <span className="text-[12px] text-zinc-400 font-sans">{item.shortDesc}</span>
+                    <span className="text-[12px] text-zinc-300 font-sans">{item.shortDesc}</span>
                   </div>
                 </div>
               </button>
@@ -133,17 +133,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
                 isAiOpen
                   ? 'bg-zinc-800 text-white border border-zinc-600'
-                  : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white hover:bg-zinc-800'
+                  : 'bg-zinc-900 text-zinc-300 border border-zinc-800 hover:text-white hover:bg-zinc-800'
               }`}
             >
-              <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-white' : 'text-zinc-400 group-hover:text-white'}`} />
+              <Sparkles className={`w-5 h-5 ${isAiOpen ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`} />
             </motion.button>
 
             {/* Instant Tooltip */}
             <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700 rounded-xl text-[13px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-white font-sans">Asistan</span>
-                <span className="text-[12px] text-zinc-400 font-sans">Konteyner ve log özeti</span>
+                <span className="text-[12px] text-zinc-300 font-sans">Konteyner ve log özeti</span>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           type="button"
           onClick={() => onSelectTab('settings')}
           aria-label="Ayarlar"
-          className="group relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-400 hover:text-white"
+          className="group relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-300 hover:text-white"
         >
           {activeTab === 'settings' && (
             <motion.div
@@ -170,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </span>
           <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[13px] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex flex-col text-left">
             <span className="font-semibold text-white font-sans">Ayarlar</span>
-            <span className="text-[12px] text-zinc-400 font-sans">Sistem durumu &amp; bakım</span>
+            <span className="text-[12px] text-zinc-300 font-sans">Sistem durumu &amp; bakım</span>
           </div>
         </button>
       </div>

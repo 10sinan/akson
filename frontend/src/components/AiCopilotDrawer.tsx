@@ -128,7 +128,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
                       Asistan
                     </h3>
                   </div>
-                  <p className="text-[13px] text-zinc-400 font-mono truncate max-w-[190px]">
+                  <p className="text-[13px] text-zinc-300 font-mono truncate max-w-[190px]">
                     {activeContainer ? activeContainer.name : 'Genel Sistem'}
                   </p>
                 </div>
@@ -136,7 +136,7 @@ export const AiCopilotDrawer: React.FC<AiCopilotDrawerProps> = ({
 
               <button
                 onClick={onClose}
-                className="p-1.5 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800 transition cursor-pointer"
+                className="p-1.5 text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-800 transition cursor-pointer"
                 title="Sohbet Panelini Kapat"
               >
                 <X className="w-4 h-4" />

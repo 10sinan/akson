@@ -34,7 +34,7 @@ export const StorageView: React.FC = () => {
     <div className="flex flex-col flex-1 space-y-6">
       <div className="pb-6 border-b border-[#262626]">
         <h1 className="text-2xl font-bold text-white tracking-tight font-sans">Depolama</h1>
-        <p className="text-xs text-zinc-400 mt-1 font-sans">
+        <p className="text-xs text-zinc-300 mt-1 font-sans">
           Akson&apos;un kendi verilerini sakladığı dosyalar.
         </p>
       </div>
@@ -51,7 +51,7 @@ export const StorageView: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white font-mono">{item.name}</h2>
-                <p className="text-xs text-zinc-400 font-sans">
+                <p className="text-xs text-zinc-300 font-sans">
                   {item.description} • {item.format}
                 </p>
               </div>
@@ -61,7 +61,7 @@ export const StorageView: React.FC = () => {
               <span className="truncate pr-2 text-zinc-300">{item.path}</span>
               <button
                 onClick={() => handleCopyPath(item)}
-                className="text-zinc-400 hover:text-white transition cursor-pointer p-1"
+                className="text-zinc-300 hover:text-white transition cursor-pointer p-1"
                 title="Yolu kopyala"
               >
                 {copiedPath === item.id ? (
@@ -74,8 +74,8 @@ export const StorageView: React.FC = () => {
           </div>
         ))}
 
-        <div className="flex items-start gap-3 p-4 rounded-2xl border border-dashed border-[#262626] text-xs text-zinc-400 font-sans">
-          <HardDrive className="w-4 h-4 mt-0.5 shrink-0 text-zinc-500" />
+        <div className="flex items-start gap-3 p-4 rounded-2xl border border-dashed border-[#262626] text-xs text-zinc-300 font-sans">
+          <HardDrive className="w-4 h-4 mt-0.5 shrink-0 text-zinc-400" />
           <p>
             Konteyner birimleri (Docker volume) henüz buradan okunmuyor. Bunları görmek için
             terminalde <span className="font-mono text-zinc-300">docker volume ls</span> kullanabilirsiniz.
