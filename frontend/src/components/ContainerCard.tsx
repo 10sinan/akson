@@ -12,6 +12,7 @@ import {
 import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 import { ShimmerScan } from './Skeleton';
+import { TiltCard } from './three/TiltCard';
 
 interface ContainerCardProps {
   container: ContainerItem;
@@ -68,7 +69,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   const isRunning = container.status === 'running';
 
   return (
-    <motion.div
+    <TiltCard
       variants={staggerItemVariants}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.985 }}
@@ -192,6 +193,6 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           </span>
         </div>
       </div>
-    </motion.div>
+    </TiltCard>
   );
 };

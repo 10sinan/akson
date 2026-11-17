@@ -78,3 +78,22 @@ export const cascadeBlockVariants: Variants = {
   },
 };
 
+
+// 3D page turn for tab changes: the incoming view tips up from the screen plane.
+// Views must not contain position:fixed children (perspective would re-anchor them).
+export const tab3DProps = {
+  initial: { opacity: 0, y: 10, rotateX: -5, transformPerspective: 1400 },
+  animate: { opacity: 1, y: 0, rotateX: 0, transformPerspective: 1400 },
+  exit: { opacity: 0, rotateX: 3, transformPerspective: 1400, transition: { duration: 0.08 } },
+  transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] },
+  style: { transformOrigin: '50% 0%' },
+} as const;
+
+// Detail panel swings in from the right edge like a door.
+export const panel3DProps = {
+  initial: { opacity: 0, x: 24, rotateY: -10, transformPerspective: 1400 },
+  animate: { opacity: 1, x: 0, rotateY: 0, transformPerspective: 1400 },
+  exit: { opacity: 0, x: 20, rotateY: -6, transformPerspective: 1400, transition: { duration: 0.08 } },
+  transition: snappySpring,
+  style: { transformOrigin: '100% 50%' },
+} as const;
