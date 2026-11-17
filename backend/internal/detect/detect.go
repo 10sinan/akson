@@ -188,13 +188,16 @@ WORKDIR /src
 COPY go.mod go.sum* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /app .
+RUN CGO_ENABLED=0 go build -o /out/server .
 
 FROM alpine:3.20
-COPY --from=build /app /app
+# Keep the project files next to the binary: many apps load templates or static files at runtime.
+WORKDIR /app
+COPY --from=build /src /app
+COPY --from=build /out/server /app/server
 ENV PORT=8080
 EXPOSE 8080
-CMD ["/app"]
+CMD ["/app/server"]
 `, goVersion),
 	}, nil
 }

@@ -259,7 +259,13 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	if !isGit {
 		d.step(StepPull, "done", req.Image)
 	}
-	d.step(StepStart, "done", result.Container.ID)
+
+	// "Started" is not "healthy": make sure the app stays up for a few seconds.
+	d.step(StepStart, "running", "Uygulamanın ayakta kaldığı kontrol ediliyor")
+	if crashErr := s.checkStaysUp(ctx, result.Container.ID, d); crashErr != nil {
+		return nil, d.fail(StepStart, http.StatusInternalServerError, crashErr.Error(), crashErr, req.Name, req.Image, commit, branch)
+	}
+	d.step(StepStart, "done", shortCommit(result.Container.ID))
 	result.Logs = d.logs
 
 	if s.db != nil {
@@ -374,4 +380,44 @@ func (s *Server) handleDeployStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	emit(DeployEvent{Type: "result", Container: &result.Container, URL: accessURL(&result.Container)})
+}
+
+// stayUpWindow is how long a new container must keep running to count as started.
+var stayUpWindow = 5 * time.Second
+
+// checkStaysUp watches a freshly started container for stayUpWindow. If it exits or
+// restarts, its last log lines are added to the deploy log, it is stopped (so it does not
+// restart forever) and an error is returned.
+func (s *Server) checkStaysUp(ctx context.Context, id string, d *deployRun) error {
+	deadline := time.Now().Add(stayUpWindow)
+	for {
+		info, err := s.docker.InspectContainer(ctx, id)
+		if err != nil {
+			return fmt.Errorf("could not check the container: %w", err)
+		}
+		st := info.State
+		if st == nil || !st.Running || st.Restarting || info.RestartCount > 0 {
+			exit := 0
+			if st != nil {
+				exit = st.ExitCode
+			}
+			if entries, lerr := s.docker.GetContainerLogs(ctx, id, "20"); lerr == nil {
+				d.log("--- application output ---")
+				for _, e := range entries {
+					d.log(e.Message)
+				}
+			}
+			timeout := 5
+			_ = s.docker.StopContainer(ctx, id, &timeout)
+			return fmt.Errorf("Application exited right after starting (exit code %d). See the application output in the logs.", exit)
+		}
+		if time.Now().After(deadline) {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(time.Second):
+		}
+	}
 }
