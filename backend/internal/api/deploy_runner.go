@@ -149,6 +149,16 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 			req.Port = plan.Port
 			d.step(StepDetect, "done", plan.Kind)
 		} else {
+			// The repo brings its own Dockerfile: publish its EXPOSE port on a free host port.
+			if len(req.Ports) == 0 {
+				if p := detect.ExposedPort(tempDir, requested); p > 0 {
+					req.Ports = []docker.PortMapping{{PrivatePort: uint16(p), Type: "tcp"}}
+					req.Port = p
+					d.log(fmt.Sprintf("Using the repository's Dockerfile (EXPOSE %d).", p))
+				} else {
+					d.log("Using the repository's Dockerfile (no EXPOSE line: the app will not be published on a host port).")
+				}
+			}
 			d.step(StepDetect, "done", "dockerfile")
 		}
 

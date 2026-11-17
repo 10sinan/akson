@@ -206,3 +206,26 @@ func Write(dir string, p *Plan) (string, error) {
 	}
 	return GeneratedDockerfileName, nil
 }
+
+// ExposedPort returns the first port from an EXPOSE line in dir/dockerfile, or 0.
+func ExposedPort(dir, dockerfile string) int {
+	if dockerfile == "" {
+		dockerfile = "Dockerfile"
+	}
+	data, err := os.ReadFile(filepath.Join(dir, dockerfile))
+	if err != nil {
+		return 0
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(strings.TrimSpace(line))
+		if len(fields) < 2 || !strings.EqualFold(fields[0], "EXPOSE") {
+			continue
+		}
+		p := strings.SplitN(fields[1], "/", 2)[0]
+		var port int
+		if _, err := fmt.Sscanf(p, "%d", &port); err == nil && port > 0 && port < 65536 {
+			return port
+		}
+	}
+	return 0
+}
