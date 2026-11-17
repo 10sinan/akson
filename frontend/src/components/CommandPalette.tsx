@@ -22,7 +22,6 @@ interface CommandPaletteProps {
   containers: ContainerItem[];
   onSelectContainer: (container: ContainerItem) => void;
   onSelectTab: (tab: ActiveNavTab) => void;
-  onOpenDeploy: () => void;
   onOpenAi: () => void;
   onRefresh: () => void;
 }
@@ -42,7 +41,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   containers,
   onSelectContainer,
   onSelectTab,
-  onOpenDeploy,
   onOpenAi,
   onRefresh,
 }) => {
@@ -107,7 +105,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     {
       id: 'nav-storage',
       title: 'Depolama & Birimler (Storage)',
-      subtitle: 'Docker hacimleri ve NVMe disk telemetrisi',
+      subtitle: 'Akson\'un kendi veri dosyaları',
       category: 'Gezinme',
       icon: <Database className="w-4 h-4 text-white" />,
       action: () => {
@@ -158,17 +156,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       icon: <Sparkles className="w-4 h-4 text-zinc-400" />,
       action: () => {
         onOpenAi();
-        onClose();
-      },
-    },
-    {
-      id: 'act-deploy-wizard',
-      title: 'Yeni Konteyner Dağıtma Sihirbazı',
-      subtitle: 'Hızlı modal penceresini aç',
-      category: 'Hızlı Eylemler',
-      icon: <Rocket className="w-4 h-4 text-zinc-500" />,
-      action: () => {
-        onOpenDeploy();
         onClose();
       },
     },

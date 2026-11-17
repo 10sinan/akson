@@ -374,10 +374,8 @@ export function App() {
           onSearchChange={setSearchQuery}
           onRefresh={handleRefresh}
           onOpenDeploy={() => setActiveTab('deploy')}
-          onOpenAi={() => setIsAiOpen((prev) => !prev)}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           isRefreshing={isRefreshing}
-          isAiOpen={isAiOpen}
           dockerStatus={dockerStatus}
         />
 
@@ -780,7 +778,6 @@ export function App() {
         containers={containers}
         onSelectContainer={handleSelectContainer}
         onSelectTab={setActiveTab}
-        onOpenDeploy={() => setActiveTab('deploy')}
         onOpenAi={() => setIsAiOpen(true)}
         onRefresh={handleRefresh}
       />
