@@ -24,7 +24,7 @@ interface LiveTopologyGraphProps {
   selectedId: string | null;
   isDetailOpen?: boolean;
   onSelectContainer: (container: ContainerItem) => void;
-  onAction?: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void;
+  onAction?: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void | Promise<void>;
   onDeployClick?: () => void;
 }
 
@@ -36,6 +36,18 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
   onAction,
   onDeployClick,
 }) => {
+  const [busyId, setBusyId] = React.useState<string | null>(null);
+  const runAction = async (action: 'start' | 'stop' | 'restart', id: string) => {
+    if (busyId) return;
+    soundManager.playClick();
+    setBusyId(id);
+    try {
+      await onAction?.(action, id);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   // Group or classify containers
   const runningCount = containers.filter((c) => c.status === 'running').length;
 
@@ -364,6 +376,45 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                       {container.memoryUsageMb} MB
                     </span>
                   </div>
+
+                  {/* Quick actions */}
+                  {onAction && (
+                    <div
+                      className="mt-2 flex items-center gap-1.5 relative z-10"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
+                      {isRunning ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={busyId === container.id}
+                            onClick={() => runAction('stop', container.id)}
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg border border-zinc-700 bg-zinc-900 text-[13px] font-sans font-medium text-zinc-100 hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-wait transition cursor-pointer"
+                          >
+                            <Square className="w-3 h-3" /> Durdur
+                          </button>
+                          <button
+                            type="button"
+                            disabled={busyId === container.id}
+                            onClick={() => runAction('restart', container.id)}
+                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg border border-zinc-700 bg-zinc-900 text-[13px] font-sans font-medium text-zinc-100 hover:bg-zinc-800 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-wait transition cursor-pointer"
+                          >
+                            <RotateCw className="w-3 h-3" /> Yeniden başlat
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={busyId === container.id}
+                          onClick={() => runAction('start', container.id)}
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-white text-black text-[13px] font-sans font-semibold hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-wait transition cursor-pointer"
+                        >
+                          <Play className="w-3 h-3" /> Başlat
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </TiltCard>
               );
             })}
