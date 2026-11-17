@@ -166,6 +166,22 @@ export function mapApiContainerToItem(apiC: ApiContainer): ContainerItem {
   };
 }
 
+export interface ApiSystemInfo {
+  docker?: { version: string; api_version: string; os: string; arch: string };
+  docker_error?: string;
+  unused_images?: { count: number; size_bytes: number };
+  traefik_running: boolean;
+  auth_enabled: boolean;
+  acme_email_set: boolean;
+  db_path: string;
+  serves_frontend: boolean;
+}
+
+export interface ApiPruneResult {
+  deleted: number;
+  space_reclaimed: number;
+}
+
 export const api = {
   /**
    * Pings backend health endpoint to check Docker and DB status.
@@ -372,5 +388,17 @@ export const api = {
       throw new Error(err.error || `Deploy failed with HTTP ${res.status}`);
     }
     return res.json();
+  },
+  async fetchSystemInfo(): Promise<ApiSystemInfo> {
+    const res = await fetch(`${API_BASE}/api/v1/system`, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) throw new Error(`System info failed: HTTP ${res.status}`);
+    return res.json();
+  },
+
+  async pruneUnusedImages(): Promise<ApiPruneResult> {
+    const res = await fetch(`${API_BASE}/api/v1/system/prune-images`, { method: 'POST' });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `Prune failed: HTTP ${res.status}`);
+    return body;
   },
 };

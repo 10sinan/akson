@@ -13,6 +13,7 @@ import { MetricsColumn } from './components/dashboard/MetricsColumn';
 import { DeployView } from './components/views/DeployView';
 import { StorageView } from './components/views/StorageView';
 import { LogsView } from './components/views/LogsView';
+import { SettingsView } from './components/views/SettingsView';
 import { NetworkView } from './components/views/NetworkView';
 import type { ContainerItem } from './types/container';
 import { soundManager } from './utils/sound';
@@ -31,7 +32,7 @@ import { wiseBouncy, wiseSpring, wiseGentle, tab3DProps, panel3DProps, staggerCo
 // three.js is heavy, so the 3D scene ships as its own chunk and never blocks first paint.
 const ClusterScene3D = lazy(() => import('./components/three/ClusterScene3D'));
 
-const NAV_TABS: ActiveNavTab[] = ['dashboard', 'deploy', 'storage', 'logs', 'network'];
+const NAV_TABS: ActiveNavTab[] = ['dashboard', 'deploy', 'storage', 'logs', 'network', 'settings'];
 
 // The active tab lives in the URL hash (#deploy, #logs, ...) so a page refresh keeps it.
 const readTabFromHash = (): ActiveNavTab => {
@@ -339,6 +340,8 @@ export function App() {
         return 'sistem-gunlukleri';
       case 'network':
         return 'ag-ve-traefik-proxy';
+      case 'settings':
+        return 'ayarlar';
       default:
         return 'kontrol-paneli';
     }
@@ -759,6 +762,17 @@ export function App() {
                 className="flex flex-col flex-1"
               >
                 <NetworkView containers={containers} isLiveBackend={isLiveBackend} />
+              </motion.div>
+            )}
+
+            {/* TAB 6: AYARLAR (SETTINGS) */}
+            {activeTab === 'settings' && (
+              <motion.div
+                key="settings"
+                {...tab3DProps}
+                className="flex flex-col flex-1"
+              >
+                <SettingsView isLiveBackend={isLiveBackend} />
               </motion.div>
             )}
           </AnimatePresence>

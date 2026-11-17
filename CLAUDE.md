@@ -38,9 +38,11 @@ Frontend (`cd frontend`):
 
 **Live deploy**: `POST /api/v1/deployments/stream` runs the same `runDeploy` (`internal/api/deploy_runner.go`) as the JSON endpoints and streams NDJSON `DeployEvent`s (step/log/result/error); the deploy keeps running if the client disconnects.
 
+**Settings**: `GET /api/v1/system` reports Docker version, unused (dangling) images, Traefik, and whether `AKSON_TOKEN`/`ACME_EMAIL` are set (never their values). `POST /api/v1/system/prune-images` removes dangling images only. These env settings are read-only in the UI; they are changed in `docker-compose.yml`.
+
 **Streaming**: logs and stats go over Server-Sent Events (`/containers/{id}/logs/stream`, `/containers/{id}/stats/stream`). The frontend reads them with `EventSource` in `src/api/client.ts`.
 
 **Frontend** (`frontend/src`, React 19, Tailwind v4 via `@tailwindcss/vite`, framer-motion, lucide-react):
 - `api/client.ts` holds all backend calls and the API types (snake_case, matching Go JSON tags). `mapApiContainerToItem` converts them to the UI's `ContainerItem` (`types/container.ts`). `API_BASE` is `''`, and the Vite dev server proxies `/api` and `/health` to `localhost:3001`.
 - `App.tsx` owns the top-level state (active tab, container list, modals, toasts). On mount it calls `/health`. If the backend or Docker is unreachable, the UI switches to **demo mode** (`dockerStatus: 'demo'`, `isLiveBackend: false`) instead of failing, so UI changes need to work in both modes.
-- Each tab (dashboard/deploy/storage/logs/network) is rendered by a switch in `App.tsx` that picks a component from `components/views/`. Dashboard sub-panels live in `components/dashboard/`.
+- Each tab (dashboard/deploy/storage/logs/network/settings) is rendered by a switch in `App.tsx` that picks a component from `components/views/`. Dashboard sub-panels live in `components/dashboard/`.

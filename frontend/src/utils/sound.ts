@@ -4,6 +4,9 @@
 let audioCtx: AudioContext | null = null;
 let soundEnabled = false;
 
+// Fired on window whenever the sound setting changes, so every toggle in the UI stays in sync.
+export const SOUND_CHANGE_EVENT = 'akson-sound-change';
+
 // Check localStorage for saved sound preference
 if (typeof window !== 'undefined') {
   soundEnabled = localStorage.getItem('akson_sound_enabled') === 'true';
@@ -33,6 +36,7 @@ export const soundManager = {
     soundEnabled = !soundEnabled;
     if (typeof window !== 'undefined') {
       localStorage.setItem('akson_sound_enabled', String(soundEnabled));
+      window.dispatchEvent(new CustomEvent(SOUND_CHANGE_EVENT, { detail: soundEnabled }));
     }
     if (soundEnabled) {
       this.playClick();

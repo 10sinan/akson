@@ -11,7 +11,7 @@ import {
   Layers,
 } from 'lucide-react';
 
-export type ActiveNavTab = 'dashboard' | 'deploy' | 'storage' | 'logs' | 'network';
+export type ActiveNavTab = 'dashboard' | 'deploy' | 'storage' | 'logs' | 'network' | 'settings';
 
 interface SidebarProps {
   activeTab: ActiveNavTab;
@@ -150,22 +150,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Bottom: Settings (planned) */}
+      {/* Bottom: Settings */}
       <div className="flex flex-col items-center gap-3 w-full px-2">
-        <div className="relative group">
-          <button
-            type="button"
-            disabled
-            aria-label="Ayarlar (yakında)"
-            className="w-10 h-10 rounded-xl text-zinc-600 flex items-center justify-center cursor-not-allowed"
-          >
+        <button
+          type="button"
+          onClick={() => onSelectTab('settings')}
+          aria-label="Ayarlar"
+          className="group relative w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer text-zinc-400 hover:text-white"
+        >
+          {activeTab === 'settings' && (
+            <motion.div
+              layoutId="sidebarActivePill"
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              className="absolute inset-0 bg-white rounded-xl shadow-md"
+            />
+          )}
+          <span className={`relative z-10 transition-colors ${activeTab === 'settings' ? 'text-black' : ''}`}>
             <Settings className="w-5 h-5" />
-          </button>
-          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-sans text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
-            <span className="font-semibold text-white">Ayarlar</span>
-            <span className="text-[9px] text-zinc-400 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">Yakında</span>
+          </span>
+          <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex flex-col text-left">
+            <span className="font-semibold text-white font-sans">Ayarlar</span>
+            <span className="text-[10px] text-zinc-400 font-sans">Sistem durumu &amp; bakım</span>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );
