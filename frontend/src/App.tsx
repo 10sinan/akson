@@ -640,6 +640,7 @@ export function App() {
                             onSelect={handleSelectContainer}
                             isRefreshing={isRefreshing}
                             onContextMenu={handleOpenContextMenu}
+                            onAction={handleAction}
                           />
                         ))}
                         {filteredContainers.length === 0 && (
