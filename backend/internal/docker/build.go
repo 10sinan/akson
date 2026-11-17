@@ -22,6 +22,7 @@ type BuildOptions struct {
 	Dockerfile string            `json:"dockerfile"` // relative to ContextDir, defaults to "Dockerfile"
 	Tag        string            `json:"tag"`        // e.g. "akson/my-app:latest"
 	BuildArgs  map[string]string `json:"build_args"`
+	OnLog      func(string)      `json:"-"` // optional: called for each build output line as it arrives
 }
 
 // BuildResult holds the output tag and build log lines.
@@ -167,6 +168,9 @@ func (c *Client) BuildImage(ctx context.Context, opts BuildOptions) (*BuildResul
 				trimmed := strings.TrimRight(StripANSI(p.Stream), "\r\n")
 				if trimmed != "" {
 					logs = append(logs, trimmed)
+					if opts.OnLog != nil {
+						opts.OnLog(trimmed)
+					}
 				}
 			}
 		}

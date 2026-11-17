@@ -188,13 +188,16 @@ WORKDIR /src
 COPY go.mod go.sum* ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /app .
+RUN CGO_ENABLED=0 go build -o /out/server .
 
 FROM alpine:3.20
-COPY --from=build /app /app
+# Keep the project files next to the binary: many apps load templates or static files at runtime.
+WORKDIR /app
+COPY --from=build /src /app
+COPY --from=build /out/server /app/server
 ENV PORT=8080
 EXPOSE 8080
-CMD ["/app"]
+CMD ["/app/server"]
 `, goVersion),
 	}, nil
 }
@@ -205,4 +208,27 @@ func Write(dir string, p *Plan) (string, error) {
 		return "", err
 	}
 	return GeneratedDockerfileName, nil
+}
+
+// ExposedPort returns the first port from an EXPOSE line in dir/dockerfile, or 0.
+func ExposedPort(dir, dockerfile string) int {
+	if dockerfile == "" {
+		dockerfile = "Dockerfile"
+	}
+	data, err := os.ReadFile(filepath.Join(dir, dockerfile))
+	if err != nil {
+		return 0
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(strings.TrimSpace(line))
+		if len(fields) < 2 || !strings.EqualFold(fields[0], "EXPOSE") {
+			continue
+		}
+		p := strings.SplitN(fields[1], "/", 2)[0]
+		var port int
+		if _, err := fmt.Sscanf(p, "%d", &port); err == nil && port > 0 && port < 65536 {
+			return port
+		}
+	}
+	return 0
 }

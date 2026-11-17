@@ -72,3 +72,22 @@ func TestHasDockerfile(t *testing.T) {
 		t.Fatal("expected no Dockerfile")
 	}
 }
+
+func TestExposedPort(t *testing.T) {
+	cases := map[string]int{
+		"FROM x\nEXPOSE 8080\n":     8080,
+		"FROM x\nexpose 3000/tcp\n": 3000,
+		"FROM x\nEXPOSE 80 443\n":   80,
+		"FROM x\nCMD [\"run\"]\n":   0,
+		"FROM x\nEXPOSE ${PORT}\n":  0,
+	}
+	for content, want := range cases {
+		dir := project(t, map[string]string{"Dockerfile": content})
+		if got := ExposedPort(dir, ""); got != want {
+			t.Errorf("%q: got %d, want %d", content, got, want)
+		}
+	}
+	if got := ExposedPort(t.TempDir(), "Dockerfile"); got != 0 {
+		t.Errorf("missing file: got %d", got)
+	}
+}
