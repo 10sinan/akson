@@ -8,7 +8,6 @@ import {
   Network,
   Sparkles,
   Settings,
-  Shield,
   Layers,
 } from 'lucide-react';
 
@@ -26,14 +25,13 @@ const NAV_ITEMS: {
   id: ActiveNavTab;
   title: string;
   shortDesc: string;
-  shortcut: string;
   icon: React.FC<{ className?: string }>;
 }[] = [
-  { id: 'dashboard', title: 'Kontrol Paneli', shortDesc: 'Servis topolojisi & metrikler', shortcut: '⌘1', icon: LayoutDashboard },
-  { id: 'deploy', title: 'Yeni Dağıtım', shortDesc: 'Konteyner ayağa kaldır', shortcut: '⌘2', icon: Rocket },
-  { id: 'storage', title: 'Kalıcı Depolama', shortDesc: 'Volumes & NVMe disk', shortcut: '⌘3', icon: HardDrive },
-  { id: 'logs', title: 'Canlı Loglar', shortDesc: 'Stdout/stderr akışı', shortcut: '⌘4', icon: Terminal },
-  { id: 'network', title: 'Ağ & Traefik', shortDesc: 'SSL & akson-bridge', shortcut: '⌘5', icon: Network },
+  { id: 'dashboard', title: 'Kontrol Paneli', shortDesc: 'Servis topolojisi & metrikler', icon: LayoutDashboard },
+  { id: 'deploy', title: 'Yeni Dağıtım', shortDesc: 'Konteyner ayağa kaldır', icon: Rocket },
+  { id: 'storage', title: 'Kalıcı Depolama', shortDesc: 'Akson verileri', icon: HardDrive },
+  { id: 'logs', title: 'Canlı Loglar', shortDesc: 'Stdout/stderr akışı', icon: Terminal },
+  { id: 'network', title: 'Ağ & Traefik', shortDesc: 'Traefik & akson-bridge', icon: Network },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -70,7 +68,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Instant Tooltip */}
           <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
             <span className="font-bold text-white">akson</span>
-            <span className="text-[10px] text-zinc-100 bg-zinc-100/10 px-1.5 py-0.2 rounded border border-white/20 font-mono">v1.0.0</span>
           </div>
         </button>
 
@@ -120,9 +117,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <span className="font-semibold text-white font-sans">{item.title}</span>
                     <span className="text-[10px] text-zinc-400 font-sans">{item.shortDesc}</span>
                   </div>
-                  <kbd className="text-[9px] text-zinc-400 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 font-mono">
-                    {item.shortcut}
-                  </kbd>
                 </div>
               </button>
             );
@@ -156,41 +150,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
       </div>
 
-      {/* Bottom: Settings & Status */}
+      {/* Bottom: Settings (planned) */}
       <div className="flex flex-col items-center gap-3 w-full px-2">
         <div className="relative group">
           <button
-            className="w-10 h-10 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
-          >
-            <Shield className="w-5 h-5" />
-          </button>
-          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-sans text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50">
-            Güvenlik & Sertifikalar (TLS 1.3)
-          </div>
-        </div>
-
-        <div className="relative group">
-          <button
-            className="w-10 h-10 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
+            type="button"
+            disabled
+            aria-label="Ayarlar (yakında)"
+            className="w-10 h-10 rounded-xl text-zinc-600 flex items-center justify-center cursor-not-allowed"
           >
             <Settings className="w-5 h-5" />
           </button>
-          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-sans text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50">
-            Sistem Ayarları & Motor
-          </div>
-        </div>
-
-        {/* User Profile Avatar with Online Status Dot & Tooltip */}
-        <div className="relative group cursor-pointer">
-          <div className="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300 relative shadow-sm hover:border-zinc-500 transition-colors">
-            AK
-            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-zinc-100 border-2 border-[#0c0d10]" />
-          </div>
-
-          {/* Instant Tooltip */}
-          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
-            <span className="font-semibold text-white">Akson Root</span>
-            <span className="text-[9px] text-zinc-100 bg-zinc-100/10 px-1.5 py-0.5 rounded border border-white/20 font-mono">Çevrimiçi</span>
+          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-sans text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
+            <span className="font-semibold text-white">Ayarlar</span>
+            <span className="text-[9px] text-zinc-400 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">Yakında</span>
           </div>
         </div>
       </div>

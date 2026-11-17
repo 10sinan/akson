@@ -14,7 +14,6 @@ import {
   Terminal,
   Network,
   Layers,
-  Sparkles,
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 import type { ActiveNavTab } from './Sidebar';
@@ -30,10 +29,8 @@ interface HeaderProps {
   onSearchChange: (query: string) => void;
   onRefresh: () => void;
   onOpenDeploy: () => void;
-  onOpenAi?: () => void;
   onOpenCommandPalette?: () => void;
   isRefreshing: boolean;
-  isAiOpen?: boolean;
   dockerStatus?: 'online' | 'demo' | 'checking';
 }
 
@@ -56,10 +53,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSearchChange,
   onRefresh,
   onOpenDeploy,
-  onOpenAi,
   onOpenCommandPalette,
   isRefreshing,
-  isAiOpen = false,
   dockerStatus = 'online',
 }) => {
   const [isMuted, setIsMuted] = useState(!soundManager.isEnabled());
@@ -87,8 +82,6 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="font-bold text-sm text-white tracking-wide">akson</span>
         </div>
         <span className="text-zinc-600 font-mono text-xs">/</span>
-        <span className="text-zinc-500 font-mono text-xs hidden sm:inline">varsayilan-ag</span>
-        <span className="text-zinc-600 font-mono text-xs hidden sm:inline">/</span>
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800/90 shadow-sm">
           <PageIcon className="w-3.5 h-3.5 text-zinc-300" />
           <span className="text-white text-xs font-mono font-medium">{currentTabName}</span>
@@ -161,21 +154,6 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
         </div>
-
-        {/* Assistant trigger */}
-        {onOpenAi && (
-          <button
-            onClick={onOpenAi}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs transition shadow-sm active:scale-95 cursor-pointer font-mono text-[11px] font-medium ${
-              isAiOpen
-                ? 'bg-zinc-800 text-white border-zinc-600'
-                : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-            <span>Asistan</span>
-          </button>
-        )}
 
         {/* Docker Status Badge */}
         <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono">
