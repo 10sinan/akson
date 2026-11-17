@@ -64,7 +64,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-white">Dağıtım ilerlemesi</h2>
         {demo && (
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 border border-[#262626] rounded-md px-2 py-0.5">
+          <span className="text-[12px] font-mono uppercase tracking-wider text-zinc-400 border border-[#262626] rounded-md px-2 py-0.5">
             Demo
           </span>
         )}
@@ -96,7 +96,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
                 <div className={`text-xs font-semibold ${state === 'pending' ? 'text-zinc-500' : 'text-white'}`}>
                   {step.label}
                 </div>
-                <div className="text-[11px] text-zinc-500">
+                <div className="text-[13px] text-zinc-500">
                   {state === 'running' ? step.hint : STATE_TEXT[state]}
                 </div>
                 {detail && state !== 'pending' && (
@@ -104,7 +104,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={snappySpring}
-                    className="mt-1 inline-block max-w-[12rem] truncate text-[10px] font-mono text-zinc-200 bg-white/5 border border-[#262626] rounded-md px-1.5 py-0.5"
+                    className="mt-1 inline-block max-w-[12rem] truncate text-[12px] font-mono text-zinc-200 bg-white/5 border border-[#262626] rounded-md px-1.5 py-0.5"
                     title={detail}
                   >
                     {detail}
@@ -128,7 +128,7 @@ export const DeployProgress: React.FC<DeployProgressProps> = ({ steps, states, d
           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showLogs ? 'rotate-180' : ''}`} />
         </button>
         {showLogs && (
-          <div className="mt-3 max-h-72 overflow-y-auto bg-black border border-[#262626] rounded-xl p-3 font-mono text-[11px] leading-relaxed text-zinc-300 whitespace-pre-wrap break-words">
+          <div className="mt-3 max-h-72 overflow-y-auto bg-black border border-[#262626] rounded-xl p-3 font-mono text-[13px] leading-relaxed text-zinc-300 whitespace-pre-wrap break-words">
             {logs.length === 0 ? <span className="text-zinc-600">Henüz çıktı yok.</span> : logs.join('\n')}
             <div ref={logEndRef} />
           </div>

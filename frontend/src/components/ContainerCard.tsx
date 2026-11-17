@@ -115,7 +115,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
             <h3 className="text-sm font-semibold text-white tracking-tight truncate font-sans">
               {container.name}
             </h3>
-            <div className="flex items-center gap-1.5 text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+            <div className="flex items-center gap-1.5 text-[13px] text-zinc-400 font-mono mt-0.5 truncate">
               <span>{container.image}:{container.tag}</span>
               {container.ports.length > 0 && (
                 <>
@@ -147,7 +147,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
                 }`}
               />
             </span>
-            <span className="text-[11px] font-sans font-medium">
+            <span className="text-[13px] font-sans font-medium">
               {container.statusText}
             </span>
           </div>
@@ -179,7 +179,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
       <div className="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-xs font-mono relative z-10">
         {/* Left: CPU with inline sparkline */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-zinc-400 font-sans">CPU</span>
+          <span className="text-[13px] text-zinc-400 font-sans">CPU</span>
           <span className="text-white font-medium">
             <AnimatedNumber value={container.cpuPercent} decimals={1} prefix="%" />
           </span>
@@ -187,7 +187,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
 
         {/* Right: RAM usage */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] text-zinc-400 font-sans">RAM</span>
+          <span className="text-[13px] text-zinc-400 font-sans">RAM</span>
           <span className="text-white font-medium">
             <AnimatedNumber value={container.memoryUsageMb} decimals={0} suffix=" MB" />
           </span>

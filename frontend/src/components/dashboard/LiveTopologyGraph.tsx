@@ -95,7 +95,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
             <h2 className="text-sm sm:text-base font-bold text-white tracking-tight font-sans flex items-center gap-2">
               Canlı Altyapı & Servis Topolojisi
             </h2>
-            <span className="text-[10px] font-mono text-zinc-100 bg-zinc-100/10 border border-white/20 px-2 py-0.5 rounded-full">
+            <span className="text-[12px] font-mono text-zinc-100 bg-zinc-100/10 border border-white/20 px-2 py-0.5 rounded-full">
               Canlı Ağ Akışı
             </span>
           </div>
@@ -125,7 +125,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
         >
           {/* A. SOL İSTASYON: İNTERNET GİRİŞİ (Ingress Gateway) */}
           <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-start space-y-1.5`}>
-            <span className="text-[10px] font-mono text-zinc-300/90 uppercase tracking-wider font-semibold">
+            <span className="text-[12px] font-mono text-zinc-300/90 uppercase tracking-wider font-semibold">
               01. Ingress
             </span>
             <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-white/20 shadow-md flex items-center gap-3 group transition-all`}>
@@ -134,7 +134,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Genel Ağ Girişi</h3>
-                <div className="text-[10px] text-zinc-300 font-mono mt-0.5">:80 / :443 HTTPS</div>
+                <div className="text-[12px] text-zinc-300 font-mono mt-0.5">:80 / :443 HTTPS</div>
               </div>
             </div>
           </div>
@@ -150,7 +150,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
           {/* C. ORTA İSTASYON: TRAEFIK V3 TERS VEKİL (Proxy Hub) */}
           <div className={`${isDetailOpen ? '' : 'lg:col-span-3'} flex flex-col items-start space-y-1.5`}>
-            <span className="text-[10px] font-mono text-zinc-100/90 uppercase tracking-wider font-semibold">
+            <span className="text-[12px] font-mono text-zinc-100/90 uppercase tracking-wider font-semibold">
               02. SSL / Ters Vekil
             </span>
             <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-white/20 shadow-md flex items-center gap-3 group transition-all`}>
@@ -159,7 +159,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-bold text-white font-sans truncate">Traefik</h3>
-                <div className="text-[9px] text-zinc-100 font-mono mt-0.5">akson-bridge</div>
+                <div className="text-[12px] text-zinc-100 font-mono mt-0.5">akson-bridge</div>
               </div>
             </div>
           </div>
@@ -175,7 +175,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
           {/* E. SAĞ İSTASYON: İZLEME VE TOPLAM YÜK (Cluster Heartbeat) */}
           <div className={`${isDetailOpen ? '' : 'lg:col-span-4'} flex flex-col items-start space-y-1.5`}>
-            <span className="text-[10px] font-mono text-zinc-300/90 uppercase tracking-wider font-semibold">
+            <span className="text-[12px] font-mono text-zinc-300/90 uppercase tracking-wider font-semibold">
               03. İzole Ağ
             </span>
             <div className={`w-full ${isDetailOpen ? 'p-2.5 sm:p-3' : 'p-3 sm:p-3.5'} rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-white/20 shadow-md flex items-center justify-between gap-3 transition-all`}>
@@ -185,7 +185,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold text-white font-sans truncate">Docker Motoru</h3>
-                  <div className="text-[10px] text-zinc-300 font-mono mt-0.5 truncate">cgroups-v2</div>
+                  <div className="text-[12px] text-zinc-300 font-mono mt-0.5 truncate">cgroups-v2</div>
                 </div>
               </div>
             </div>
@@ -198,7 +198,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
           <div className="h-[2px] bg-zinc-800" />
 
           {/* Merkez Kavşak Dağıtım Rozeti */}
-          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-md">
+          <div className="absolute left-1/2 -top-2.5 -translate-x-1/2 px-3 py-0.5 rounded-full bg-zinc-950 border border-zinc-800/90 text-[12px] font-mono text-zinc-400 flex items-center gap-1.5 shadow-md">
             <span className="inline-flex rounded-full h-1.5 w-1.5 bg-zinc-100" />
             <span>
               akson-bridge: <strong className="text-zinc-100 font-semibold">{runningCount} çalışan servis</strong>
@@ -214,7 +214,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
               Bağlı Servis Düğümleri
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] font-sans text-zinc-400 hidden sm:inline">
+              <span className="text-[13px] font-sans text-zinc-400 hidden sm:inline">
                 {isDetailOpen
                   ? 'Düğüm detayları sağ panelde açıktır (Kapatmak için seçili düğüme tekrar tıklayın)'
                   : 'Tıklanan düğüm sağ panelde canlı detay görünümünü açar'}
@@ -306,12 +306,12 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                             {container.name}
                           </h4>
                           {isActiveSelection && (
-                            <span className="shrink-0 text-[9px] font-sans font-bold text-black bg-white px-1.5 py-0.2 rounded-full">
+                            <span className="shrink-0 text-[12px] font-sans font-bold text-black bg-white px-1.5 py-0.2 rounded-full">
                               Açık
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-zinc-400 font-mono truncate">
+                        <div className="text-[12px] text-zinc-400 font-mono truncate">
                           {container.image}:{container.tag}
                         </div>
                       </div>
@@ -333,7 +333,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                           }`}
                         />
                       </span>
-                      <span className="text-[10px] font-sans font-medium">
+                      <span className="text-[12px] font-sans font-medium">
                         {container.statusText}
                       </span>
                     </div>
@@ -341,7 +341,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
 
                   {/* Middle: Live Sparkline Pulse Wave */}
                   <div className="mt-2.5 relative z-10">
-                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                    <div className="flex items-center justify-between text-[12px] font-mono text-zinc-400 mb-1">
                       <span>CPU</span>
                       <span className="text-white font-medium">%{container.cpuPercent}</span>
                     </div>
@@ -354,7 +354,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   </div>
 
                   {/* Bottom: Port & IP Specs */}
-                  <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-mono text-zinc-400 relative z-10">
+                  <div className="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[13px] font-mono text-zinc-400 relative z-10">
                     <span className="text-zinc-300 truncate max-w-[120px]">
                       {container.ports.length > 0
                         ? `:${container.ports[0].hostPort}➔${container.ports[0].containerPort}`
@@ -406,7 +406,7 @@ export const LiveTopologyGraph: React.FC<LiveTopologyGraphProps> = ({
                   </a>
                 )}
               </div>
-              <div className="text-[11px] text-zinc-400 font-mono mt-0.5">
+              <div className="text-[13px] text-zinc-400 font-mono mt-0.5">
                 Dahili IP: <span className="text-white">{selectedContainer.ipAddress || '—'}</span> • Çalışma Süresi: <span className="text-zinc-100">{selectedContainer.uptime}</span>
               </div>
             </div>

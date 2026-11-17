@@ -78,7 +78,7 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
                 {toast.title}
               </span>
               {toast.description && (
-                <span className="text-[11px] text-zinc-400 block mt-0.5 leading-snug">
+                <span className="text-[13px] text-zinc-400 block mt-0.5 leading-snug">
                   {toast.description}
                 </span>
               )}

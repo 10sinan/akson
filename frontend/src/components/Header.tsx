@@ -113,7 +113,7 @@ export const Header: React.FC<HeaderProps> = ({
             placeholder="Konteyner, servis ara... (⌘K)"
             className="w-full bg-zinc-900/90 group-hover:bg-zinc-800/90 border border-zinc-800 group-hover:border-zinc-700 text-xs text-white rounded-lg pl-9 pr-12 py-1.5 focus:outline-none transition-all placeholder:text-zinc-500 cursor-pointer"
           />
-          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-zinc-400 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
+          <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[12px] text-zinc-400 group-hover:text-zinc-200 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800 group-hover:border-zinc-700 font-mono pointer-events-none transition-colors">
             ⌘K
           </kbd>
         </div>
@@ -122,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Right: Quick Stats & Action Buttons */}
       <div className="flex items-center gap-3">
         {/* Cluster Telemetry Pill */}
-        <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[11px] font-mono text-zinc-300 shadow-sm transition-colors">
+        <div className="hidden xl:flex items-center gap-3.5 bg-zinc-900/90 hover:bg-zinc-900 border border-zinc-800/90 hover:border-zinc-700 px-3.5 py-1.5 rounded-lg text-[13px] font-mono text-zinc-300 shadow-sm transition-colors">
           {/* CPU */}
           <div className="flex items-center gap-1.5" title={`Toplam CPU Kullanımı: %${totalCpu.toFixed(1)}`}>
             <Cpu className={`w-3.5 h-3.5 ${totalCpu >= 50 ? 'text-zinc-400' : 'text-zinc-100'}`} />
@@ -177,7 +177,7 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             />
           </span>
-          <span className="text-zinc-300 text-[11px]">
+          <span className="text-zinc-300 text-[13px]">
             Docker:{' '}
             <span className={`font-medium ${dockerStatus === 'online' ? 'text-zinc-100' : 'text-white'}`}>
               {dockerStatus === 'online'

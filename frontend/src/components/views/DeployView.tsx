@@ -295,9 +295,9 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-white">{tpl.name}</span>
-                    <span className="text-[10px] font-mono text-zinc-400">{tpl.image}</span>
+                    <span className="text-[12px] font-mono text-zinc-400">{tpl.image}</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">{tpl.desc}</p>
+                  <p className="text-[13px] text-zinc-500 mt-0.5">{tpl.desc}</p>
                 </button>
               ))}
             </div>
@@ -329,7 +329,7 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
                 <div className="w-9 h-9 rounded-xl border border-[#262626] bg-[#121212] flex items-center justify-center text-zinc-300">
                   <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[11px] text-zinc-400 leading-tight">{text}</span>
+                <span className="text-[13px] text-zinc-400 leading-tight">{text}</span>
                 {i < HOW_IT_WORKS.length - 1 && (
                   <ArrowRight className="hidden sm:block absolute -right-2 top-4 w-4 h-4 text-zinc-600" />
                 )}
@@ -438,17 +438,17 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
 
               <div className="sm:col-span-2 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-zinc-400">Ortam değişkenleri (ENV)</span>
+                  <span className="text-[13px] text-zinc-400">Ortam değişkenleri (ENV)</span>
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => setEnvVars((prev) => [...prev, { key: '', value: '' }])}
-                    className="inline-flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-[13px] text-zinc-300 hover:text-white cursor-pointer disabled:opacity-50"
                   >
                     <Plus className="w-3 h-3" /> Ekle
                   </button>
                 </div>
-                {envVars.length === 0 && <p className="text-[11px] text-zinc-600">Henüz değişken yok.</p>}
+                {envVars.length === 0 && <p className="text-[13px] text-zinc-600">Henüz değişken yok.</p>}
                 {envVars.map((ev, i) => (
                   <div key={i} className="flex gap-2">
                     <input
@@ -522,8 +522,8 @@ const DeployButton: React.FC<{ onClick: () => void; disabled: boolean; busy: boo
 
 const Field: React.FC<{ label: string; hint?: string; children: React.ReactNode }> = ({ label, hint, children }) => (
   <label className="block space-y-1.5">
-    <span className="text-[11px] text-zinc-400">{label}</span>
+    <span className="text-[13px] text-zinc-400">{label}</span>
     {children}
-    {hint && <span className="block text-[10px] text-zinc-600">{hint}</span>}
+    {hint && <span className="block text-[12px] text-zinc-600">{hint}</span>}
   </label>
 );

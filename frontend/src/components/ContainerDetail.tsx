@@ -349,7 +349,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       style={{ width: `${Math.min(liveCpu * 10, 100)}%` }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
+                  <div className="flex justify-between items-center text-[13px] text-zinc-400 font-sans">
                     <span>Durum: {liveCpu > 80 ? 'Yüksek Yük' : 'Nominal'}</span>
                     <span className="font-mono text-zinc-100/90">Anlık SSE Akışı</span>
                   </div>
@@ -375,7 +375,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       }}
                     />
                   </div>
-                  <div className="flex justify-between items-center text-[11px] text-zinc-400 font-sans">
+                  <div className="flex justify-between items-center text-[13px] text-zinc-400 font-sans">
                     <span>Limit: {container.memoryLimitMb} MB</span>
                     <span className="font-mono text-zinc-300/90">
                       %{Math.round((liveMemoryMb / container.memoryLimitMb) * 100)} Doluluk
@@ -442,7 +442,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 text-white border border-zinc-800 text-[10px] font-sans">
+                    <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 text-white border border-zinc-800 text-[12px] font-sans">
                       <span className="w-1.5 h-1.5 rounded-full bg-white" />
                       <span>Canlı Akış</span>
                     </span>

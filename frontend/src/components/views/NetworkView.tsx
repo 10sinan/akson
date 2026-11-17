@@ -87,7 +87,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
           { label: 'Ağ geçidi', value: details?.gateway },
         ].map((item) => (
           <div key={item.label} className="bg-[#0a0a0a] border border-[#262626] rounded-2xl p-4">
-            <span className="text-[11px] text-zinc-400 font-sans block">{item.label}</span>
+            <span className="text-[13px] text-zinc-400 font-sans block">{item.label}</span>
             <span className="text-sm text-white font-mono mt-1 block">{item.value || '—'}</span>
           </div>
         ))}
@@ -100,7 +100,7 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
             <Network className="w-4 h-4 text-white" />
             <h2 className="text-xs font-bold text-white uppercase tracking-wider font-sans">Traefik rotaları</h2>
           </div>
-          <span className="text-[11px] font-sans text-zinc-400">{routed.length} rota</span>
+          <span className="text-[13px] font-sans text-zinc-400">{routed.length} rota</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -162,8 +162,8 @@ export const NetworkView: React.FC<NetworkViewProps> = ({ containers, isLiveBack
                   <span className="font-semibold text-white text-xs font-sans truncate">{c.name}</span>
                   <span className={`w-2 h-2 rounded-full ${c.status === 'running' ? 'bg-zinc-100' : 'bg-zinc-600'}`} />
                 </div>
-                <div className="text-[11px] text-zinc-300 font-mono">{ipOf(c)}</div>
-                <div className="text-[10px] text-zinc-500 font-mono truncate">{c.image}</div>
+                <div className="text-[13px] text-zinc-300 font-mono">{ipOf(c)}</div>
+                <div className="text-[12px] text-zinc-500 font-mono truncate">{c.image}</div>
               </div>
             ))}
           </div>

@@ -562,7 +562,7 @@ export function App() {
                         </div>
 
                         {/* Wise-Style Sliding Filter Pills */}
-                        <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800 text-[11px] font-sans">
+                        <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800 text-[13px] font-sans">
                           <button
                             onClick={() => setStatusFilter('all')}
                             className={`relative px-2.5 py-0.5 rounded transition-colors cursor-pointer select-none ${

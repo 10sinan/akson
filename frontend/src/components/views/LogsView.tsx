@@ -265,7 +265,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                 />
               )}
               <span className="relative z-10">Tüm Konteynerler</span>
-              <span className="relative z-10 text-[10px] font-mono text-zinc-400">{containers.length}</span>
+              <span className="relative z-10 text-[12px] font-mono text-zinc-400">{containers.length}</span>
             </motion.button>
 
             {containers.map((c) => (
@@ -317,7 +317,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
             </div>
 
             {/* Level Filters with Sliding Spring Pill */}
-            <div className="flex items-center gap-1 bg-[#000000] p-1 rounded-xl border border-[#262626] text-[11px] font-sans">
+            <div className="flex items-center gap-1 bg-[#000000] p-1 rounded-xl border border-[#262626] text-[13px] font-sans">
               <button
                 onClick={() => setSelectedLevel('all')}
                 className={`relative px-2.5 py-1 rounded-lg transition-colors cursor-pointer select-none ${
@@ -401,7 +401,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
           </div>
 
           {/* Terminal Console */}
-          <div ref={terminalBoxRef} className="bg-[#000000] p-4 font-mono text-[11px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
+          <div ref={terminalBoxRef} className="bg-[#000000] p-4 font-mono text-[13px] leading-relaxed text-zinc-300 space-y-1.5 h-[520px] overflow-y-auto select-text shadow-inner">
             {filteredLogs.length === 0 ? (
               <div className="text-zinc-500 italic pt-8 text-center font-sans">
                 {containers.length === 0 ? "Henüz servis yok. Loglar servis dağıtıldığında burada görünür." : "Arama kriterlerine uygun log bulunamadı."}
@@ -416,7 +416,7 @@ export const LogsView: React.FC<LogsViewProps> = ({ containers }) => {
                     <span className="text-zinc-500 shrink-0">{log.timestamp}</span>
                     <span className="text-white font-semibold shrink-0">[{log.containerName}]</span>
                     <span
-                      className={`font-bold shrink-0 text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                      className={`font-bold shrink-0 text-[12px] px-1.5 py-0.5 rounded font-mono ${
                         log.level === 'error'
                           ? 'bg-zinc-500/10 text-zinc-500 border border-white/20'
                           : log.level === 'warn'

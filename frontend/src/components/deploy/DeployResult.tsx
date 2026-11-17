@@ -121,7 +121,7 @@ export const DeployError: React.FC<ErrorProps> = ({ message, onRetry }) => {
         <div className="min-w-0 space-y-1">
           <h2 className="text-base font-bold text-white">{info.title}</h2>
           <p className="text-sm text-zinc-300">{info.hint}</p>
-          <p className="text-[11px] font-mono text-zinc-500 break-words">{message}</p>
+          <p className="text-[13px] font-mono text-zinc-500 break-words">{message}</p>
         </div>
       </div>
       <button

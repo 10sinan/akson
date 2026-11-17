@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Layers className="w-5 h-5 text-white group-hover:text-zinc-100 transition-colors" />
 
           {/* Instant Tooltip */}
-          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
+          <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[13px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2">
             <span className="font-bold text-white">akson</span>
           </div>
         </button>
@@ -112,10 +112,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 )}
 
                 {/* Instant Cyber Tooltip */}
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
+                <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[13px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
                   <div className="flex flex-col text-left">
                     <span className="font-semibold text-white font-sans">{item.title}</span>
-                    <span className="text-[10px] text-zinc-400 font-sans">{item.shortDesc}</span>
+                    <span className="text-[12px] text-zinc-400 font-sans">{item.shortDesc}</span>
                   </div>
                 </div>
               </button>
@@ -140,10 +140,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </motion.button>
 
             {/* Instant Tooltip */}
-            <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700 rounded-xl text-[11px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
+            <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700 rounded-xl text-[13px] font-mono text-zinc-200 pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex items-center gap-2.5">
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-white font-sans">Asistan</span>
-                <span className="text-[10px] text-zinc-400 font-sans">Konteyner ve log özeti</span>
+                <span className="text-[12px] text-zinc-400 font-sans">Konteyner ve log özeti</span>
               </div>
             </div>
           </div>
@@ -168,9 +168,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className={`relative z-10 transition-colors ${activeTab === 'settings' ? 'text-black' : ''}`}>
             <Settings className="w-5 h-5" />
           </span>
-          <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[11px] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex flex-col text-left">
+          <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-900/98 border border-zinc-700/80 rounded-xl shadow-2xl text-[13px] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all duration-150 z-50 flex flex-col text-left">
             <span className="font-semibold text-white font-sans">Ayarlar</span>
-            <span className="text-[10px] text-zinc-400 font-sans">Sistem durumu &amp; bakım</span>
+            <span className="text-[12px] text-zinc-400 font-sans">Sistem durumu &amp; bakım</span>
           </div>
         </button>
       </div>

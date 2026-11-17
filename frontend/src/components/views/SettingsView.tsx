@@ -44,7 +44,7 @@ const StatusCard: React.FC<StatusCardProps> = ({ icon: Icon, title, value, ok, h
       </div>
       {ok !== null && (
         <span
-          className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+          className={`text-[12px] font-mono px-2 py-0.5 rounded-full border ${
             ok ? 'bg-white text-black border-white' : 'text-zinc-400 border-zinc-700'
           }`}
         >
@@ -53,12 +53,12 @@ const StatusCard: React.FC<StatusCardProps> = ({ icon: Icon, title, value, ok, h
       )}
     </div>
     <div>
-      <p className="text-[11px] text-zinc-500 font-sans">{title}</p>
+      <p className="text-[13px] text-zinc-500 font-sans">{title}</p>
       <p className="text-sm font-semibold text-white font-mono truncate" title={value}>
         {value}
       </p>
     </div>
-    <p className="text-[11px] text-zinc-400 font-sans leading-relaxed">{hint}</p>
+    <p className="text-[13px] text-zinc-400 font-sans leading-relaxed">{hint}</p>
   </div>
 );
 
@@ -232,7 +232,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
           <div className="shrink-0 flex flex-col items-stretch sm:items-end gap-2">
             {prunePhase === 'confirm' ? (
               <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2">
-                <p className="text-[11px] text-zinc-400 font-sans">Silinen imajlar geri gelmez. Emin misin?</p>
+                <p className="text-[13px] text-zinc-400 font-sans">Silinen imajlar geri gelmez. Emin misin?</p>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePrune}
@@ -263,7 +263,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
               </button>
             )}
             {(prunePhase === 'done' || prunePhase === 'error') && (
-              <p className="text-[11px] font-sans text-zinc-300 flex items-center gap-1.5">
+              <p className="text-[13px] font-sans text-zinc-300 flex items-center gap-1.5">
                 {prunePhase === 'done' && <Check className="w-3.5 h-3.5" />}
                 {prunePhase === 'error' ? `Temizlenemedi: ${pruneMessage}` : pruneMessage}
               </p>
@@ -321,7 +321,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ isLiveBackend }) => 
               değişikliği görürsün.
             </li>
           </ol>
-          <div className="bg-[#121212] border border-[#262626] rounded-xl p-3 font-mono text-[11px] text-zinc-300 overflow-x-auto">
+          <div className="bg-[#121212] border border-[#262626] rounded-xl p-3 font-mono text-[13px] text-zinc-300 overflow-x-auto">
             <div className="flex items-center gap-2 text-zinc-500 mb-2">
               <FileCode2 className="w-3.5 h-3.5" />
               docker-compose.yml
