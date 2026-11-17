@@ -13,6 +13,7 @@ import { staggerItemVariants, wiseBouncy, wiseSpring } from '../utils/motion';
 import { AnimatedNumber } from './AnimatedNumber';
 import { ShimmerScan } from './Skeleton';
 import { TiltCard } from './three/TiltCard';
+import { CardActions } from './CardActions';
 
 interface ContainerCardProps {
   container: ContainerItem;
@@ -20,6 +21,7 @@ interface ContainerCardProps {
   onSelect: (container: ContainerItem) => void;
   isRefreshing?: boolean;
   onContextMenu?: (e: React.MouseEvent, container: ContainerItem) => void;
+  onAction?: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void | Promise<void>;
 }
 
 export const ContainerCard: React.FC<ContainerCardProps> = ({
@@ -28,6 +30,7 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
   onSelect,
   isRefreshing = false,
   onContextMenu,
+  onAction,
 }) => {
   // Select appropriate category styling & color
   const getCategoryStyles = () => {
@@ -193,6 +196,15 @@ export const ContainerCard: React.FC<ContainerCardProps> = ({
           </span>
         </div>
       </div>
+
+      {onAction && (
+        <CardActions
+          id={container.id}
+          isRunning={isRunning}
+          onAction={onAction}
+          className="mt-2.5 relative z-10"
+        />
+      )}
     </TiltCard>
   );
 };
