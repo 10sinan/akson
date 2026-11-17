@@ -36,6 +36,8 @@ Frontend (`cd frontend`):
 
 **Deploy flow** (`handleDeployContainer`, used by both `POST /containers/deploy` and `POST /deployments`): if `git_url` is set, it clones into a temp dir (if the repo has no Dockerfile, `internal/detect` generates `Dockerfile.akson` for Node/Python/Go/static projects), builds the image as `akson/<name>:latest`, then deploys it. Otherwise it deploys `image` directly. Every outcome, success or failure, is recorded as a row in the `deployments` table, and the step logs are returned in the response.
 
+**Live deploy**: `POST /api/v1/deployments/stream` runs the same `runDeploy` (`internal/api/deploy_runner.go`) as the JSON endpoints and streams NDJSON `DeployEvent`s (step/log/result/error); the deploy keeps running if the client disconnects.
+
 **Streaming**: logs and stats go over Server-Sent Events (`/containers/{id}/logs/stream`, `/containers/{id}/stats/stream`). The frontend reads them with `EventSource` in `src/api/client.ts`.
 
 **Frontend** (`frontend/src`, React 19, Tailwind v4 via `@tailwindcss/vite`, framer-motion, lucide-react):

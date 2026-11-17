@@ -58,6 +58,7 @@ func (s *Server) NewRouter() http.Handler {
 		r.Route("/deployments", func(r chi.Router) {
 			r.Get("/", s.handleListDeployments)
 			r.Post("/", s.handleDeployContainer)
+			r.Post("/stream", s.handleDeployStream)
 		})
 
 		// Network & Proxy
