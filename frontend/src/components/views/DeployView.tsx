@@ -118,7 +118,8 @@ export const DeployView: React.FC<DeployViewProps> = ({ onDeploySuccess, onNavig
       case 'step': {
         setStepStates((prev) => ({ ...prev, [ev.step]: ev.status }));
         let detail: string | undefined;
-        if (ev.step === 'detect' && ev.detail) detail = KIND_LABELS[ev.detail] ?? ev.detail;
+        // On error the full explanation goes to the error card, not under the step.
+        if (ev.step === 'detect' && ev.status === 'done' && ev.detail) detail = KIND_LABELS[ev.detail] ?? ev.detail;
         if (ev.step === 'clone' && ev.status === 'done' && ev.detail) detail = `commit ${ev.detail}`;
         if (ev.step === 'ready' && ev.detail) detail = ev.detail;
         if (detail) setStepDetails((prev) => ({ ...prev, [ev.step]: detail }));
