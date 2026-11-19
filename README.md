@@ -19,6 +19,8 @@ bıkan geliştiriciler için **sade, hızlı ve tek ekranlı bir yönetim paneli
 * **Otomatik Port:** Dağıttığın her uygulama boş bir porta yerleşir, Akson sana `http://localhost:PORT` adresini söyler.
 * **Alan Adı Yönlendirme (Traefik):** Sunucunda Traefik çalışıyorsa uygulamalara `uygulama.siten.com` gibi adresler verebilirsin.
 * **Hızlı Dağıtım:** Git reposunun linkini verip servisi tek tıkla ayağa kaldırabilirsin. Repoda `Dockerfile` yoksa Akson proje türünü tanır ve kendisi oluşturur.
+* **Kartlardan Hızlı İşlem:** Her servis kartında **Başlat**, **Durdur** ve **Yeniden başlat** butonları vardır. Durdurmadan önce onay sorulur.
+* **Ayarlar Sayfası:** Docker sürümü, Traefik durumu, kullanılmayan imajlar ve sistem ayarları tek yerde görünür. Kullanılmayan imajları buradan temizleyebilirsin.
 
 ---
 
@@ -71,6 +73,17 @@ npm run dev
 ```
 
 Arka yüz `:3001`, ön yüz `http://localhost:5173` adresinde açılır.
+
+Testler için: `npm run test:backend`. Ön yüzü derleyip tip kontrolü yapmak için: `cd frontend && npm run build`.
+
+---
+
+## Sık Karşılaşılan Sorunlar
+
+* **`npm run dev` "package.json bulunamadı" diyor:** Yanlış klasördesin. Önce proje klasörüne geç (`cd akson`), ilk seferde `npm install` çalıştır.
+* **Ayarlar sayfasında "HTTP 404" görünüyor:** `:3001` portunu Docker'daki eski bir Akson konteyneri tutuyor olabilir. Onu durdur (`docker stop akson`) ya da imajı yeniden derle (`docker compose up -d --build`).
+* **Arka yüz hiç açılmıyor:** Docker'ın çalıştığından emin ol. Akson, Docker'a bağlanamazsa başlamaz.
+* **Bir servis sürekli yeniden başlıyor:** Servisin bağlandığı başka bir konteyner (veritabanı, kuyruk vb.) durmuş olabilir. Logları kontrol et.
 
 ---
 
