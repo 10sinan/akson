@@ -51,6 +51,23 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   const [liveMemoryMb, setLiveMemoryMb] = useState(container.memoryUsageMb);
   const [liveLogs, setLiveLogs] = useState<string[]>(container.logs);
 
+  // Real env vars from Docker inspect; falls back to container.env (demo mode / request failure).
+  const [envVars, setEnvVars] = useState(container.env);
+  useEffect(() => {
+    setEnvVars(container.env);
+    if (activeTab !== 'env') return;
+    let cancelled = false;
+    api
+      .fetchContainerEnv(container.id)
+      .then((list) => {
+        if (!cancelled) setEnvVars(list);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [container.id, container.env, activeTab]);
+
   useEffect(() => {
     setLiveCpu(container.cpuPercent);
     setLiveMemoryMb(container.memoryUsageMb);
@@ -316,7 +333,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
           )}
           <span className="relative z-10 flex items-center gap-2">
             <Key className="w-4 h-4 text-zinc-300" />
-            <span>Ortam Değişkenleri ({container.env.length})</span>
+            <span>Ortam Değişkenleri ({envVars.length})</span>
           </span>
         </button>
       </div>
@@ -487,7 +504,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-zinc-300 font-sans">
-                    Kayıtlı ortam değişkenleri ({container.env.length})
+                    Kayıtlı ortam değişkenleri ({envVars.length})
                   </span>
                   <button
                     onClick={() => setShowSecrets(!showSecrets)}
@@ -507,7 +524,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800 bg-zinc-950">
-                      {container.env.map((e, index) => (
+                      {envVars.map((e, index) => (
                         <tr key={index} className="hover:bg-zinc-900/50">
                           <td className="p-3 text-zinc-200 font-semibold">{e.key}</td>
                           <td className="p-3 text-zinc-300">
