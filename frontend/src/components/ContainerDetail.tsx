@@ -31,6 +31,7 @@ interface ContainerDetailProps {
   onAction: (action: 'start' | 'stop' | 'restart' | 'delete', id: string) => void;
   onClose?: () => void;
   onOpenAiAnalyze?: () => void;
+  onEnvSaved?: (name: string) => void;
 }
 
 type DetailTab = 'overview' | 'logs' | 'env';
@@ -40,6 +41,7 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   onAction,
   onClose,
   onOpenAiAnalyze,
+  onEnvSaved,
 }) => {
   const [activeTab, setActiveTab] = useState<DetailTab>('overview');
   const [copiedId, setCopiedId] = useState(false);
@@ -50,6 +52,36 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
   const [liveCpu, setLiveCpu] = useState(container.cpuPercent);
   const [liveMemoryMb, setLiveMemoryMb] = useState(container.memoryUsageMb);
   const [liveLogs, setLiveLogs] = useState<string[]>(container.logs);
+
+  const [editingEnv, setEditingEnv] = useState(false);
+  const [draftEnv, setDraftEnv] = useState<Array<{ key: string; value: string }>>([]);
+  const [savingEnv, setSavingEnv] = useState(false);
+  const [envError, setEnvError] = useState('');
+
+  const startEditEnv = () => {
+    setDraftEnv(envVars.map((e) => ({ key: e.key, value: e.value })));
+    setEnvError('');
+    setEditingEnv(true);
+  };
+
+  const saveEnv = async () => {
+    const env: Record<string, string> = {};
+    for (const e of draftEnv) {
+      const k = e.key.trim();
+      if (k) env[k] = e.value;
+    }
+    setSavingEnv(true);
+    setEnvError('');
+    try {
+      await api.updateContainerEnv(container.id, env);
+      setEditingEnv(false);
+      onEnvSaved?.(container.name);
+    } catch (err) {
+      setEnvError(err instanceof Error ? err.message : 'Kaydedilemedi');
+    } finally {
+      setSavingEnv(false);
+    }
+  };
 
   // Real env vars from Docker inspect; falls back to container.env (demo mode / request failure).
   const [envVars, setEnvVars] = useState(container.env);
@@ -506,6 +538,32 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                   <span className="text-xs text-zinc-300 font-sans">
                     Kayıtlı ortam değişkenleri ({envVars.length})
                   </span>
+                  <div className="flex items-center gap-2">
+                  {editingEnv ? (
+                    <>
+                      <button
+                        onClick={() => setEditingEnv(false)}
+                        disabled={savingEnv}
+                        className="text-xs text-zinc-300 hover:text-white px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 cursor-pointer font-sans hover:bg-zinc-800"
+                      >
+                        İptal
+                      </button>
+                      <button
+                        onClick={saveEnv}
+                        disabled={savingEnv}
+                        className="text-xs text-white px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 cursor-pointer font-sans disabled:opacity-50"
+                      >
+                        {savingEnv ? 'Kaydediliyor…' : 'Kaydet ve yeniden başlat'}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={startEditEnv}
+                      className="text-xs text-zinc-300 hover:text-white px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 cursor-pointer font-sans hover:bg-zinc-800"
+                    >
+                      Düzenle
+                    </button>
+                  )}
                   <button
                     onClick={() => setShowSecrets(!showSecrets)}
                     className="flex items-center gap-1.5 text-xs text-zinc-300 hover:text-white px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 transition cursor-pointer font-sans hover:bg-zinc-800"
@@ -513,7 +571,15 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                     {showSecrets ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     <span>{showSecrets ? 'Gizle' : 'Gizli Değerleri Göster'}</span>
                   </button>
+                  </div>
                 </div>
+
+                {editingEnv && (
+                  <p className="text-xs text-amber-400 font-sans">
+                    Kaydedince container silinip yeni değerlerle yeniden oluşturulur (yeni ID alır).
+                  </p>
+                )}
+                {envError && <p className="text-xs text-red-400 font-sans">{envError}</p>}
 
                 <div className="rounded-xl border border-zinc-800 overflow-hidden text-xs">
                   <table className="w-full text-left font-mono">
@@ -524,7 +590,50 @@ export const ContainerDetail: React.FC<ContainerDetailProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800 bg-zinc-950">
-                      {envVars.map((e, index) => (
+                      {editingEnv && (
+                        <>
+                          {draftEnv.map((d, i) => (
+                            <tr key={i}>
+                              <td className="p-2">
+                                <input
+                                  value={d.key}
+                                  onChange={(e) =>
+                                    setDraftEnv((prev) => prev.map((x, j) => (j === i ? { ...x, key: e.target.value } : x)))
+                                  }
+                                  className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-zinc-200"
+                                />
+                              </td>
+                              <td className="p-2 flex gap-2">
+                                <input
+                                  value={d.value}
+                                  onChange={(e) =>
+                                    setDraftEnv((prev) => prev.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)))
+                                  }
+                                  className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-zinc-200"
+                                />
+                                <button
+                                  onClick={() => setDraftEnv((prev) => prev.filter((_, j) => j !== i))}
+                                  className="text-zinc-400 hover:text-red-400 cursor-pointer"
+                                  aria-label="Sil"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                          <tr>
+                            <td colSpan={2} className="p-2">
+                              <button
+                                onClick={() => setDraftEnv((prev) => [...prev, { key: '', value: '' }])}
+                                className="text-xs text-zinc-300 hover:text-white cursor-pointer font-sans"
+                              >
+                                + Değişken ekle
+                              </button>
+                            </td>
+                          </tr>
+                        </>
+                      )}
+                      {!editingEnv && envVars.map((e, index) => (
                         <tr key={index} className="hover:bg-zinc-900/50">
                           <td className="p-3 text-zinc-200 font-semibold">{e.key}</td>
                           <td className="p-3 text-zinc-300">

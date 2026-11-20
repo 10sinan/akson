@@ -280,6 +280,18 @@ export function App() {
     }
   };
 
+  const handleEnvSaved = async (name: string) => {
+    try {
+      const liveList = await api.fetchContainers();
+      setContainers(liveList);
+      const fresh = liveList.find((c) => c.name === name);
+      if (fresh) setSelectedId(fresh.id);
+      addToast({ type: 'success', title: 'ENV Güncellendi', description: `${name} yeni değişkenlerle yeniden oluşturuldu.` });
+    } catch {
+      // list refresh failed; the user can refresh manually
+    }
+  };
+
   const handleRefresh = async () => {
     soundManager.playPop();
     setIsRefreshing(true);
@@ -525,6 +537,7 @@ export function App() {
                               onAction={handleAction}
                               onClose={() => setIsDetailOpen(false)}
                               onOpenAiAnalyze={() => setIsAiOpen(true)}
+                              onEnvSaved={handleEnvSaved}
                             />
                           ) : (
                             <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center space-y-4 shadow-xl">
@@ -717,6 +730,7 @@ export function App() {
                             onAction={handleAction}
                             onClose={() => setIsDetailOpen(false)}
                             onOpenAiAnalyze={() => setIsAiOpen(true)}
+                              onEnvSaved={handleEnvSaved}
                           />
                         </motion.section>
                       )}

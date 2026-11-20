@@ -263,6 +263,28 @@ export const api = {
   },
 
   /**
+   * Recreates a managed container with a new environment (new container id).
+   */
+  async updateContainerEnv(id: string, env: Record<string, string>): Promise<void> {
+    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/env`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ env }),
+      signal: AbortSignal.timeout(120000),
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const data = await res.json();
+        msg = data.error || data.message || msg;
+      } catch {
+        // keep the HTTP status message
+      }
+      throw new Error(msg);
+    }
+  },
+
+  /**
    * Fetches a one-shot resource telemetry snapshot for a container.
    */
   async fetchContainerStats(id: string): Promise<ApiContainerStats> {
