@@ -123,6 +123,32 @@ func (s *Server) handleGetContainer(w http.ResponseWriter, r *http.Request) {
 	respond(w, http.StatusOK, info)
 }
 
+// handleUpdateEnv recreates a managed container with a new set of environment variables.
+func (s *Server) handleUpdateEnv(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var body struct {
+		Env map[string]string `json:"env"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid JSON: "+err.Error())
+		return
+	}
+	for k := range body.Env {
+		if k == "" || strings.ContainsAny(k, "= \t\n") {
+			errorResponse(w, http.StatusBadRequest, "Invalid env key: "+k)
+			return
+		}
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	defer cancel()
+	res, err := s.docker.UpdateEnv(ctx, id, body.Env)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	respond(w, http.StatusOK, res)
+}
+
 // handleContainerAction performs start/stop/restart on a container.
 func (s *Server) handleContainerAction(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")

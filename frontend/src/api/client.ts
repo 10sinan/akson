@@ -1,4 +1,4 @@
-import type { ContainerItem, ContainerStatus } from '../types/container';
+import type { ContainerEnvVar, ContainerItem, ContainerStatus } from '../types/container';
 
 export interface ApiHealth {
   status: string;
@@ -242,6 +242,46 @@ export const api = {
       throw new Error(err.error || `Container action '${action}' failed: HTTP ${res.status}`);
     }
     return res.json();
+  },
+
+  /**
+   * Fetches the container's real environment variables (Docker inspect Config.Env).
+   */
+  async fetchContainerEnv(id: string): Promise<ContainerEnvVar[]> {
+    const res = await fetch(`${API_BASE}/api/v1/containers/${id}`, {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) throw new Error(`Fetch env failed: HTTP ${res.status}`);
+    const data: { Config?: { Env?: string[] } } = await res.json();
+    const secretKey = /(PASS|SECRET|TOKEN|KEY|PWD|CREDENTIAL)/i;
+    return (data.Config?.Env || []).map((line) => {
+      const i = line.indexOf('=');
+      const key = i === -1 ? line : line.slice(0, i);
+      const value = i === -1 ? '' : line.slice(i + 1);
+      return { key, value, secret: secretKey.test(key) };
+    });
+  },
+
+  /**
+   * Recreates a managed container with a new environment (new container id).
+   */
+  async updateContainerEnv(id: string, env: Record<string, string>): Promise<void> {
+    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/env`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ env }),
+      signal: AbortSignal.timeout(120000),
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const data = await res.json();
+        msg = data.error || data.message || msg;
+      } catch {
+        // keep the HTTP status message
+      }
+      throw new Error(msg);
+    }
   },
 
   /**

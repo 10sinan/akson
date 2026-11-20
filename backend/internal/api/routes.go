@@ -39,6 +39,7 @@ func (s *Server) NewRouter() http.Handler {
 			r.Post("/deploy", s.handleDeployContainer)
 			r.Get("/{id}", s.handleGetContainer)
 			r.Delete("/{id}", s.handleRemoveContainer)
+			r.Put("/{id}/env", s.handleUpdateEnv)
 			r.Post("/{id}/actions/{action}", s.handleContainerAction)
 			r.Get("/{id}/stats", s.handleContainerStats)
 			r.Get("/{id}/logs/stream", s.handleStreamLogs)
