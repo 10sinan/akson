@@ -32,4 +32,12 @@ export interface ContainerItem {
   restartCount: number;
   logs: string[];
   env: ContainerEnvVar[];
+  /** Set when the container was built from a git repository (akson.git.* labels). */
+  git?: ContainerGitSource;
+}
+
+export interface ContainerGitSource {
+  url: string;
+  branch: string;
+  commit: string;
 }

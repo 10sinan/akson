@@ -83,8 +83,9 @@ func GenerateLabels(cfg RouteConfig) map[string]string {
 // TraefikDefaultArgs returns standard command-line flags to run the Traefik v3 container.
 func TraefikDefaultArgs(acmeEmail string) []string {
 	args := []string{
+		// The dashboard is enabled but not served on the unauthenticated :8080 "insecure"
+		// entrypoint; expose it only through an explicit, protected router if needed.
 		"--api.dashboard=true",
-		"--api.insecure=true", // Exposed internally on 8080 for status/monitoring
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
 		fmt.Sprintf("--providers.docker.network=%s", DefaultNetworkName),
@@ -101,4 +102,44 @@ func TraefikDefaultArgs(acmeEmail string) []string {
 	}
 
 	return args
+}
+
+var (
+	// One DNS label: letters, digits and inner hyphens, 1-63 chars.
+	domainLabelRe = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$`)
+	// URL path: starts with "/", then unreserved characters, "/" and percent escapes only.
+	pathPrefixRe = regexp.MustCompile(`^/[A-Za-z0-9._~/%-]*$`)
+	// Traefik certificate resolver name.
+	resolverRe = regexp.MustCompile(`^[A-Za-z0-9_-]{1,64}$`)
+)
+
+// ValidateRoute checks the user-supplied parts of a Traefik rule. They are placed
+// inside Host(`...`) / PathPrefix(`...`), so a backtick or a parenthesis would let a
+// caller rewrite the rule (e.g. add "|| PathPrefix(`/`)" to capture every request).
+func ValidateRoute(cfg RouteConfig) error {
+	if cfg.Domain != "" {
+		if err := ValidateDomain(cfg.Domain); err != nil {
+			return err
+		}
+	}
+	if cfg.PathPrefix != "" && (len(cfg.PathPrefix) > 512 || !pathPrefixRe.MatchString(cfg.PathPrefix)) {
+		return fmt.Errorf("invalid path prefix %q: must start with / and contain only letters, digits and . _ ~ / %% -", cfg.PathPrefix)
+	}
+	if cfg.CertResolver != "" && !resolverRe.MatchString(cfg.CertResolver) {
+		return fmt.Errorf("invalid cert resolver name %q", cfg.CertResolver)
+	}
+	return nil
+}
+
+// ValidateDomain accepts a plain host name such as "app.example.com" or "app.localhost".
+func ValidateDomain(domain string) error {
+	if len(domain) > 253 {
+		return fmt.Errorf("invalid domain: too long")
+	}
+	for _, label := range strings.Split(domain, ".") {
+		if !domainLabelRe.MatchString(label) {
+			return fmt.Errorf("invalid domain %q: use a host name like app.example.com", domain)
+		}
+	}
+	return nil
 }

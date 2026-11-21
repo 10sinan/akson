@@ -15,6 +15,7 @@ import { StorageView } from './components/views/StorageView';
 import { LogsView } from './components/views/LogsView';
 import { SettingsView } from './components/views/SettingsView';
 import { NetworkView } from './components/views/NetworkView';
+import { GalaxyView } from './components/views/GalaxyView';
 import type { ContainerItem } from './types/container';
 import { soundManager } from './utils/sound';
 import { api } from './api/client';
@@ -32,7 +33,7 @@ import { wiseBouncy, wiseSpring, wiseGentle, tab3DProps, panel3DProps, staggerCo
 // three.js is heavy, so the 3D scene ships as its own chunk and never blocks first paint.
 const ClusterScene3D = lazy(() => import('./components/three/ClusterScene3D'));
 
-const NAV_TABS: ActiveNavTab[] = ['dashboard', 'deploy', 'storage', 'logs', 'network', 'settings'];
+const NAV_TABS: ActiveNavTab[] = ['dashboard', 'galaxy', 'deploy', 'storage', 'logs', 'network', 'settings'];
 
 // The active tab lives in the URL hash (#deploy, #logs, ...) so a page refresh keeps it.
 const readTabFromHash = (): ActiveNavTab => {
@@ -352,6 +353,8 @@ export function App() {
     switch (activeTab) {
       case 'dashboard':
         return 'kontrol-paneli';
+      case 'galaxy':
+        return 'galaksi';
       case 'deploy':
         return 'yeni-dagitim';
       case 'storage':
@@ -408,8 +411,14 @@ export function App() {
             isAiOpen ? '2xl:ml-[444px]' : ''
           }`}
         >
-          {/* Ambient 3D cluster scene: sits behind every panel, never takes input */}
-          <div className="fixed top-14 left-16 right-0 bottom-0 -z-10 pointer-events-none opacity-60" aria-hidden="true">
+          {/* Ambient 3D cluster scene: sits behind every panel, never takes input.
+              Hidden on the Galaxy tab, which has its own interactive scene. */}
+          <div
+            className={`fixed top-14 left-16 right-0 bottom-0 -z-10 pointer-events-none transition-opacity duration-300 ${
+              activeTab === 'galaxy' ? 'opacity-0' : 'opacity-60'
+            }`}
+            aria-hidden="true"
+          >
             <Suspense fallback={null}>
               <ClusterScene3D
                 nodes={sceneNodes}
@@ -763,6 +772,22 @@ export function App() {
                 className="flex flex-col flex-1"
               >
                 <StorageView />
+              </motion.div>
+            )}
+
+            {/* GALAKSİ: uygulamalar gezegen, Git dalları galaksi */}
+            {activeTab === 'galaxy' && (
+              <motion.div
+                key="galaxy"
+                {...tab3DProps}
+                className="flex flex-col flex-1"
+              >
+                <GalaxyView
+                  containers={containers}
+                  live={isLiveBackend && dockerStatus === 'online'}
+                  reducedMotion={reducedMotion}
+                  onRedeployed={handleDeployNew}
+                />
               </motion.div>
             )}
 

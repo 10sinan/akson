@@ -14,11 +14,12 @@ func (s *Server) NewRouter() http.Handler {
 
 	// --- Middleware ---
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	r.Use(requestLogger)
 	r.Use(middleware.Recoverer)
+	r.Use(SecurityHeaders)
 	r.Use(middleware.RequestID)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:3000", "http://localhost:4173"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Request-ID"},
 		ExposedHeaders:   []string{"Link"},
@@ -31,6 +32,8 @@ func (s *Server) NewRouter() http.Handler {
 
 	// --- API v1 ---
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(LimitBody)
+		r.Use(OriginGuard)
 		r.Use(AuthMiddleware(s.authToken))
 
 		// Containers
@@ -40,6 +43,8 @@ func (s *Server) NewRouter() http.Handler {
 			r.Get("/{id}", s.handleGetContainer)
 			r.Delete("/{id}", s.handleRemoveContainer)
 			r.Put("/{id}/env", s.handleUpdateEnv)
+			r.Get("/{id}/branches", s.handleListBranches)
+			r.Post("/{id}/redeploy-branch", s.handleRedeployBranch)
 			r.Post("/{id}/actions/{action}", s.handleContainerAction)
 			r.Get("/{id}/stats", s.handleContainerStats)
 			r.Get("/{id}/logs/stream", s.handleStreamLogs)

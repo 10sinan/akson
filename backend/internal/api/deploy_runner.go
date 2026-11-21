@@ -16,6 +16,7 @@ import (
 	"akson/internal/docker"
 	"akson/internal/git"
 	"akson/internal/proxy"
+	"akson/internal/redact"
 )
 
 // Deploy steps reported to the UI, in order.
@@ -81,6 +82,18 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	}
 	d := &deployRun{s: s, emit: emit, depID: fmt.Sprintf("dep-%d", time.Now().UnixMilli()), now: time.Now().UTC()}
 
+	// Domain and path prefix end up inside a Traefik rule: reject anything that is not a
+	// plain host name / path before doing any work.
+	if err := proxy.ValidateRoute(proxy.RouteConfig{Domain: req.Domain, PathPrefix: req.PathPrefix}); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
+	if err := docker.ValidateDockerfilePath(strings.TrimSpace(req.Dockerfile)); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
+	if err := validateEnvKeys(req.Env); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
+
 	if strings.TrimSpace(req.GitURL) != "" {
 		if strings.TrimSpace(req.Name) == "" {
 			base := filepath.Base(strings.TrimSuffix(strings.TrimSpace(req.GitURL), ".git"))
@@ -89,6 +102,10 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 
 		d.step(StepClone, "running", req.GitURL)
 		if err := git.ValidateRepoURL(req.GitURL); err != nil {
+			d.log("Git URL rejected: " + err.Error())
+			return nil, d.fail(StepClone, http.StatusBadRequest, err.Error(), err, req.Name, req.GitURL, "unknown", req.GitBranch)
+		}
+		if err := git.CheckRepoHost(ctx, req.GitURL); err != nil {
 			d.log("Git URL rejected: " + err.Error())
 			return nil, d.fail(StepClone, http.StatusBadRequest, err.Error(), err, req.Name, req.GitURL, "unknown", req.GitBranch)
 		}
@@ -180,6 +197,20 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 		d.log(fmt.Sprintf("Successfully built image %s", builtTag))
 		d.step(StepBuild, "done", builtTag)
 		req.Image = builtTag
+
+		// Remember where the image came from, so the Galaxy view can list the repo's
+		// branches and redeploy another one. Credentials never go into labels.
+		if req.Labels == nil {
+			req.Labels = make(map[string]string)
+		}
+		req.Labels[LabelGitURL] = redact.URLCredentials(strings.TrimSpace(req.GitURL))
+		req.Labels[LabelGitBranch] = req.Branch
+		req.Labels[LabelGitCommit] = req.CommitHash
+		if requested != "" && requested != "Dockerfile" {
+			req.Labels[LabelGitDockerfile] = requested
+		} else {
+			delete(req.Labels, LabelGitDockerfile)
+		}
 	}
 
 	if strings.TrimSpace(req.Name) == "" {
@@ -246,6 +277,7 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 		d.step(StepPull, "running", req.Image)
 	}
 	d.step(StepStart, "running", req.Name)
+	applyDefaultPublishIP(req.Ports, s.effectivePublishIP())
 	result, err := s.docker.DeployContainer(ctx, req.DeployConfig)
 	if err != nil {
 		if !isGit {
@@ -299,6 +331,32 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	return result, nil
 }
 
+// defaultPublishIP is where new deployments publish their ports unless the request names
+// an IP or AKSON_PUBLISH_IP says otherwise. Docker's own default (all interfaces) would
+// expose every deployed app to the network and bypass host firewalls such as ufw.
+const defaultPublishIP = "127.0.0.1"
+
+// SetPublishIP sets the host IP new deployments publish ports on ("" = 127.0.0.1).
+func (s *Server) SetPublishIP(ip string) {
+	s.publishIP = ip
+}
+
+func (s *Server) effectivePublishIP() string {
+	if s.publishIP == "" {
+		return defaultPublishIP
+	}
+	return s.publishIP
+}
+
+// applyDefaultPublishIP fills in ip for every port mapping that does not name one.
+func applyDefaultPublishIP(ports []docker.PortMapping, ip string) {
+	for i := range ports {
+		if ports[i].IP == "" {
+			ports[i].IP = ip
+		}
+	}
+}
+
 // accessURL returns http://localhost:<port> for the first published port, or "".
 func accessURL(c *docker.ContainerInfo) string {
 	for _, p := range c.Ports {
@@ -343,6 +401,12 @@ func (s *Server) handleDeployStream(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON payload: "+err.Error())
 		return
 	}
+	s.streamDeployRun(w, r, req)
+}
+
+// streamDeployRun runs req through runDeploy and writes its events as NDJSON.
+// The deployment keeps running (up to 15 minutes) if the client disconnects.
+func (s *Server) streamDeployRun(w http.ResponseWriter, r *http.Request, req DeployContainerRequest) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		errorResponse(w, http.StatusInternalServerError, "Streaming not supported")

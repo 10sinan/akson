@@ -89,7 +89,77 @@ export type DeployEvent =
   | { type: 'result'; container: ApiContainer; url?: string }
   | { type: 'error'; message: string };
 
+/** One branch of a deployed app's repository (GET /containers/{id}/branches). */
+export interface ApiBranch {
+  name: string;
+  commit: string;
+  deployed: boolean;
+}
+
+export interface ApiBranchesResponse {
+  repo: string;
+  deployed_branch: string;
+  deployed_commit: string;
+  branches: ApiBranch[];
+}
+
 const API_BASE = '';
+
+/**
+ * API token (AKSON_TOKEN on the server), saved in this browser with
+ * localStorage.setItem('akson_token', '<token>'). Empty when auth is off.
+ */
+function getToken(): string {
+  try {
+    return localStorage.getItem('akson_token') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** fetch for /api/v1 calls: adds the Authorization header when a token is saved. */
+function apiFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  if (!token) return fetch(url, init);
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  return fetch(url, { ...init, headers });
+}
+
+/** Reads an NDJSON deploy stream (one DeployEvent per line) and calls onEvent for each line. */
+async function readDeployStream(res: Response, onEvent: (ev: DeployEvent) => void): Promise<void> {
+  if (!res.ok || !res.body) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Deploy failed with HTTP ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const flush = (line: string) => {
+    if (!line.trim()) return;
+    try {
+      onEvent(JSON.parse(line) as DeployEvent);
+    } catch {
+      // ignore a malformed line rather than breaking the whole stream
+    }
+  };
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+    lines.forEach(flush);
+  }
+  flush(buffer);
+}
+
+/** EventSource cannot send headers, so the token goes in the query string. */
+function withToken(url: string): string {
+  const token = getToken();
+  if (!token) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+}
 
 /**
  * Transforms backend Docker ContainerInfo into frontend ContainerItem.
@@ -134,7 +204,17 @@ export function mapApiContainerToItem(apiC: ApiContainer): ContainerItem {
     }
   }
 
+  const gitUrl = apiC.labels?.['akson.git.url'];
+  const git = gitUrl
+    ? {
+        url: gitUrl,
+        branch: apiC.labels['akson.git.branch'] || '',
+        commit: apiC.labels['akson.git.commit'] || '',
+      }
+    : undefined;
+
   return {
+    git,
     id: apiC.id.substring(0, 12),
     name: apiC.name || 'unnamed-container',
     image: cleanImage,
@@ -196,7 +276,7 @@ export const api = {
    * Fetches real container list from Docker daemon via Go backend.
    */
   async fetchContainers(): Promise<ContainerItem[]> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/`, {
       signal: AbortSignal.timeout(6000),
     });
     if (!res.ok) throw new Error(`Fetch containers failed: HTTP ${res.status}`);
@@ -229,11 +309,11 @@ export const api = {
   ): Promise<{ status: string; message: string }> {
     const res =
       action === 'delete'
-        ? await fetch(`${API_BASE}/api/v1/containers/${id}`, {
+        ? await apiFetch(`${API_BASE}/api/v1/containers/${id}`, {
             method: 'DELETE',
             signal: AbortSignal.timeout(30000),
           })
-        : await fetch(`${API_BASE}/api/v1/containers/${id}/actions/${action}`, {
+        : await apiFetch(`${API_BASE}/api/v1/containers/${id}/actions/${action}`, {
             method: 'POST',
             signal: AbortSignal.timeout(15000),
           });
@@ -248,7 +328,7 @@ export const api = {
    * Fetches the container's real environment variables (Docker inspect Config.Env).
    */
   async fetchContainerEnv(id: string): Promise<ContainerEnvVar[]> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/${id}`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/${id}`, {
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`Fetch env failed: HTTP ${res.status}`);
@@ -266,7 +346,7 @@ export const api = {
    * Recreates a managed container with a new environment (new container id).
    */
   async updateContainerEnv(id: string, env: Record<string, string>): Promise<void> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/env`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/${id}/env`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ env }),
@@ -288,7 +368,7 @@ export const api = {
    * Fetches a one-shot resource telemetry snapshot for a container.
    */
   async fetchContainerStats(id: string): Promise<ApiContainerStats> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/${id}/stats`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/${id}/stats`, {
       signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) throw new Error(`Fetch stats failed: HTTP ${res.status}`);
@@ -304,7 +384,7 @@ export const api = {
     onEntry: (entry: ApiLogEntry) => void,
     onError?: (err: Event) => void
   ): () => void {
-    const eventSource = new EventSource(`${API_BASE}/api/v1/containers/${id}/logs/stream?tail=100`);
+    const eventSource = new EventSource(withToken(`${API_BASE}/api/v1/containers/${id}/logs/stream?tail=100`));
 
     eventSource.onmessage = (event) => {
       try {
@@ -339,7 +419,7 @@ export const api = {
     onStats: (stats: ApiContainerStats) => void,
     onError?: (err: Event) => void
   ): () => void {
-    const eventSource = new EventSource(`${API_BASE}/api/v1/containers/${id}/stats/stream`);
+    const eventSource = new EventSource(withToken(`${API_BASE}/api/v1/containers/${id}/stats/stream`));
 
     eventSource.onmessage = (event) => {
       try {
@@ -364,7 +444,7 @@ export const api = {
    * Fetches akson-bridge topology and connected containers.
    */
   async fetchNetworkDetails(): Promise<ApiNetworkDetails> {
-    const res = await fetch(`${API_BASE}/api/v1/network`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/network`, {
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) throw new Error(`Fetch network failed: HTTP ${res.status}`);
@@ -380,43 +460,52 @@ export const api = {
     onEvent: (ev: DeployEvent) => void,
     signal?: AbortSignal
   ): Promise<void> {
-    const res = await fetch(`${API_BASE}/api/v1/deployments/stream`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/deployments/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
       signal,
     });
-    if (!res.ok || !res.body) {
+    await readDeployStream(res, onEvent);
+  },
+
+  /**
+   * Lists the branches of the repository a git-deployed container was built from.
+   */
+  async fetchBranches(id: string): Promise<ApiBranchesResponse> {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/${id}/branches`, {
+      signal: AbortSignal.timeout(35000),
+    });
+    if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Deploy failed with HTTP ${res.status}`);
+      throw new Error(err.error || `Branches failed with HTTP ${res.status}`);
     }
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    const flush = (line: string) => {
-      if (!line.trim()) return;
-      try {
-        onEvent(JSON.parse(line) as DeployEvent);
-      } catch {
-        // ignore a malformed line rather than breaking the whole stream
-      }
-    };
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() ?? '';
-      lines.forEach(flush);
-    }
-    flush(buffer);
+    return res.json();
+  },
+
+  /**
+   * Rebuilds a git-deployed container from another branch, streaming progress like deployStream.
+   */
+  async redeployBranch(
+    id: string,
+    branch: string,
+    onEvent: (ev: DeployEvent) => void,
+    signal?: AbortSignal
+  ): Promise<void> {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/${id}/redeploy-branch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branch }),
+      signal,
+    });
+    await readDeployStream(res, onEvent);
   },
 
   /**
    * Deploys a new container from scratch via Docker daemon (pull, configure, network, start).
    */
   async deployContainer(req: DeployContainerRequest): Promise<DeployContainerResult> {
-    const res = await fetch(`${API_BASE}/api/v1/containers/deploy`, {
+    const res = await apiFetch(`${API_BASE}/api/v1/containers/deploy`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
@@ -430,13 +519,13 @@ export const api = {
     return res.json();
   },
   async fetchSystemInfo(): Promise<ApiSystemInfo> {
-    const res = await fetch(`${API_BASE}/api/v1/system`, { signal: AbortSignal.timeout(12000) });
+    const res = await apiFetch(`${API_BASE}/api/v1/system`, { signal: AbortSignal.timeout(12000) });
     if (!res.ok) throw new Error(`System info failed: HTTP ${res.status}`);
     return res.json();
   },
 
   async pruneUnusedImages(): Promise<ApiPruneResult> {
-    const res = await fetch(`${API_BASE}/api/v1/system/prune-images`, { method: 'POST' });
+    const res = await apiFetch(`${API_BASE}/api/v1/system/prune-images`, { method: 'POST' });
     const body = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(body.error || `Prune failed: HTTP ${res.status}`);
     return body;

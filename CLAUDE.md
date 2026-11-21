@@ -18,7 +18,7 @@ From the repo root:
 Backend (`cd backend`):
 - Run a single test: `go test ./internal/docker -run TestCalculateStats_Math -v`
 - Tests that need a live Docker daemon (deploy, containers, logs, stats, proxy network) call `t.Skip` when the daemon can't be reached. If Docker is running they create real containers and networks.
-- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `STATIC_DIR` (optional; serves the built frontend, used by the Docker image), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
+- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `HOST` (default `127.0.0.1`; the Docker image sets `0.0.0.0`), `AKSON_PUBLISH_IP` (default `127.0.0.1`; host IP new deployments publish ports on), `STATIC_DIR` (optional; serves the built frontend, used by the Docker image), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
 - The server exits at startup if it can't ping the Docker daemon.
 
 Frontend (`cd frontend`):
@@ -38,6 +38,8 @@ Frontend (`cd frontend`):
 
 **Live deploy**: `POST /api/v1/deployments/stream` runs the same `runDeploy` (`internal/api/deploy_runner.go`) as the JSON endpoints and streams NDJSON `DeployEvent`s (step/log/result/error); the deploy keeps running if the client disconnects.
 
+**Galaxy**: git deploys label the container `akson.git.url` (credentials masked), `akson.git.branch`, `akson.git.commit` and optionally `akson.git.dockerfile`. `GET /containers/{id}/branches` lists the repo's branches with `git ls-remote` (URL taken from the label, public repos only); `POST /containers/{id}/redeploy-branch` rebuilds from another branch through `runDeploy`, keeping ports/limits/network/Traefik labels and only user-set env vars (`docker.UserEnv`). The UI is `components/views/GalaxyView.tsx` + `components/three/GalaxyScene3D.tsx`, with demo data when the backend is unreachable.
+
 **Settings**: `GET /api/v1/system` reports Docker version, unused (dangling) images, Traefik, and whether `AKSON_TOKEN`/`ACME_EMAIL` are set (never their values). `POST /api/v1/system/prune-images` removes dangling images only. These env settings are read-only in the UI; they are changed in `docker-compose.yml`.
 
 **Streaming**: logs and stats go over Server-Sent Events (`/containers/{id}/logs/stream`, `/containers/{id}/stats/stream`). The frontend reads them with `EventSource` in `src/api/client.ts`.
@@ -45,4 +47,4 @@ Frontend (`cd frontend`):
 **Frontend** (`frontend/src`, React 19, Tailwind v4 via `@tailwindcss/vite`, framer-motion, lucide-react):
 - `api/client.ts` holds all backend calls and the API types (snake_case, matching Go JSON tags). `mapApiContainerToItem` converts them to the UI's `ContainerItem` (`types/container.ts`). `API_BASE` is `''`, and the Vite dev server proxies `/api` and `/health` to `localhost:3001`.
 - `App.tsx` owns the top-level state (active tab, container list, modals, toasts). On mount it calls `/health`. If the backend or Docker is unreachable, the UI switches to **demo mode** (`dockerStatus: 'demo'`, `isLiveBackend: false`) instead of failing, so UI changes need to work in both modes.
-- Each tab (dashboard/deploy/storage/logs/network/settings) is rendered by a switch in `App.tsx` that picks a component from `components/views/`. Dashboard sub-panels live in `components/dashboard/`.
+- Each tab (dashboard/galaxy/deploy/storage/logs/network/settings) is rendered by a switch in `App.tsx` that picks a component from `components/views/`. Dashboard sub-panels live in `components/dashboard/`.

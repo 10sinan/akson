@@ -19,6 +19,7 @@ bıkan geliştiriciler için **sade, hızlı ve tek ekranlı bir yönetim paneli
 * **Otomatik Port:** Dağıttığın her uygulama boş bir porta yerleşir, Akson sana `http://localhost:PORT` adresini söyler.
 * **Alan Adı Yönlendirme (Traefik):** Sunucunda Traefik çalışıyorsa uygulamalara `uygulama.siten.com` gibi adresler verebilirsin.
 * **Hızlı Dağıtım:** Git reposunun linkini verip servisi tek tıkla ayağa kaldırabilirsin. Repoda `Dockerfile` yoksa Akson proje türünü tanır ve kendisi oluşturur.
+* **Galaksi:** Her uygulama 3D haritada bir gezegen. Git'ten kurduğun bir uygulamaya tıklayınca reposunun dalları (main, develop, feature/...) etrafında gezegen olarak açılır; bir dalı seçip tek tıkla o daldan yeniden yayınlayabilirsin. Ortam değişkenleri, portlar ve alan adı korunur. Şimdilik sadece herkese açık repolar desteklenir; bu özellikten önce kurulmuş uygulamaları bir kez yeniden kurman gerekir.
 * **Kartlardan Hızlı İşlem:** Her servis kartında **Başlat**, **Durdur** ve **Yeniden başlat** butonları vardır. Durdurmadan önce onay sorulur.
 * **Ayarlar Sayfası:** Docker sürümü, Traefik durumu, kullanılmayan imajlar ve sistem ayarları tek yerde görünür. Kullanılmayan imajları buradan temizleyebilirsin.
 
@@ -47,6 +48,10 @@ Sonra tarayıcıda **http://localhost:3001** adresini aç.
 Durdurmak için: `docker compose down`
 
 > **Not:** Akson, konteynerleri yönetebilmek için Docker soketine (`/var/run/docker.sock`) erişir. Bu, Akson'a bilgisayarındaki Docker üzerinde tam yetki verir. Akson'u internete açacaksan `AKSON_TOKEN` ayarla ve tarayıcıda `localStorage.setItem('akson_token', '<token>')` ile aynı değeri gir.
+>
+> Güvenlik için Akson varsayılan olarak yalnızca bu bilgisayardan erişilebilir: `docker-compose.yml` portu `127.0.0.1:3001` üzerinde açar, Docker dışında çalışan arka yüz de `HOST=127.0.0.1` adresini dinler. Başka bir makineden erişmek istiyorsan önce `AKSON_TOKEN` ayarla, sonra bu adresi bilerek değiştir (tercihen önüne HTTPS'li bir ters vekil koy).
+>
+> Dağıttığın uygulamaların portları da varsayılan olarak sadece `127.0.0.1` üzerinde açılır (alan adıyla Traefik üzerinden erişim etkilenmez). Uygulamaları ağdaki diğer cihazlardan port numarasıyla açmak istiyorsan `AKSON_PUBLISH_IP=0.0.0.0` ayarla.
 
 ---
 

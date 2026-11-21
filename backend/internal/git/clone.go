@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -38,7 +39,7 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 
 	// Attempt 1: Clone specific branch with depth 1
 	args := []string{"clone", "--depth", "1", "-b", branch, "--", repoURL, targetDir}
-	cmd := exec.CommandContext(ctx, "git", args...)
+	cmd := gitCommand(ctx, args...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -49,7 +50,7 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 		if branch == "main" {
 			logs = append(logs, fmt.Sprintf("Branch 'main' not found, falling back to default branch for %s...", repoURL))
 			fallbackArgs := []string{"clone", "--depth", "1", "--", repoURL, targetDir}
-			fallbackCmd := exec.CommandContext(ctx, "git", fallbackArgs...)
+			fallbackCmd := gitCommand(ctx, fallbackArgs...)
 			fallbackCmd.Stdout = &stdout
 			fallbackCmd.Stderr = &stderr
 			if fbErr := fallbackCmd.Run(); fbErr != nil {
@@ -70,7 +71,7 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 	}
 
 	// Read commit info: hash|author|message
-	logCmd := exec.CommandContext(ctx, "git", "-C", targetDir, "log", "-1", "--format=%H|%an|%s")
+	logCmd := gitCommand(ctx, "-C", targetDir, "log", "-1", "--format=%H|%an|%s")
 	var logOut bytes.Buffer
 	logCmd.Stdout = &logOut
 	_ = logCmd.Run()
@@ -95,6 +96,17 @@ func CloneRepo(ctx context.Context, repoURL string, branch string, targetDir str
 	logs = append(logs, fmt.Sprintf("Repository cloned successfully. Commit %s (%s)", shortHash(info.CommitHash), info.Message))
 
 	return info, logs, nil
+}
+
+// gitCommand runs git without ever waiting for a terminal prompt (credentials,
+// host keys): a request for a private repo fails fast instead of hanging until timeout.
+func gitCommand(ctx context.Context, args ...string) *exec.Cmd {
+	cmd := exec.CommandContext(ctx, "git", args...)
+	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	if os.Getenv("GIT_SSH_COMMAND") == "" {
+		cmd.Env = append(cmd.Env, "GIT_SSH_COMMAND=ssh -o BatchMode=yes")
+	}
+	return cmd
 }
 
 func shortHash(h string) string {

@@ -24,6 +24,7 @@ type Server struct {
 	authToken  string
 	staticDir  string
 	sysConfig  SystemConfig
+	publishIP  string
 }
 
 // SetStaticDir serves the built frontend from dir for all non-API routes.
@@ -133,11 +134,9 @@ func (s *Server) handleUpdateEnv(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON: "+err.Error())
 		return
 	}
-	for k := range body.Env {
-		if k == "" || strings.ContainsAny(k, "= \t\n") {
-			errorResponse(w, http.StatusBadRequest, "Invalid env key: "+k)
-			return
-		}
+	if err := validateEnvKeys(body.Env); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
 	defer cancel()
@@ -147,6 +146,17 @@ func (s *Server) handleUpdateEnv(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, res)
+}
+
+// validateEnvKeys rejects variable names Docker would mis-parse: an empty name, or one
+// containing "=", whitespace or NUL (e.g. key "A=B" would silently become A with value "B=...").
+func validateEnvKeys(env map[string]string) error {
+	for k := range env {
+		if k == "" || strings.ContainsAny(k, "= \t\r\n\x00") {
+			return fmt.Errorf("Invalid env key: %q", k)
+		}
+	}
+	return nil
 }
 
 // handleContainerAction performs start/stop/restart on a container.
@@ -389,6 +399,10 @@ func (s *Server) handleGenerateTraefikLabels(w http.ResponseWriter, r *http.Requ
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON: "+err.Error())
 		return
 	}
+	if err := proxy.ValidateRoute(cfg); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	labels := proxy.GenerateLabels(cfg)
 	respond(w, http.StatusOK, labels)
 }
@@ -400,14 +414,22 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
+	// /health needs no token, so it only says ok/unavailable; details (socket paths,
+	// file paths) go to the server log.
 	dockerOK := "ok"
-	if err := s.docker.Ping(ctx); err != nil {
-		dockerOK = "unavailable: " + err.Error()
+	if s.docker == nil {
+		dockerOK = "unavailable"
+	} else if err := s.docker.Ping(ctx); err != nil {
+		log.Printf("health: docker unavailable: %v", err)
+		dockerOK = "unavailable"
 	}
 
 	dbOK := "ok"
-	if err := s.db.Ping(); err != nil {
-		dbOK = "unavailable: " + err.Error()
+	if s.db == nil {
+		dbOK = "unavailable"
+	} else if err := s.db.Ping(); err != nil {
+		log.Printf("health: database unavailable: %v", err)
+		dbOK = "unavailable"
 	}
 
 	respond(w, http.StatusOK, map[string]string{

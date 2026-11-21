@@ -49,6 +49,37 @@ func ConfigFromInspect(in *types.ContainerJSON) DeployConfig {
 	return cfg
 }
 
+// ImageEnv returns the ENV entries ("KEY=value") baked into an image.
+func (c *Client) ImageEnv(ctx context.Context, imageRef string) ([]string, error) {
+	img, _, err := c.cli.ImageInspectWithRaw(ctx, imageRef)
+	if err != nil {
+		return nil, err
+	}
+	if img.Config == nil {
+		return nil, nil
+	}
+	return img.Config.Env, nil
+}
+
+// UserEnv removes from a container's environment the entries that come unchanged from
+// its image (PATH, NODE_VERSION, ...), leaving what the user set. Used when the image is
+// rebuilt from another branch, whose own ENV must not be overwritten by the old image's.
+func UserEnv(containerEnv map[string]string, imageEnv []string) map[string]string {
+	fromImage := make(map[string]string, len(imageEnv))
+	for _, line := range imageEnv {
+		k, v, _ := strings.Cut(line, "=")
+		fromImage[k] = v
+	}
+	out := make(map[string]string, len(containerEnv))
+	for k, v := range containerEnv {
+		if iv, ok := fromImage[k]; ok && iv == v {
+			continue
+		}
+		out[k] = v
+	}
+	return out
+}
+
 // UpdateEnv recreates an Akson-managed container with a new environment, keeping its
 // image, ports, limits, network, restart policy and labels.
 func (c *Client) UpdateEnv(ctx context.Context, id string, env map[string]string) (*DeployResult, error) {

@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,12 +19,15 @@ import (
 func main() {
 	// --- Configuration from environment (or defaults) ---
 	port := envOr("PORT", "3001")
+	// Listen on loopback by default: the API controls the Docker daemon, so it must not be
+	// reachable from the network unless the operator opts in (HOST=0.0.0.0, ideally with AKSON_TOKEN).
+	host := envOr("HOST", "127.0.0.1")
 	dbPath := envOr("DB_PATH", "./data/akson.db")
 	acmeEmail := envOr("ACME_EMAIL", "")
 	authToken := envOr("AKSON_TOKEN", "")
 	staticDir := envOr("STATIC_DIR", "")
 
-	log.Printf("🚀 Akson Backend starting on :%s", port)
+	log.Printf("🚀 Akson Backend starting on %s", net.JoinHostPort(host, port))
 
 	// --- Database ---
 	log.Printf("📦 Opening database at %s", dbPath)
@@ -71,8 +74,18 @@ func main() {
 	server := api.NewServer(database, dockerClient, networkMgr)
 	server.SetAuthToken(authToken)
 	server.SetSystemConfig(api.SystemConfig{DBPath: dbPath, ACMEEmailSet: acmeEmail != ""})
+	if publishIP := envOr("AKSON_PUBLISH_IP", ""); publishIP != "" {
+		if net.ParseIP(publishIP) == nil {
+			log.Fatalf("AKSON_PUBLISH_IP=%q is not an IP address", publishIP)
+		}
+		server.SetPublishIP(publishIP)
+		log.Printf("📡 New deployments publish ports on %s", publishIP)
+	}
 	if authToken == "" {
 		log.Printf("⚠️  AKSON_TOKEN is not set: API is open without authentication")
+		if !isLoopbackHost(host) {
+			log.Printf("🚨 HOST=%s exposes an unauthenticated Docker control API to the network. Set AKSON_TOKEN.", host)
+		}
 	} else {
 		log.Printf("🔒 API token authentication enabled")
 	}
@@ -83,7 +96,7 @@ func main() {
 	router := server.NewRouter()
 
 	httpServer := &http.Server{
-		Addr:         fmt.Sprintf(":%s", port),
+		Addr:         net.JoinHostPort(host, port),
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 0, // 0 = no timeout, needed for SSE streaming
@@ -93,7 +106,7 @@ func main() {
 	// Start in a goroutine so we can handle signals
 	serverErr := make(chan error, 1)
 	go func() {
-		log.Printf("🟢 HTTP API listening on http://localhost:%s", port)
+		log.Printf("🟢 HTTP API listening on http://%s", net.JoinHostPort(host, port))
 		log.Printf("   Health: http://localhost:%s/health", port)
 		log.Printf("   API:    http://localhost:%s/api/v1", port)
 		serverErr <- httpServer.ListenAndServe()
@@ -125,4 +138,13 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// isLoopbackHost reports whether host only accepts connections from the local machine.
+func isLoopbackHost(host string) bool {
+	if host == "localhost" {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
