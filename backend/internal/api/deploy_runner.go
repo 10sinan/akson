@@ -16,6 +16,7 @@ import (
 	"akson/internal/docker"
 	"akson/internal/git"
 	"akson/internal/proxy"
+	"akson/internal/redact"
 )
 
 // Deploy steps reported to the UI, in order.
@@ -196,6 +197,20 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 		d.log(fmt.Sprintf("Successfully built image %s", builtTag))
 		d.step(StepBuild, "done", builtTag)
 		req.Image = builtTag
+
+		// Remember where the image came from, so the Galaxy view can list the repo's
+		// branches and redeploy another one. Credentials never go into labels.
+		if req.Labels == nil {
+			req.Labels = make(map[string]string)
+		}
+		req.Labels[LabelGitURL] = redact.URLCredentials(strings.TrimSpace(req.GitURL))
+		req.Labels[LabelGitBranch] = req.Branch
+		req.Labels[LabelGitCommit] = req.CommitHash
+		if requested != "" && requested != "Dockerfile" {
+			req.Labels[LabelGitDockerfile] = requested
+		} else {
+			delete(req.Labels, LabelGitDockerfile)
+		}
 	}
 
 	if strings.TrimSpace(req.Name) == "" {
@@ -386,6 +401,12 @@ func (s *Server) handleDeployStream(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON payload: "+err.Error())
 		return
 	}
+	s.streamDeployRun(w, r, req)
+}
+
+// streamDeployRun runs req through runDeploy and writes its events as NDJSON.
+// The deployment keeps running (up to 15 minutes) if the client disconnects.
+func (s *Server) streamDeployRun(w http.ResponseWriter, r *http.Request, req DeployContainerRequest) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		errorResponse(w, http.StatusInternalServerError, "Streaming not supported")

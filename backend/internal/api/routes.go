@@ -43,6 +43,8 @@ func (s *Server) NewRouter() http.Handler {
 			r.Get("/{id}", s.handleGetContainer)
 			r.Delete("/{id}", s.handleRemoveContainer)
 			r.Put("/{id}/env", s.handleUpdateEnv)
+			r.Get("/{id}/branches", s.handleListBranches)
+			r.Post("/{id}/redeploy-branch", s.handleRedeployBranch)
 			r.Post("/{id}/actions/{action}", s.handleContainerAction)
 			r.Get("/{id}/stats", s.handleContainerStats)
 			r.Get("/{id}/logs/stream", s.handleStreamLogs)
