@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"akson/internal/redact"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -56,6 +58,11 @@ func New(dbPath string) (*DB, error) {
 	if _, err := conn.Exec(schemaDDL); err != nil {
 		conn.Close()
 		return nil, fmt.Errorf("failed to initialize schema: %w", err)
+	}
+
+	if err := db.scrubStoredSecrets(); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("failed to scrub stored secrets: %w", err)
 	}
 
 	return db, nil
@@ -113,6 +120,9 @@ func (db *DB) UpsertService(s *Service) error {
 		s.CreatedAt = now
 	}
 	s.UpdatedAt = now
+	// Docker keeps the real values; the database only needs the variable names.
+	s.Env = redact.EnvValues(s.Env)
+	s.Image = redact.URLCredentials(s.Image)
 
 	query := `
 	INSERT INTO services (id, name, image, status, ports, env, traefik_rule, created_at, updated_at)
@@ -175,6 +185,7 @@ func (db *DB) ListDeployments(serviceID string, limit int) ([]Deployment, error)
 
 // CreateDeployment registers a new deployment run.
 func (db *DB) CreateDeployment(d *Deployment) error {
+	d.LogExcerpt = redact.URLCredentials(d.LogExcerpt)
 	if d.TriggeredAt.IsZero() {
 		d.TriggeredAt = time.Now().UTC()
 	}
@@ -185,6 +196,7 @@ func (db *DB) CreateDeployment(d *Deployment) error {
 
 // UpdateDeploymentStatus updates the progress, status, and log excerpt of a deployment.
 func (db *DB) UpdateDeploymentStatus(id string, status string, logExcerpt string, completedAt *time.Time) error {
+	logExcerpt = redact.URLCredentials(logExcerpt)
 	query := `UPDATE deployments SET status = ?, log_excerpt = ?, completed_at = ? WHERE id = ?`
 	_, err := db.conn.Exec(query, status, logExcerpt, completedAt, id)
 	return err
@@ -216,3 +228,57 @@ func (db *DB) SetSetting(key, val string) error {
 	return err
 }
 
+// scrubStoredSecrets masks secrets written by older versions: environment variable
+// values in services.env, and credentials embedded in git URLs (services.image,
+// deployments.log_excerpt). It is idempotent and runs on every start.
+func (db *DB) scrubStoredSecrets() error {
+	tx, err := db.conn.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback() //nolint:errcheck
+
+	type row struct{ id, a, b string }
+	collect := func(query string) ([]row, error) {
+		rows, err := tx.Query(query)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+		var out []row
+		for rows.Next() {
+			var r row
+			if err := rows.Scan(&r.id, &r.a, &r.b); err != nil {
+				return nil, err
+			}
+			out = append(out, r)
+		}
+		return out, rows.Err()
+	}
+
+	services, err := collect(`SELECT id, env, image FROM services`)
+	if err != nil {
+		return err
+	}
+	for _, r := range services {
+		env, image := redact.EnvValues(r.a), redact.URLCredentials(r.b)
+		if env != r.a || image != r.b {
+			if _, err := tx.Exec(`UPDATE services SET env = ?, image = ? WHERE id = ?`, env, image, r.id); err != nil {
+				return err
+			}
+		}
+	}
+
+	deployments, err := collect(`SELECT id, log_excerpt, '' FROM deployments`)
+	if err != nil {
+		return err
+	}
+	for _, r := range deployments {
+		if clean := redact.URLCredentials(r.a); clean != r.a {
+			if _, err := tx.Exec(`UPDATE deployments SET log_excerpt = ? WHERE id = ?`, clean, r.id); err != nil {
+				return err
+			}
+		}
+	}
+	return tx.Commit()
+}
