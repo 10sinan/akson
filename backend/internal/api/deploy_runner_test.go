@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"akson/internal/db"
@@ -82,6 +83,26 @@ func TestDeployStream_InvalidJSON(t *testing.T) {
 	NewServer(nil, nil, nil).NewRouter().ServeHTTP(rec, req)
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", rec.Code)
+	}
+}
+
+func TestDeployStream_RejectsTraefikRuleInjection(t *testing.T) {
+	events := streamDeploy(t, NewServer(nil, nil, nil), map[string]any{
+		"name": "x", "image": "nginx:alpine", "domain": "a.com`) || PathPrefix(`/",
+	})
+	last := events[len(events)-1]
+	if last.Type != "error" || !strings.Contains(last.Message, "invalid domain") {
+		t.Fatalf("expected invalid domain error, got %+v", last)
+	}
+}
+
+func TestGenerateLabels_RejectsInvalidDomain(t *testing.T) {
+	body := []byte(`{"service_name":"x","domain":"a.com` + "`" + `) || Host(` + "`" + `b.com","port":80}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/network/labels", bytes.NewReader(body))
+	rec := httptest.NewRecorder()
+	NewServer(nil, nil, nil).NewRouter().ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d: %s", rec.Code, rec.Body.String())
 	}
 }
 

@@ -389,6 +389,10 @@ func (s *Server) handleGenerateTraefikLabels(w http.ResponseWriter, r *http.Requ
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON: "+err.Error())
 		return
 	}
+	if err := proxy.ValidateRoute(cfg); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
 	labels := proxy.GenerateLabels(cfg)
 	respond(w, http.StatusOK, labels)
 }

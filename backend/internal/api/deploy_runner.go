@@ -81,6 +81,12 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	}
 	d := &deployRun{s: s, emit: emit, depID: fmt.Sprintf("dep-%d", time.Now().UnixMilli()), now: time.Now().UTC()}
 
+	// Domain and path prefix end up inside a Traefik rule: reject anything that is not a
+	// plain host name / path before doing any work.
+	if err := proxy.ValidateRoute(proxy.RouteConfig{Domain: req.Domain, PathPrefix: req.PathPrefix}); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
+
 	if strings.TrimSpace(req.GitURL) != "" {
 		if strings.TrimSpace(req.Name) == "" {
 			base := filepath.Base(strings.TrimSuffix(strings.TrimSpace(req.GitURL), ".git"))
