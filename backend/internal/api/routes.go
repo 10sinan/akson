@@ -18,7 +18,7 @@ func (s *Server) NewRouter() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:3000", "http://localhost:4173"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Request-ID"},
 		ExposedHeaders:   []string{"Link"},
@@ -31,6 +31,7 @@ func (s *Server) NewRouter() http.Handler {
 
 	// --- API v1 ---
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(OriginGuard)
 		r.Use(AuthMiddleware(s.authToken))
 
 		// Containers
