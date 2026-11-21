@@ -16,6 +16,8 @@ services:
       - AKSON_TOKEN=${AKSON_TOKEN:-}
       # Optional: e-mail for free Let's Encrypt HTTPS certificates via Traefik.
       - ACME_EMAIL=${ACME_EMAIL:-}
+      # Optional: host IP deployed apps publish their ports on (default 127.0.0.1).
+      - AKSON_PUBLISH_IP=${AKSON_PUBLISH_IP:-}
 
 volumes:
   akson-data:

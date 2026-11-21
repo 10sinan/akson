@@ -74,6 +74,13 @@ func main() {
 	server := api.NewServer(database, dockerClient, networkMgr)
 	server.SetAuthToken(authToken)
 	server.SetSystemConfig(api.SystemConfig{DBPath: dbPath, ACMEEmailSet: acmeEmail != ""})
+	if publishIP := envOr("AKSON_PUBLISH_IP", ""); publishIP != "" {
+		if net.ParseIP(publishIP) == nil {
+			log.Fatalf("AKSON_PUBLISH_IP=%q is not an IP address", publishIP)
+		}
+		server.SetPublishIP(publishIP)
+		log.Printf("📡 New deployments publish ports on %s", publishIP)
+	}
 	if authToken == "" {
 		log.Printf("⚠️  AKSON_TOKEN is not set: API is open without authentication")
 		if !isLoopbackHost(host) {

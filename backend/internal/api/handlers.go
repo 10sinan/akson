@@ -24,6 +24,7 @@ type Server struct {
 	authToken  string
 	staticDir  string
 	sysConfig  SystemConfig
+	publishIP  string
 }
 
 // SetStaticDir serves the built frontend from dir for all non-API routes.

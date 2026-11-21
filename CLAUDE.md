@@ -18,7 +18,7 @@ From the repo root:
 Backend (`cd backend`):
 - Run a single test: `go test ./internal/docker -run TestCalculateStats_Math -v`
 - Tests that need a live Docker daemon (deploy, containers, logs, stats, proxy network) call `t.Skip` when the daemon can't be reached. If Docker is running they create real containers and networks.
-- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `HOST` (default `127.0.0.1`; the Docker image sets `0.0.0.0`), `STATIC_DIR` (optional; serves the built frontend, used by the Docker image), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
+- Env vars: `PORT` (default 3001), `DB_PATH` (default `./data/akson.db`), `HOST` (default `127.0.0.1`; the Docker image sets `0.0.0.0`), `AKSON_PUBLISH_IP` (default `127.0.0.1`; host IP new deployments publish ports on), `STATIC_DIR` (optional; serves the built frontend, used by the Docker image), `ACME_EMAIL` (optional, Traefik Let's Encrypt), `AKSON_TOKEN` (optional; when set, `/api/v1` requires `Authorization: Bearer <token>` or `?token=`).
 - The server exits at startup if it can't ping the Docker daemon.
 
 Frontend (`cd frontend`):

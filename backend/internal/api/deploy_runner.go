@@ -259,6 +259,7 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 		d.step(StepPull, "running", req.Image)
 	}
 	d.step(StepStart, "running", req.Name)
+	applyDefaultPublishIP(req.Ports, s.effectivePublishIP())
 	result, err := s.docker.DeployContainer(ctx, req.DeployConfig)
 	if err != nil {
 		if !isGit {
@@ -310,6 +311,32 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 
 	d.step(StepReady, "done", accessURL(&result.Container))
 	return result, nil
+}
+
+// defaultPublishIP is where new deployments publish their ports unless the request names
+// an IP or AKSON_PUBLISH_IP says otherwise. Docker's own default (all interfaces) would
+// expose every deployed app to the network and bypass host firewalls such as ufw.
+const defaultPublishIP = "127.0.0.1"
+
+// SetPublishIP sets the host IP new deployments publish ports on ("" = 127.0.0.1).
+func (s *Server) SetPublishIP(ip string) {
+	s.publishIP = ip
+}
+
+func (s *Server) effectivePublishIP() string {
+	if s.publishIP == "" {
+		return defaultPublishIP
+	}
+	return s.publishIP
+}
+
+// applyDefaultPublishIP fills in ip for every port mapping that does not name one.
+func applyDefaultPublishIP(ports []docker.PortMapping, ip string) {
+	for i := range ports {
+		if ports[i].IP == "" {
+			ports[i].IP = ip
+		}
+	}
 }
 
 // accessURL returns http://localhost:<port> for the first published port, or "".

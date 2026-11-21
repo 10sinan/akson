@@ -49,6 +49,8 @@ Durdurmak için: `docker compose down`
 > **Not:** Akson, konteynerleri yönetebilmek için Docker soketine (`/var/run/docker.sock`) erişir. Bu, Akson'a bilgisayarındaki Docker üzerinde tam yetki verir. Akson'u internete açacaksan `AKSON_TOKEN` ayarla ve tarayıcıda `localStorage.setItem('akson_token', '<token>')` ile aynı değeri gir.
 >
 > Güvenlik için Akson varsayılan olarak yalnızca bu bilgisayardan erişilebilir: `docker-compose.yml` portu `127.0.0.1:3001` üzerinde açar, Docker dışında çalışan arka yüz de `HOST=127.0.0.1` adresini dinler. Başka bir makineden erişmek istiyorsan önce `AKSON_TOKEN` ayarla, sonra bu adresi bilerek değiştir (tercihen önüne HTTPS'li bir ters vekil koy).
+>
+> Dağıttığın uygulamaların portları da varsayılan olarak sadece `127.0.0.1` üzerinde açılır (alan adıyla Traefik üzerinden erişim etkilenmez). Uygulamaları ağdaki diğer cihazlardan port numarasıyla açmak istiyorsan `AKSON_PUBLISH_IP=0.0.0.0` ayarla.
 
 ---
 
