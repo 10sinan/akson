@@ -414,14 +414,22 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
+	// /health needs no token, so it only says ok/unavailable; details (socket paths,
+	// file paths) go to the server log.
 	dockerOK := "ok"
-	if err := s.docker.Ping(ctx); err != nil {
-		dockerOK = "unavailable: " + err.Error()
+	if s.docker == nil {
+		dockerOK = "unavailable"
+	} else if err := s.docker.Ping(ctx); err != nil {
+		log.Printf("health: docker unavailable: %v", err)
+		dockerOK = "unavailable"
 	}
 
 	dbOK := "ok"
-	if err := s.db.Ping(); err != nil {
-		dbOK = "unavailable: " + err.Error()
+	if s.db == nil {
+		dbOK = "unavailable"
+	} else if err := s.db.Ping(); err != nil {
+		log.Printf("health: database unavailable: %v", err)
+		dbOK = "unavailable"
 	}
 
 	respond(w, http.StatusOK, map[string]string{
