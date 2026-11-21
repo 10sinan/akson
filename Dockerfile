@@ -21,7 +21,8 @@ FROM alpine:3.20
 RUN apk add --no-cache git ca-certificates
 COPY --from=backend /out/akson-server /usr/local/bin/akson-server
 COPY --from=frontend /app/dist /app/web
-ENV PORT=3001 \
+ENV HOST=0.0.0.0 \
+    PORT=3001 \
     DB_PATH=/data/akson.db \
     STATIC_DIR=/app/web
 VOLUME ["/data"]

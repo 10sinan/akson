@@ -4,7 +4,9 @@ services:
     container_name: akson
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      # Loopback only: Akson controls the host Docker daemon. To reach it from another
+      # machine, put a TLS reverse proxy in front and set AKSON_TOKEN, or change this deliberately.
+      - "127.0.0.1:3001:3001"
     volumes:
       # Akson manages containers through the host's Docker daemon.
       - /var/run/docker.sock:/var/run/docker.sock
