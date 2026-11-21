@@ -98,6 +98,10 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 			d.log("Git URL rejected: " + err.Error())
 			return nil, d.fail(StepClone, http.StatusBadRequest, err.Error(), err, req.Name, req.GitURL, "unknown", req.GitBranch)
 		}
+		if err := git.CheckRepoHost(ctx, req.GitURL); err != nil {
+			d.log("Git URL rejected: " + err.Error())
+			return nil, d.fail(StepClone, http.StatusBadRequest, err.Error(), err, req.Name, req.GitURL, "unknown", req.GitBranch)
+		}
 
 		tempDir, err := os.MkdirTemp("", "akson-git-*")
 		if err != nil {
