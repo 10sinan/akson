@@ -9,9 +9,10 @@ import {
   Sparkles,
   Settings,
   Layers,
+  Orbit,
 } from 'lucide-react';
 
-export type ActiveNavTab = 'dashboard' | 'deploy' | 'storage' | 'logs' | 'network' | 'settings';
+export type ActiveNavTab = 'dashboard' | 'galaxy' | 'deploy' | 'storage' | 'logs' | 'network' | 'settings';
 
 interface SidebarProps {
   activeTab: ActiveNavTab;
@@ -28,6 +29,7 @@ const NAV_ITEMS: {
   icon: React.FC<{ className?: string }>;
 }[] = [
   { id: 'dashboard', title: 'Kontrol Paneli', shortDesc: 'Servis topolojisi & metrikler', icon: LayoutDashboard },
+  { id: 'galaxy', title: 'Galaksi', shortDesc: 'Uygulamalar & Git dalları', icon: Orbit },
   { id: 'deploy', title: 'Yeni Dağıtım', shortDesc: 'Konteyner ayağa kaldır', icon: Rocket },
   { id: 'storage', title: 'Kalıcı Depolama', shortDesc: 'Akson verileri', icon: HardDrive },
   { id: 'logs', title: 'Canlı Loglar', shortDesc: 'Stdout/stderr akışı', icon: Terminal },

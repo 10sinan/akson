@@ -15,6 +15,7 @@ import {
   Network,
   Layers,
   Settings,
+  Orbit,
 } from 'lucide-react';
 import { soundManager, SOUND_CHANGE_EVENT } from '../utils/sound';
 import type { ActiveNavTab } from './Sidebar';
@@ -37,6 +38,7 @@ interface HeaderProps {
 
 const TAB_ICONS: Record<ActiveNavTab, React.FC<{ className?: string }>> = {
   dashboard: LayoutDashboard,
+  galaxy: Orbit,
   deploy: Rocket,
   storage: HardDrive,
   logs: Terminal,
