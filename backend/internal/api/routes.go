@@ -32,6 +32,7 @@ func (s *Server) NewRouter() http.Handler {
 
 	// --- API v1 ---
 	r.Route("/api/v1", func(r chi.Router) {
+		r.Use(LimitBody)
 		r.Use(OriginGuard)
 		r.Use(AuthMiddleware(s.authToken))
 
