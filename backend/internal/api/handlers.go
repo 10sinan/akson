@@ -134,11 +134,9 @@ func (s *Server) handleUpdateEnv(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, http.StatusBadRequest, "Invalid JSON: "+err.Error())
 		return
 	}
-	for k := range body.Env {
-		if k == "" || strings.ContainsAny(k, "= \t\n") {
-			errorResponse(w, http.StatusBadRequest, "Invalid env key: "+k)
-			return
-		}
+	if err := validateEnvKeys(body.Env); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
 	defer cancel()
@@ -148,6 +146,17 @@ func (s *Server) handleUpdateEnv(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(w, http.StatusOK, res)
+}
+
+// validateEnvKeys rejects variable names Docker would mis-parse: an empty name, or one
+// containing "=", whitespace or NUL (e.g. key "A=B" would silently become A with value "B=...").
+func validateEnvKeys(env map[string]string) error {
+	for k := range env {
+		if k == "" || strings.ContainsAny(k, "= \t\r\n\x00") {
+			return fmt.Errorf("Invalid env key: %q", k)
+		}
+	}
+	return nil
 }
 
 // handleContainerAction performs start/stop/restart on a container.

@@ -89,6 +89,9 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	if err := docker.ValidateDockerfilePath(strings.TrimSpace(req.Dockerfile)); err != nil {
 		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
 	}
+	if err := validateEnvKeys(req.Env); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
 
 	if strings.TrimSpace(req.GitURL) != "" {
 		if strings.TrimSpace(req.Name) == "" {
