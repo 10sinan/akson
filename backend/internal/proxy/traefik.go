@@ -83,8 +83,9 @@ func GenerateLabels(cfg RouteConfig) map[string]string {
 // TraefikDefaultArgs returns standard command-line flags to run the Traefik v3 container.
 func TraefikDefaultArgs(acmeEmail string) []string {
 	args := []string{
+		// The dashboard is enabled but not served on the unauthenticated :8080 "insecure"
+		// entrypoint; expose it only through an explicit, protected router if needed.
 		"--api.dashboard=true",
-		"--api.insecure=true", // Exposed internally on 8080 for status/monitoring
 		"--providers.docker=true",
 		"--providers.docker.exposedbydefault=false",
 		fmt.Sprintf("--providers.docker.network=%s", DefaultNetworkName),
