@@ -96,6 +96,21 @@ func TestDeployStream_RejectsTraefikRuleInjection(t *testing.T) {
 	}
 }
 
+func TestDeployStream_RejectsDockerfileOutsideRepo(t *testing.T) {
+	events := streamDeploy(t, NewServer(nil, nil, nil), map[string]any{
+		"git_url": "https://github.com/a/b.git", "dockerfile": "../../etc/passwd",
+	})
+	last := events[len(events)-1]
+	if last.Type != "error" || !strings.Contains(last.Message, "invalid Dockerfile path") {
+		t.Fatalf("expected invalid Dockerfile path error, got %+v", last)
+	}
+	for _, ev := range events {
+		if ev.Type == "step" && ev.Step == StepClone {
+			t.Fatalf("nothing should be cloned, got %+v", ev)
+		}
+	}
+}
+
 func TestGenerateLabels_RejectsInvalidDomain(t *testing.T) {
 	body := []byte(`{"service_name":"x","domain":"a.com` + "`" + `) || Host(` + "`" + `b.com","port":80}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/network/labels", bytes.NewReader(body))

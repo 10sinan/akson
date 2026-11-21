@@ -119,6 +119,9 @@ func (c *Client) BuildImage(ctx context.Context, opts BuildOptions) (*BuildResul
 	if dockerfile == "" {
 		dockerfile = "Dockerfile"
 	}
+	if err := ValidateDockerfilePath(dockerfile); err != nil {
+		return nil, err
+	}
 
 	// Verify Dockerfile exists in contextDir
 	dockerfilePath := filepath.Join(opts.ContextDir, dockerfile)
@@ -186,7 +189,24 @@ func (c *Client) BuildImage(ctx context.Context, opts BuildOptions) (*BuildResul
 	}, nil
 }
 
-var ansiRe = regexp.MustCompile(`\x1b\[[0-9;?]*[A-Za-z]`)
+// ValidateDockerfilePath accepts only a relative path that stays inside the build
+// context, e.g. "Dockerfile" or "docker/prod.Dockerfile". Absolute paths and ".."
+// would let a request probe (and read EXPOSE lines from) files outside the cloned repo.
+func ValidateDockerfilePath(p string) error {
+	if p == "" {
+		return nil
+	}
+	if strings.ContainsAny(p, "\x00\\") || filepath.IsAbs(p) || strings.HasPrefix(p, "/") {
+		return fmt.Errorf("invalid Dockerfile path %q: must be a relative path inside the repository", p)
+	}
+	clean := filepath.Clean(p)
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") {
+		return fmt.Errorf("invalid Dockerfile path %q: must be a relative path inside the repository", p)
+	}
+	return nil
+}
+
+var ansiRe =regexp.MustCompile(`\x1b\[[0-9;?]*[A-Za-z]`)
 
 // StripANSI removes terminal color/control sequences from build output.
 func StripANSI(s string) string {

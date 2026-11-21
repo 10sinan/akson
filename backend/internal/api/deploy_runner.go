@@ -86,6 +86,9 @@ func (s *Server) runDeploy(ctx context.Context, req DeployContainerRequest, emit
 	if err := proxy.ValidateRoute(proxy.RouteConfig{Domain: req.Domain, PathPrefix: req.PathPrefix}); err != nil {
 		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
 	}
+	if err := docker.ValidateDockerfilePath(strings.TrimSpace(req.Dockerfile)); err != nil {
+		return nil, &deployError{code: http.StatusBadRequest, msg: err.Error()}
+	}
 
 	if strings.TrimSpace(req.GitURL) != "" {
 		if strings.TrimSpace(req.Name) == "" {
